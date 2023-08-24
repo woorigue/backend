@@ -39,7 +39,5 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
 
     access_token = create_access_token(data={"sub": str(user_data.email)})
     refresh_token = create_refresh_token(data={"sub": str(user_data.email)})
-    print(access_token)
-    print(refresh_token)
 
-    return {"success": True}
+    return {"access_token": access_token, "refresh_token": refresh_token}
