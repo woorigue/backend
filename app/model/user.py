@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
-from sqlalchemy import Boolean, CheckConstraint, Column, Integer, String, select
+from sqlalchemy import Boolean, Column, Integer, String, select
 from sqlalchemy.orm import Session
 
 from app.db.session import Base
