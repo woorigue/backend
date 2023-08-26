@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -7,14 +5,21 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_db
 from app.core.token import create_access_token, create_refresh_token, verify_password
 from app.model.user import User
+from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.user import user_controller as con
-from app.rest_api.schema.base import CreateResponse
+from app.rest_api.schema.email import EmailVerifySchema
 from app.rest_api.schema.user import EmailLoginSchema, EmailRegisterSchema
 
 user_router = APIRouter(tags=["user"], prefix="/user")
 
 
-@user_router.post("/email/register", response_model=CreateResponse)
+@user_router.post("/email/verify/code")
+def email_verify(user_data: EmailVerifySchema, db: Session = Depends(get_db)):
+    email_con.send_verify_code(db, user_data)
+    return {"success": True}
+
+
+@user_router.post("/email/register", response_model=CreatgiteResponse)
 def email_register_user(user_data: EmailRegisterSchema, db: Session = Depends(get_db)):
     con.email_register_user(db, user_data)
     return {"success": True}
