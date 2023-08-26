@@ -22,7 +22,8 @@ def upgrade() -> None:
         "email",
         sa.Column("seq", sa.Integer, primary_key=True, comment="시퀀스"),
         sa.Column("email", sa.String(128), comment="이메일"),
-        sa.Column("is_verified", sa.String(256), comment="인증 여부"),
+        sa.Column("auth_number", sa.String(6), comment="인증번호"),
+        sa.Column("is_verified", sa.Boolean, comment="인증 여부"),
         sa.Column(
             "expired_at", sa.DateTime, server_default=sa.sql.func.now(), comment="만료 시간"
         ),
