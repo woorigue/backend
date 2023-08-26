@@ -16,6 +16,7 @@ pydantic-settings = "^2.0.3"
 alembic = "^1.11.3"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+boto3 = "^1.28.35"
 
 
 [tool.poetry.group.dev.dependencies]
