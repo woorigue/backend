@@ -35,3 +35,21 @@ class User(Base):
         db.add(user)
         db.commit()
         return None
+
+    @staticmethod
+    def resset_password(db: Session, email: str, password: str):
+        user = db.scalar(select(User).where(User.email == email))
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "status_code": status.HTTP_404_NOT_FOUND,
+                    "system_code": "USER_NOT_FOUND",
+                },
+            )
+        db.query(User).filter(User.email == email).update(
+            {"password": pwd_context.hash(password)}
+        )
+        db.commit()
+        db.flush()

@@ -4,12 +4,21 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
 from app.core.token import create_access_token, create_refresh_token, verify_password
+from app.helper.rest import Test, UnicornException
 from app.model.user import User
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.user import user_controller as con
 from app.rest_api.schema.base import CreateResponse
-from app.rest_api.schema.email import EmailAuthCodeSchema, EmailVerifySchema
-from app.rest_api.schema.user import EmailLoginSchema, EmailRegisterSchema
+from app.rest_api.schema.email import (
+    EmailAuthCodeSchema,
+    EmailPasswordResetSchema,
+    EmailVerifySchema,
+)
+from app.rest_api.schema.user import (
+    EmailLoginSchema,
+    EmailRegisterSchema,
+    ResetPasswordSchema,
+)
 
 user_router = APIRouter(tags=["user"], prefix="/user")
 
@@ -57,3 +66,19 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
     refresh_token = create_refresh_token(data={"sub": str(user_data.email)})
 
     return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+@user_router.post("/email/request/password/reset")
+def email_request_password_reset(
+    user_data: EmailPasswordResetSchema, db: Session = Depends(get_db)
+):
+    email_con.send_verify_code_for_reset_password(db, user_data)
+
+    return {"success": True}
+
+
+@user_router.post("/reset/password")
+def user_reset_password(user_data: ResetPasswordSchema, db: Session = Depends(get_db)):
+    con.reset_password(db, user_data)
+
+    return {"success": True}

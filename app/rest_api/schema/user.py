@@ -9,3 +9,8 @@ class EmailLoginSchema(BaseModel):
 class EmailRegisterSchema(BaseModel):
     email: str = Field(title="이메일")
     password: str = Field(title="패스워드")
+
+
+class ResetPasswordSchema(BaseModel):
+    email: str = Field(title="이메일")
+    password: str = Field(title="패스워드")
