@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
 from app.core.token import create_access_token, create_refresh_token, verify_password
-from app.helper.rest import Test, UnicornException
 from app.model.user import User
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.user import user_controller as con
