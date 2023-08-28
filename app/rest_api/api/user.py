@@ -76,7 +76,7 @@ def email_request_password_reset(
     return {"success": True}
 
 
-@user_router.post("/reset/password")
+@user_router.post("/password/reset")
 def user_reset_password(user_data: ResetPasswordSchema, db: Session = Depends(get_db)):
     con.reset_password(db, user_data)
 
