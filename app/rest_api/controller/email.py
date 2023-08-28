@@ -60,7 +60,7 @@ class EmailController:
             select(Email).where(
                 Email.email == user_data.email,
                 Email.auth_number == user_data.auth_number,
-                Email.is_verified is False,
+                Email.is_verified == False,
             )
         )
 
