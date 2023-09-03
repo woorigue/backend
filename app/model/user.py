@@ -1,9 +1,11 @@
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from sqlalchemy import Boolean, Column, Integer, String, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 
 from app.db.session import Base
+
+from .profile import Profile
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -15,6 +17,8 @@ class User(Base):
     email = Column(String(128), unique=True, comment="이메일")
     password = Column(String(256), comment="비밀번호")
     is_active = Column(Boolean, default=True, comment="활성화 여부")
+
+    profile = relationship(Profile, back_populates="user")
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:
