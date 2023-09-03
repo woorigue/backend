@@ -62,7 +62,7 @@ def get_current_user(
     except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"system_code": "EXPIRED_REFRESH_TOKEN"},
+            detail={"system_code": "EXPIRED_ACCESS_TOKEN"},
         )
     except JWTError:
         raise credentials_exception
