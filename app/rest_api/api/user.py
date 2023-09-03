@@ -21,11 +21,13 @@ from app.rest_api.schema.email import (
     EmailPasswordResetSchema,
     EmailVerifySchema,
 )
+from app.rest_api.schema.profile import ProfileSchema
 from app.rest_api.schema.token import RefreshTokenSchema
 from app.rest_api.schema.user import (
     EmailLoginSchema,
     EmailRegisterSchema,
     ResetPasswordSchema,
+    UserSchema,
 )
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -59,7 +61,14 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"system_code": "USER_NOT_FOUND"},
+        )
+
+    if not user.profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"system_code": "USER_PROFILE_NOT_FOUND"},
         )
 
     result = verify_password(user_data.password, user.password)
@@ -67,7 +76,7 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
     if not result:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Password is not matched",
+            detail={"system_code": "USER_PASSWORD_NOT_MATCHED"},
         )
 
     access_token = create_access_token(data={"sub": str(user_data.email)})
@@ -102,3 +111,25 @@ def get_access_token_using_refresh_token(
     refresh_token = create_refresh_token(data={"sub": token.email})
 
     return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+@user_router.get("/me", response_model=UserSchema)
+def get_user_info_with_profile(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    return token
+
+
+@user_router.patch("/me")
+def update_user_profile(
+    user_data: ProfileSchema,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    profile = token.profile[0]
+    profile.nickname = user_data.nickname
+
+    db.commit()
+    db.flush()
+    return {"success": True}
