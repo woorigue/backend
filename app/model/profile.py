@@ -13,3 +13,4 @@ class Profile(Base):
     user_seq = Column(Integer, ForeignKey("users.seq"))
 
     user = relationship("User", back_populates="profile")
+    join_profile = relationship("JoinPosition", back_populates="profile")
