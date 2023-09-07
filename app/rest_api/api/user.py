@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
@@ -12,6 +12,7 @@ from app.core.token import (
     validate_refresh_token,
     verify_password,
 )
+from app.model.position import JoinPosition
 from app.model.user import User
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.user import user_controller as con
@@ -21,7 +22,7 @@ from app.rest_api.schema.email import (
     EmailPasswordResetSchema,
     EmailVerifySchema,
 )
-from app.rest_api.schema.profile import ProfileSchema
+from app.rest_api.schema.profile import GetProfileSchema, ProfileSchema
 from app.rest_api.schema.token import RefreshTokenSchema
 from app.rest_api.schema.user import (
     EmailLoginSchema,
@@ -128,7 +129,20 @@ def update_user_profile(
     db: Session = Depends(get_db),
 ):
     profile = token.profile[0]
-    profile.nickname = user_data.nickname
+    position = user_data.position
+
+    for key, value in user_data.dict(exclude_none=True).items():
+        setattr(profile, key, value)
+
+    if position is not None:
+        sql = delete(JoinPosition).where(JoinPosition.profile_seq == profile.seq)
+        db.execute(sql)
+
+        obj = [
+            JoinPosition(profile_seq=profile.seq, position_seq=item)
+            for item in position
+        ]
+        db.bulk_save_objects(obj)
 
     db.commit()
     db.flush()
