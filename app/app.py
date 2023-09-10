@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.blueprints import register_router
+from app.core.errorhanlder import register_exception_handler
 
 
 def create_application() -> FastAPI:
@@ -10,6 +11,7 @@ def create_application() -> FastAPI:
         docs_url="/swagger",
     )
     register_router(application)
+    register_exception_handler(application)
     return application
 
 
