@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import APIKeyHeader
+from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy import select
@@ -17,7 +17,7 @@ ACCESS_TOKEN_EXPIRE_DAYS = 1
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-bearer_header = APIKeyHeader(name="bearer", scheme_name="bearer")
+bearer_header = APIKeyHeader(name="Authorization")
 
 
 def verify_password(plain_password, hashed_password):
@@ -54,6 +54,8 @@ def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    # TODO: Use HTTPBearer
+    token = token.split(" ")[1]
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
