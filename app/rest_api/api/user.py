@@ -12,6 +12,7 @@ from app.core.token import (
     validate_refresh_token,
     verify_password,
 )
+from app.helper.exception import ProfileRequired
 from app.model.position import JoinPosition
 from app.model.user import User
 from app.rest_api.controller.email import email_controller as email_con
@@ -67,10 +68,7 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
         )
 
     if not user.profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"system_code": "USER_PROFILE_NOT_FOUND"},
-        )
+        raise ProfileRequired
 
     result = verify_password(user_data.password, user.password)
 
