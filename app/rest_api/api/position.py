@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -8,7 +10,7 @@ from app.rest_api.schema.position import PositionSchema
 position_router = APIRouter(tags=["position"], prefix="/position")
 
 
-@position_router.get("", response_model=PositionSchema)
+@position_router.get("", response_model=List[PositionSchema])
 def get_positions(db: Session = Depends(get_db)):
     positions = db.query(Position).all()
     return positions
