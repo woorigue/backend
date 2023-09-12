@@ -23,7 +23,7 @@ from app.rest_api.schema.email import (
     EmailPasswordResetSchema,
     EmailVerifySchema,
 )
-from app.rest_api.schema.profile import GetProfileSchema, ProfileSchema
+from app.rest_api.schema.profile import UpdateProfileSchema
 from app.rest_api.schema.token import RefreshTokenSchema
 from app.rest_api.schema.user import (
     EmailLoginSchema,
@@ -122,7 +122,7 @@ def get_user_info_with_profile(
 
 @user_router.patch("/me")
 def update_user_profile(
-    user_data: ProfileSchema,
+    user_data: UpdateProfileSchema,
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):

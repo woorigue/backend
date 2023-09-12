@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from .profile import GetProfileSchema
@@ -24,4 +26,4 @@ class UserSchema(BaseModel):
     seq: int = Field(title="시퀀스")
     email: str = Field(title="이메일")
     is_active: bool = Field(title="계정 활성 여부")
-    profile: GetProfileSchema
+    profile: List[GetProfileSchema]
