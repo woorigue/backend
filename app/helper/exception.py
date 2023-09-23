@@ -21,7 +21,7 @@ class RestException(Exception):
 
 
 class ProfileRequired(RestException):
-    status = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_400_BAD_REQUEST
     user_message = "프로필 설정이 필요합니다."
     system_code = "USER_PROFILE_DATA_REQUIRED"
     system_message = "Profile data is reuqired of user"
