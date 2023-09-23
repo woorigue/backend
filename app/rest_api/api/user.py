@@ -101,13 +101,12 @@ def user_reset_password(user_data: ResetPasswordSchema, db: Session = Depends(ge
 @user_router.post("/token/refresh")
 def get_access_token_using_refresh_token(
     user_data: RefreshTokenSchema,
-    token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    validate_refresh_token(user_data, db)
+    username = validate_refresh_token(user_data, db)
 
-    access_token = create_access_token(data={"sub": token.email})
-    refresh_token = create_refresh_token(data={"sub": token.email})
+    access_token = create_access_token(data={"sub": username})
+    refresh_token = create_refresh_token(data={"sub": username})
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
