@@ -87,6 +87,7 @@ def validate_refresh_token(
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
+        return username
 
     except ExpiredSignatureError:
         raise HTTPException(
