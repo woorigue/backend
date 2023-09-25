@@ -3,7 +3,7 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import ClientError
 from fastapi import HTTPException, status
-from sqlalchemy import Boolean, Column, Integer, String, select, update
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.model.email import Email
@@ -13,6 +13,7 @@ from app.rest_api.schema.email import (
     EmailPasswordResetSchema,
     EmailVerifySchema,
 )
+from app.helper.exception import EmailConflictException, EmailExpiredException
 
 
 class EmailController:
@@ -67,9 +68,7 @@ class EmailController:
         user = db.scalar(select(User).where(User.email == user_data.email))
 
         if user:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="email already exists."
-            )
+            raise EmailConflictException
 
         # TODO: Create function of ses
 
@@ -116,10 +115,7 @@ class EmailController:
         )
 
         if not email or datetime.now() > email.expired_at:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Verfiy resource is not found or expied of auth code",
-            )
+            raise EmailExpiredException
 
         db.query(Email).filter(Email.seq == email.seq).update({"is_verified": True})
         db.commit()

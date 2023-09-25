@@ -31,11 +31,23 @@ from app.rest_api.schema.user import (
     ResetPasswordSchema,
     UserSchema,
 )
+from app.constants.errors import (
+    EMAIL_CONFLICT_SYSTEM_CODE,
+    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
+)
 
 user_router = APIRouter(tags=["user"], prefix="/user")
 
 
-@user_router.post("/email/request/verify/code")
+@user_router.post(
+    "/email/request/verify/code",
+    description=f"""
+    **[API Description]** <br><br>
+    Request verify code for register user and duplicated check of email <br><br>
+    **[Exception List]** <br><br> 
+    {EMAIL_CONFLICT_SYSTEM_CODE}: 이메일 중복 오류(409)
+    """,
+)
 def email_request_verify_code(
     user_data: EmailVerifySchema, db: Session = Depends(get_db)
 ):
@@ -43,7 +55,15 @@ def email_request_verify_code(
     return {"success": True}
 
 
-@user_router.post("/email/verify/auth/code")
+@user_router.post(
+    "/email/verify/auth/code",
+    description=f"""
+    **[API Description]** <br><br>
+    Verify code(expiration time: 3min) <br><br>
+    **[Exception List]** <br><br>
+    {EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE}: 이메일 인증 만료(400)
+    """,
+)
 def email_verify_auth_code(
     user_data: EmailAuthCodeSchema, db: Session = Depends(get_db)
 ):
