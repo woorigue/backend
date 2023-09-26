@@ -110,14 +110,6 @@ class EmailController:
             print(response["MessageId"])
 
     def verify_auth_code(self, db: Session, user_data: EmailAuthCodeSchema) -> None:
-        # email = db.scalar(
-        #     select(Email).where(
-        #         Email.email == user_data.email,
-        #         # Email.auth_number == user_data.auth_number,
-        #         Email.is_verified is False,
-        #     )
-        # )
-
         email_list = db.scalars(
             select(Email)
             .where(

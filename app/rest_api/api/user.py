@@ -35,6 +35,7 @@ from app.constants.errors import (
     EMAIL_CONFLICT_SYSTEM_CODE,
     EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
     PASSWORD_INVALID_SYSTEM_CODE,
+    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
 )
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -62,6 +63,7 @@ def email_request_verify_code(
     **[API Description]** <br><br>
     Verify code(expiration time: 3min) <br><br>
     **[Exception List]** <br><br>
+    {EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE}: 인증번호 오류(400) <br><br>
     {EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE}: 이메일 인증 만료(400)
     """,
 )
