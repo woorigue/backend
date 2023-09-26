@@ -1,5 +1,8 @@
 from fastapi import status
-from app.constants.errors import EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE
+from app.constants.errors import (
+    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
+    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
+)
 
 
 class RestException(Exception):
@@ -40,3 +43,10 @@ class EmailExpiredException(RestException):
     user_message = "인증이 만료되었습니다.\n다시 시도해주세요."
     system_code = EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE
     system_message = "Verify code has expired"
+
+
+class EmailAuthNumberInvalidException(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    user_message = "인증번호가 맞지 않습니다.\n다시 확인해주세요."
+    system_code = EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE
+    system_message = "Auth number is not matched"

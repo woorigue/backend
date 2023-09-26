@@ -3,7 +3,7 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import ClientError
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
 
 from app.model.email import Email
@@ -13,7 +13,11 @@ from app.rest_api.schema.email import (
     EmailPasswordResetSchema,
     EmailVerifySchema,
 )
-from app.helper.exception import EmailConflictException, EmailExpiredException
+from app.helper.exception import (
+    EmailConflictException,
+    EmailExpiredException,
+    EmailAuthNumberInvalidException,
+)
 
 
 class EmailController:
@@ -106,13 +110,28 @@ class EmailController:
             print(response["MessageId"])
 
     def verify_auth_code(self, db: Session, user_data: EmailAuthCodeSchema) -> None:
-        email = db.scalar(
-            select(Email).where(
+        # email = db.scalar(
+        #     select(Email).where(
+        #         Email.email == user_data.email,
+        #         # Email.auth_number == user_data.auth_number,
+        #         Email.is_verified is False,
+        #     )
+        # )
+
+        email_list = db.scalars(
+            select(Email)
+            .where(
                 Email.email == user_data.email,
-                Email.auth_number == user_data.auth_number,
                 Email.is_verified == False,
             )
-        )
+            .order_by(desc("seq"))
+        ).all()
+
+        email = email_list[0]
+
+        if email:
+            if email.auth_number != user_data.auth_number:
+                raise EmailAuthNumberInvalidException
 
         if not email or datetime.now() > email.expired_at:
             raise EmailExpiredException
