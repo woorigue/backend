@@ -34,6 +34,7 @@ from app.rest_api.schema.user import (
 from app.constants.errors import (
     EMAIL_CONFLICT_SYSTEM_CODE,
     EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
+    PASSWORD_INVALID_SYSTEM_CODE,
 )
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -71,7 +72,17 @@ def email_verify_auth_code(
     return {"success": True}
 
 
-@user_router.post("/email/register", response_model=CreateResponse)
+@user_router.post(
+    "/email/register",
+    description=f"""
+    **[API Description]** <br><br>
+    Verify code(expiration time: 3min) <br><br>
+    **[Exception List]** <br><br>
+    {PASSWORD_INVALID_SYSTEM_CODE}: 비밀번호 오류(400) <br><br>
+    {EMAIL_CONFLICT_SYSTEM_CODE}: 이메일 중복 오류(409)
+    """,
+    response_model=CreateResponse,
+)
 def email_register_user(user_data: EmailRegisterSchema, db: Session = Depends(get_db)):
     con.email_register_user(db, user_data)
     return {"success": True}

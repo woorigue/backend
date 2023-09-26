@@ -1,4 +1,3 @@
-from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from sqlalchemy import Boolean, Column, Integer, String, select
 from sqlalchemy.orm import Session, relationship
@@ -6,6 +5,7 @@ from sqlalchemy.orm import Session, relationship
 from app.db.session import Base
 
 from .profile import Profile
+from app.helper.exception import EmailConflictException, PasswordInvalidException
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -25,15 +25,10 @@ class User(Base):
         user = db.scalar(select(User).where(User.email == email))
 
         if user:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="email already exists."
-            )
+            raise EmailConflictException
 
         if len(password) < 6:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password need at least 6 characters",
-            )
+            raise PasswordInvalidException
 
         user = User(email=email, password=pwd_context.hash(password))
         db.add(user)

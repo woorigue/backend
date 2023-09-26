@@ -2,6 +2,7 @@ from fastapi import status
 from app.constants.errors import (
     EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
     EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
+    PASSWORD_INVALID_SYSTEM_CODE,
 )
 
 
@@ -50,3 +51,10 @@ class EmailAuthNumberInvalidException(RestException):
     user_message = "인증번호가 맞지 않습니다.\n다시 확인해주세요."
     system_code = EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE
     system_message = "Auth number is not matched"
+
+
+class PasswordInvalidException(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    user_message = "비밀번호 최소 길이는 6자입니다."
+    system_code = PASSWORD_INVALID_SYSTEM_CODE
+    system_message = "Password need at least 6 characters"
