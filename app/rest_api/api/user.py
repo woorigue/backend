@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
@@ -12,7 +12,11 @@ from app.core.token import (
     validate_refresh_token,
     verify_password,
 )
-from app.helper.exception import ProfileRequired
+from app.helper.exception import (
+    ProfileRequired,
+    UserNotFoundException,
+    UserPasswordNotMatchException,
+)
 from app.model.position import JoinPosition
 from app.model.user import User
 from app.rest_api.controller.email import email_controller as email_con
@@ -36,6 +40,7 @@ from app.constants.errors import (
     EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
     PASSWORD_INVALID_SYSTEM_CODE,
     EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
+    USER_NOT_FOUND_SYSTEM_CODE,
 )
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -90,26 +95,26 @@ def email_register_user(user_data: EmailRegisterSchema, db: Session = Depends(ge
     return {"success": True}
 
 
-@user_router.post("/email/login")
+@user_router.post(
+    "/email/login",
+    description=f"""
+    **[API Description]** <br><br>
+    Email login <br><br>
+    **[Exception List]** <br><br>
+    {PASSWORD_INVALID_SYSTEM_CODE}: 비밀번호 오류(400) <br><br>
+    {USER_NOT_FOUND_SYSTEM_CODE}: 사용자 정보 검색 오류(404) <br><br>
+    """,
+)
 def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == user_data.email))
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"system_code": "USER_NOT_FOUND"},
-        )
-
-    if not user.profile:
-        raise ProfileRequired
+        raise UserNotFoundException
 
     result = verify_password(user_data.password, user.password)
 
     if not result:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"system_code": "USER_PASSWORD_NOT_MATCHED"},
-        )
+        raise UserPasswordNotMatchException
 
     access_token = create_access_token(data={"sub": str(user_data.email)})
     refresh_token = create_refresh_token(data={"sub": str(user_data.email)})
@@ -145,10 +150,10 @@ def get_access_token_using_refresh_token(
 
 
 @user_router.get("/me", response_model=UserSchema)
-def get_user_info_with_profile(
-    token: Annotated[str, Depends(get_current_user)],
-    db: Session = Depends(get_db),
-):
+def get_user_info_with_profile(token: Annotated[str, Depends(get_current_user)]):
+    if not token.profile:
+        raise ProfileRequired
+
     return token
 
 
