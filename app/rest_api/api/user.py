@@ -41,6 +41,7 @@ from app.constants.errors import (
     PASSWORD_INVALID_SYSTEM_CODE,
     EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
     USER_NOT_FOUND_SYSTEM_CODE,
+    USER_PROFILE_REQUIRED_SYSTEM_CODE,
 )
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -149,7 +150,16 @@ def get_access_token_using_refresh_token(
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-@user_router.get("/me", response_model=UserSchema)
+@user_router.get(
+    "/me",
+    description=f"""
+    **[API Description]** <br><br>
+    Get my profile API <br><br>
+    **[Exception List]** <br><br>
+    {USER_PROFILE_REQUIRED_SYSTEM_CODE}: 사용자 프로필(400) <br><br>
+    """,
+    response_model=UserSchema,
+)
 def get_user_info_with_profile(token: Annotated[str, Depends(get_current_user)]):
     if not token.profile:
         raise ProfileRequired
