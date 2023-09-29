@@ -139,7 +139,15 @@ def email_request_password_reset(
     return {"success": True}
 
 
-@user_router.post("/password/reset")
+@user_router.post(
+    "/password/reset",
+    description=f"""
+    **[API Description]** <br><br>
+    Request auth code with email<br><br>
+    **[Exception List]** <br><br>
+    {USER_NOT_FOUND_SYSTEM_CODE}: 사용자 정보 검색 오류(404) <br><br>
+    """,
+)
 def user_reset_password(user_data: ResetPasswordSchema, db: Session = Depends(get_db)):
     con.reset_password(db, user_data)
     return {"success": True}
