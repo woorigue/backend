@@ -123,7 +123,15 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-@user_router.post("/email/request/password/reset")
+@user_router.post(
+    "/email/request/password/reset",
+    description=f"""
+    **[API Description]** <br><br>
+    Request auth code with email<br><br>
+    **[Exception List]** <br><br>
+    {USER_NOT_FOUND_SYSTEM_CODE}: 사용자 정보 검색 오류(404) <br><br>
+    """,
+)
 def email_request_password_reset(
     user_data: EmailPasswordResetSchema, db: Session = Depends(get_db)
 ):

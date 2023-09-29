@@ -2,7 +2,6 @@ from datetime import datetime
 
 import boto3
 from botocore.exceptions import ClientError
-from fastapi import HTTPException, status
 from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
 
@@ -19,6 +18,8 @@ from app.helper.exception import (
     EmailAuthNumberInvalidException,
 )
 
+from app.helper.exception import UserNotFoundException
+
 
 class EmailController:
     def send_verify_code_for_reset_password(
@@ -27,13 +28,7 @@ class EmailController:
         user = db.scalar(select(User).where(User.email == user_data.email))
 
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "status_code": status.HTTP_404_NOT_FOUND,
-                    "system_code": "USER_NOT_FOUND",
-                },
-            )
+            raise UserNotFoundException
 
         email = Email.create(db, email=user_data.email)
         client = boto3.client("ses", region_name="ap-northeast-2")

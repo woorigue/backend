@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session, relationship
 from app.db.session import Base
 
 from .profile import Profile
-from app.helper.exception import EmailConflictException, PasswordInvalidException
+from app.helper.exception import (
+    EmailConflictException,
+    PasswordInvalidException,
+    UserNotFoundException,
+)
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -40,13 +45,8 @@ class User(Base):
         user = db.scalar(select(User).where(User.email == email))
 
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "status_code": status.HTTP_404_NOT_FOUND,
-                    "system_code": "USER_NOT_FOUND",
-                },
-            )
+            raise UserNotFoundException
+
         db.query(User).filter(User.email == email).update(
             {"password": pwd_context.hash(password)}
         )
