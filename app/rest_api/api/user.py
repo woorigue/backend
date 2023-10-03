@@ -18,6 +18,7 @@ from app.helper.exception import (
     UserPasswordNotMatchException,
 )
 from app.model.position import JoinPosition
+from app.model.profile import Profile
 from app.model.user import User
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.user import user_controller as con
@@ -189,11 +190,17 @@ def update_user_profile(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    profile = token.profile[0]
+    profile = token.profile
     position = user_data.position
 
-    for key, value in user_data.dict(exclude_none=True).items():
-        setattr(profile, key, value)
+    if not profile:
+        profile = Profile(user_seq=token.seq, nickname=user_data.nickname)
+        db.add(profile)
+    else:
+        profile = profile[0]
+
+        for key, value in user_data.dict(exclude_none=True).items():
+            setattr(profile, key, value)
 
     if position is not None:
         sql = delete(JoinPosition).where(JoinPosition.profile_seq == profile.seq)
