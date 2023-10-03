@@ -196,6 +196,9 @@ def update_user_profile(
     if not profile:
         profile = Profile(user_seq=token.seq, nickname=user_data.nickname)
         db.add(profile)
+        db.commit()
+        db.refresh(profile)
+        print(profile.seq)
     else:
         profile = profile[0]
 
