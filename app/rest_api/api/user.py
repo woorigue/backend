@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
@@ -21,6 +21,7 @@ from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.model.user import User
 from app.rest_api.controller.email import email_controller as email_con
+from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
 from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.email import (
@@ -44,6 +45,7 @@ from app.constants.errors import (
     USER_NOT_FOUND_SYSTEM_CODE,
     USER_PROFILE_REQUIRED_SYSTEM_CODE,
 )
+
 
 user_router = APIRouter(tags=["user"], prefix="/user")
 
@@ -198,7 +200,6 @@ def update_user_profile(
         db.add(profile)
         db.commit()
         db.refresh(profile)
-        print(profile.seq)
     else:
         profile = profile[0]
 
@@ -217,4 +218,15 @@ def update_user_profile(
 
     db.commit()
     db.flush()
+    return {"success": True}
+
+
+@user_router.post("/me/profile/img")
+async def create_user_profile_img(
+    profile_img: UploadFile,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    file_contents = await profile_img.read()
+    file_con.upload_uesr_profile_img(file_contents, token, profile_img.filename, db)
     return {"success": True}
