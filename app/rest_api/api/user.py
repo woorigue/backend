@@ -230,3 +230,16 @@ async def create_user_profile_img(
     file_contents = await profile_img.read()
     file_con.upload_uesr_profile_img(file_contents, token, profile_img.filename, db)
     return {"success": True}
+
+
+@user_router.delete("/me/profile/img")
+def delete_user_profile_img(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    proflie = token.profile[0]
+    proflie.img = ""
+
+    db.commit()
+    db.flush()
+    return {"success": True}
