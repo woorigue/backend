@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
@@ -20,11 +20,11 @@ def add_banners(user_data:BannerRegisterSchema, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "배너가 성공적으로 등록되었습니다.", "banner": new_banner.url}
 
-@banner_router.delete("")
-def delete_banners(user_data:BannerDeleteSchema, db: Session = Depends(get_db)):
-    banner = db.query(Banner).get(user_data.id)
+@banner_router.delete("/{banner_id}")
+def delete_banners(banner_id:int, db: Session = Depends(get_db)):
+    banner = db.query(Banner).filter(Banner.id === banner_id).first()
     if not banner:
-        return {"error": "선택한 배너가 존재하지 않습니다."}
+        return HTTPException(status_code=404, detail="배너가 존재하지 않습니다.")
     db.delete(banner)
     db.commit()
     return {"message": "배너가 성공적으로 삭제되었습니다."}
