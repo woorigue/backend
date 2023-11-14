@@ -16,14 +16,14 @@ def get_banners(db: Session = Depends(get_db)):
     return banners
     
 @banner_router.post("")
-def add_banners(banner_img:UploadFile, db: Session = Depends(get_db)):
+async def add_banners(banner_img:UploadFile, db: Session = Depends(get_db)):
     banner_content = await banner_img.read()
     file_con.upload_banner_img(banner_content, banner_img.filename, db)
     return {"message": "배너가 성공적으로 등록되었습니다.", "banner": new_banner.url}
 
 @banner_router.delete("/{banner_id}")
 def delete_banners(banner_id:int, db: Session = Depends(get_db)):
-    banner = db.query(Banner).filter(Banner.id === banner_id).first()
+    banner = db.query(Banner).filter(Banner.id == banner_id).first()
     if not banner:
         return HTTPException(status_code=404, detail="배너가 존재하지 않습니다.")
     db.delete(banner)
