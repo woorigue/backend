@@ -18,6 +18,9 @@ python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 boto3 = "^1.28.35"
 python-multipart = "^0.0.6"
+authlib = "^1.2.1"
+itsdangerous = "^2.1.2"
+httpx = "^0.25.0"
 
 
 [tool.poetry.group.dev.dependencies]
