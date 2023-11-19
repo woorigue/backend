@@ -12,14 +12,14 @@ banner_router = APIRouter(tags=["banner"], prefix="/banner")
 
 @banner_router.get("")
 def get_banners(db: Session = Depends(get_db)):
-    banners = db.query(Banner).all()
+    banners = db.query(Banner).order_by(Banner.create_date.desc()).all()
     return banners
     
 @banner_router.post("")
 async def add_banners(banner_img:UploadFile, db: Session = Depends(get_db)):
     banner_content = await banner_img.read()
     file_con.upload_banner_img(banner_content, banner_img.filename, db)
-    return {"message": "배너가 성공적으로 등록되었습니다.", "banner": new_banner.url}
+    return {"success": True}
 
 @banner_router.delete("/{banner_id}")
 def delete_banners(banner_id:int, db: Session = Depends(get_db)):
