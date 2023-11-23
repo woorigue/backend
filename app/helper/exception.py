@@ -4,6 +4,7 @@ from app.constants.errors import (
     EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
     PASSWORD_INVALID_SYSTEM_CODE,
     USER_NOT_FOUND_SYSTEM_CODE,
+    BANNER_NOT_FOUND_SYSTEM_CODE
 )
 
 
@@ -73,3 +74,10 @@ class UserPasswordNotMatchException(RestException):
     user_message = "비밀번호가 틀렸습니다."
     system_code = PASSWORD_INVALID_SYSTEM_CODE
     system_message = "User's password is not matched"
+    
+
+class BannerNotFoundException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    user_message = "배너가 존재하지 않습니다."
+    system_code = BANNER_NOT_FOUND_SYSTEM_CODE
+    system_message = "Banner not found"    

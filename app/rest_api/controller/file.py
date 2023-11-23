@@ -1,6 +1,8 @@
 import boto3
 from io import BytesIO
+from app.model.banner import Banner
 
+from datetime import datetime
 
 class FileController:
     def __init__(self):
@@ -14,6 +16,14 @@ class FileController:
         profile.img = "drl2968ia795g.cloudfront.net/" + url
         db.commit()
         db.flush()
-
+        
+    def upload_banner_img(self, file, file_name, db):
+        url = f"banner/{file_name}"
+        content = BytesIO(file)
+        self.s3_client.upload_fileobj(content, "our-league", url)
+        banner = Banner(url = "drl2968ia795g.cloudfront.net/" + url, create_date = datetime.now())
+        db.add(banner)
+        db.commit()
+        db.flush()
 
 file_controller = FileController()
