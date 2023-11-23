@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from pydantic import BaseModel, Field, StrictInt, StrictStr
 
@@ -12,5 +12,5 @@ class UpdateProfileSchema(BaseModel):
 
 class GetProfileSchema(BaseModel):
     nickname: StrictStr = Field(title="닉네임", default=None)
-    img: str = Field(title="이미지 URL", default=None)
+    img: Union[str, None] = Field(title="이미지 URL", default=None)
     join_profile: List[JoinPositionSchema] = []
