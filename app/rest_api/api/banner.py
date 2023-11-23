@@ -8,6 +8,11 @@ from app.rest_api.controller.file import file_controller as file_con
 
 from app.rest_api.schema.banner import (BannerRegisterSchema, BannerDeleteSchema)
 
+from app.helper.exception import(
+    BannerNotFoundException
+)
+
+
 banner_router = APIRouter(tags=["banner"], prefix="/banner")
 
 @banner_router.get("")
@@ -25,7 +30,8 @@ async def add_banners(banner_img:UploadFile, db: Session = Depends(get_db)):
 def delete_banners(banner_id:int, db: Session = Depends(get_db)):
     banner = db.query(Banner).filter(Banner.id == banner_id).first()
     if not banner:
-        return HTTPException(status_code=404, detail="배너가 존재하지 않습니다.")
+        raise BannerNotFoundException
+        
     db.delete(banner)
     db.commit()
     return {"message": "배너가 성공적으로 삭제되었습니다."}
