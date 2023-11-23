@@ -13,4 +13,5 @@ class UpdateProfileSchema(BaseModel):
 class GetProfileSchema(BaseModel):
     nickname: StrictStr = Field(title="닉네임", default=None)
     img: Union[str, None] = Field(title="이미지 URL", default=None)
+    sex: str = Field(title="성별", default="M")
     join_profile: List[JoinPositionSchema] = []
