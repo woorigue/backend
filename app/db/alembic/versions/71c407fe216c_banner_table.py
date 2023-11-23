@@ -9,6 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.sql import func
 
 
 # revision identifiers, used by Alembic.
@@ -23,6 +24,7 @@ def upgrade() -> None:
         "banner",
         sa.Column("id", sa.Integer, primary_key=True, comment="아이디"),
         sa.Column("url", sa.String(255), nullable=False, comment="주소"),
+        sa.Column("create_date", sa.DateTime, nullable=False, server_default=func.now(), comment="생성일자")
     )
 
 
