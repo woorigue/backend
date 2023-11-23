@@ -25,6 +25,7 @@ from app.helper.exception import (
 from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.model.user import User
+from app.model.clubs import JoinClub
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
@@ -41,6 +42,7 @@ from app.rest_api.schema.user import (
     EmailRegisterSchema,
     ResetPasswordSchema,
     UserSchema,
+    UpdateUserClubSchema,
 )
 from app.constants.errors import (
     EMAIL_CONFLICT_SYSTEM_CODE,
@@ -221,6 +223,26 @@ def update_user_profile(
             JoinPosition(profile_seq=profile.seq, position_seq=item)
             for item in position
         ]
+        db.bulk_save_objects(obj)
+
+    db.commit()
+    db.flush()
+    return {"success": True}
+
+
+@user_router.patch("/club")
+def update_user_club(
+    user_data: UpdateUserClubSchema,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    clubs = user_data.clubs
+
+    if clubs is not None:
+        sql = delete(JoinClub).where(JoinClub.user_seq == token.seq)
+        db.execute(sql)
+
+        obj = [JoinClub(user_seq=token.seq, clubs_seq=item) for item in clubs]
         db.bulk_save_objects(obj)
 
     db.commit()

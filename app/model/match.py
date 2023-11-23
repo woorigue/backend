@@ -8,26 +8,25 @@ from dataclasses import dataclass
 
 from app.rest_api.schema.match.match import MatchRegisterSchema
 
-from app.helper.exception import (
-    RegisterException
-)
+from app.helper.exception import RegisterException
+
 
 class Match(Base):
     __tablename__ = "match"
-    
+
     seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
     match_type = Column(String(24), nullable=False, comment="매치유형")
     location = Column(String(128), nullable=False, comment="매치장소")
-    match_time = Column(DateTime, nullable = False, comment="매치일정")
-    skill = Column(String(24), nullable = False, comment="레벨")
-    team_size = Column(Integer, nullable = False, comment="매치인원")
-    gender = Column(String(12), nullable = False, comment="성별")
-    match_fee = Column(Integer, nullable = True, comment="매치비용")
-    notice = Column(String(255), nullable = True, comment="공지사항")
-    status = Column(String(24), nullable = False, comment="매치상태")
-    guests = Column(Integer, nullable = False, comment="용병id")
-    club_seq = Column(Integer, nullable = False, comment="클럽id")
-    
+    match_time = Column(DateTime, nullable=False, comment="매치일정")
+    skill = Column(String(24), nullable=False, comment="레벨")
+    team_size = Column(Integer, nullable=False, comment="매치인원")
+    gender = Column(String(12), nullable=False, comment="성별")
+    match_fee = Column(Integer, nullable=True, comment="매치비용")
+    notice = Column(String(255), nullable=True, comment="공지사항")
+    status = Column(String(24), nullable=False, comment="매치상태")
+    guests = Column(Integer, nullable=False, comment="용병id")
+    club_seq = Column(Integer, nullable=False, comment="클럽id")
+
     @staticmethod
     def create(match_data: MatchRegisterSchema, db: Session) -> None:
         match_type = match_data.match_type
@@ -75,10 +74,7 @@ class Match(Base):
             notice=notice,
             status=status,
             guests=guests,
-            club_seq=club_seq
+            club_seq=club_seq,
         )
         db.add(match)
         db.commit()
-        
-        
-    
