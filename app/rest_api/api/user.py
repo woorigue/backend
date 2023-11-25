@@ -25,6 +25,10 @@ from app.helper.exception import (
 from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.model.user import User
+<<<<<<< HEAD
+=======
+from app.model.club import JoinClub
+>>>>>>> 4fc8d31 (refactor: club)
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con

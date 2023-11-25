@@ -5,6 +5,10 @@ from sqlalchemy.orm import Session, relationship
 from app.db.session import Base
 
 from .profile import Profile
+<<<<<<< HEAD
+=======
+from .club import JoinClub
+>>>>>>> 4fc8d31 (refactor: club)
 from app.helper.exception import (
     EmailConflictException,
     PasswordInvalidException,
