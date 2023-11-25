@@ -1,14 +1,11 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, UploadFile
-from sqlalchemy import delete, select
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
 
-from app.model.clubs import Club
+from app.model.club import Club
 
-from app.rest_api.schema.club import ClubSchema, UpdateClubSchema, DeleteClubSchema
+from app.rest_api.schema.club import ClubSchema, UpdateClubSchema
 
 
 club_router = APIRouter(tags=["club"], prefix="/club")
@@ -29,10 +26,7 @@ def create_club(
         img=club_data.img,
         color=club_data.color,
     )
-
     db.add(club_data)
-    db.commit()
-    db.refresh(club_data)
     db.commit()
     db.flush()
     return {"success": True}
@@ -47,23 +41,9 @@ def update_club(
 
     if club:
         for key, value in update_club_data.dict(exclude_none=True).items():
-            print(key, value)
             setattr(club, key, value)
 
         db.commit()
         db.refresh(club)
 
     return {"success": True}
-
-
-@club_router.delete("/delete")
-def update_club(
-    delete_club_data: DeleteClubSchema,
-    db: Session = Depends(get_db),
-):
-    club = db.query(Club).filter_by(seq=delete_club_data.seq).first()
-
-    if club:
-        db.delete(club)
-        db.commit()
-        return {"success": True}
