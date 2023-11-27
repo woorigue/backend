@@ -25,7 +25,7 @@ class JoinClub(Base):
 
     seq = Column(Integer, primary_key=True, comment="시퀀스")
     clubs_seq = Column(Integer, ForeignKey("clubs.seq"))
-    user_seq = Column(Integer, ForeignKey("users.seq"))
+    user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
 
     club = relationship("Club", back_populates="join_club")
     user = relationship("User", back_populates="join_club")

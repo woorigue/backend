@@ -230,6 +230,33 @@ def update_user_profile(
     return {"success": True}
 
 
+@user_router.patch("/active_status")
+def update_user_active_status(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter_by(seq=token.seq).first()
+
+    if user:
+        user.is_active = not user.is_active
+        db.commit()
+        return {"success": True}
+
+
+@user_router.delete("/me")
+def delete_user(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter_by(seq=token.seq).first()
+
+    if user:
+        db.delete(user)
+        db.flush()
+        db.commit()
+        return {"success": True}
+
+
 @user_router.patch("/club")
 def update_user_club(
     user_data: UpdateUserClubSchema,
