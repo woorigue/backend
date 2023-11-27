@@ -232,6 +232,56 @@ def update_user_profile(
     return {"success": True}
 
 
+<<<<<<< HEAD
+=======
+@user_router.patch("/active_status")
+def update_user_active_status(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter_by(seq=token.seq).first()
+
+    if user:
+        user.is_active = not user.is_active
+        db.commit()
+        return {"success": True}
+
+
+@user_router.delete("/me")
+def delete_user(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter_by(seq=token.seq).first()
+
+    if user:
+        db.delete(user)
+        db.flush()
+        db.commit()
+        return {"success": True}
+
+
+@user_router.patch("/club")
+def update_user_club(
+    user_data: UpdateUserClubSchema,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    clubs = user_data.clubs
+
+    if clubs is not None:
+        sql = delete(JoinClub).where(JoinClub.user_seq == token.seq)
+        db.execute(sql)
+
+        obj = [JoinClub(user_seq=token.seq, clubs_seq=item) for item in clubs]
+        db.bulk_save_objects(obj)
+
+    db.commit()
+    db.flush()
+    return {"success": True}
+
+
+>>>>>>> 4a79a2a (added feature to delete user and deactive user)
 @user_router.post("/me/profile/img")
 async def create_user_profile_img(
     profile_img: UploadFile,

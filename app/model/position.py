@@ -18,7 +18,7 @@ class JoinPosition(Base):
 
     seq = Column(Integer, primary_key=True, comment="시퀀스")
     position_seq = Column(Integer, ForeignKey("position.seq"))
-    profile_seq = Column(Integer, ForeignKey("profile.seq"))
+    profile_seq = Column(Integer, ForeignKey("profile.seq", ondelete="CASCADE"))
 
     position = relationship("Position", back_populates="join_position")
     profile = relationship("Profile", back_populates="join_profile")

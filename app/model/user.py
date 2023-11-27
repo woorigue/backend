@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session, relationship
 
 from app.db.session import Base
 
+from .email import Email
 from .profile import Profile
 <<<<<<< HEAD
 =======
@@ -27,7 +28,14 @@ class User(Base):
     password = Column(String(256), comment="비밀번호")
     is_active = Column(Boolean, default=True, comment="활성화 여부")
 
+<<<<<<< HEAD
     profile = relationship(Profile, back_populates="user")
+=======
+    profile = relationship(Profile, back_populates="user", cascade="all, delete-orphan")
+    join_club = relationship(
+        JoinClub, back_populates="user", cascade="all, delete-orphan"
+    )
+>>>>>>> 4a79a2a (added feature to delete user and deactive user)
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:
