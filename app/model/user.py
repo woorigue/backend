@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, relationship
 from app.db.session import Base
 
 from .profile import Profile
-from .clubs import Club, JoinClub
+from .club import JoinClub
 from app.helper.exception import (
     EmailConflictException,
     PasswordInvalidException,
