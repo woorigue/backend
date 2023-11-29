@@ -239,12 +239,9 @@ def update_user_active_status(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    user = db.query(User).filter_by(seq=token.seq).first()
-
-    if user:
-        user.is_active = not user.is_active
-        db.commit()
-        return {"success": True}
+    token.is_active = not token.is_active
+    db.commit()
+    return {"success": True}
 
 
 @user_router.delete("/me")
