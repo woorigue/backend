@@ -25,7 +25,7 @@ from app.helper.exception import (
 from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.model.user import User
-from app.model.clubs import JoinClub
+from app.model.club import JoinClub
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
