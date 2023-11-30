@@ -206,6 +206,8 @@ def update_user_profile(
     profile = token.profile
     position = user_data.position
 
+    token.is_active = user_data.is_active
+
     if not profile:
         profile = Profile(user_seq=token.seq, nickname=user_data.nickname)
         db.add(profile)
@@ -233,6 +235,7 @@ def update_user_profile(
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 @user_router.patch("/active_status")
 def update_user_active_status(
@@ -244,6 +247,8 @@ def update_user_active_status(
     return {"success": True}
 
 
+=======
+>>>>>>> 0ae5873 (update user is_active status)
 @user_router.delete("/me")
 def delete_user(
     token: Annotated[str, Depends(get_current_user)],
