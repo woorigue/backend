@@ -204,6 +204,8 @@ def update_user_profile(
     profile = token.profile
     position = user_data.position
 
+    token.is_active = user_data.is_active
+
     if not profile:
         profile = Profile(user_seq=token.seq, nickname=user_data.nickname)
         db.add(profile)
@@ -227,16 +229,6 @@ def update_user_profile(
 
     db.commit()
     db.flush()
-    return {"success": True}
-
-
-@user_router.patch("/active_status")
-def update_user_active_status(
-    token: Annotated[str, Depends(get_current_user)],
-    db: Session = Depends(get_db),
-):
-    token.is_active = not token.is_active
-    db.commit()
     return {"success": True}
 
 
