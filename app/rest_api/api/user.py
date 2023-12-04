@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile, Request
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, and_
 from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse, Response
 
@@ -45,6 +45,11 @@ from app.rest_api.schema.user import (
     EmailRegisterSchema,
     ResetPasswordSchema,
     UserSchema,
+<<<<<<< HEAD
+=======
+    JoinClubSchema,
+    QuitClubSchema,
+>>>>>>> 86c036a (modified/added club related model fields and api)
 )
 from app.constants.errors import (
     EMAIL_CONFLICT_SYSTEM_CODE,
@@ -263,20 +268,34 @@ def delete_user(
         return {"success": True}
 
 
-@user_router.patch("/club")
-def update_user_club(
-    user_data: UpdateUserClubSchema,
+@user_router.post("/club/join")
+def join_club(
+    data: JoinClubSchema,
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    clubs = user_data.clubs
+    club_seq = data.club_seq
 
-    if clubs is not None:
-        sql = delete(JoinClub).where(JoinClub.user_seq == token.seq)
-        db.execute(sql)
+    join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq)
+    db.add(join_club)
 
-        obj = [JoinClub(user_seq=token.seq, clubs_seq=item) for item in clubs]
-        db.bulk_save_objects(obj)
+    db.commit()
+    db.flush()
+
+    return {"success": True}
+
+
+@user_router.delete("/club/quit")
+def quit_club(
+    data: QuitClubSchema,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    club_seq = data.club_seq
+    sql = delete(JoinClub).where(
+        and_(JoinClub.user_seq == token.seq, JoinClub.clubs_seq == club_seq)
+    )
+    db.execute(sql)
 
     db.commit()
     db.flush()
