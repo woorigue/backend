@@ -46,10 +46,13 @@ from app.rest_api.schema.user import (
     ResetPasswordSchema,
     UserSchema,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     JoinClubSchema,
     QuitClubSchema,
 >>>>>>> 86c036a (modified/added club related model fields and api)
+=======
+>>>>>>> cf57ab1 (modified api  to improve code design cosistency)
 )
 from app.constants.errors import (
     EMAIL_CONFLICT_SYSTEM_CODE,
@@ -268,14 +271,12 @@ def delete_user(
         return {"success": True}
 
 
-@user_router.post("/club/join")
+@user_router.post("/club/{club_seq}")
 def join_club(
-    data: JoinClubSchema,
+    club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    club_seq = data.club_seq
-
     join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq)
     db.add(join_club)
 
@@ -285,13 +286,12 @@ def join_club(
     return {"success": True}
 
 
-@user_router.delete("/club/quit")
+@user_router.delete("/club/{club_seq}")
 def quit_club(
-    data: QuitClubSchema,
+    club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    club_seq = data.club_seq
     sql = delete(JoinClub).where(
         and_(JoinClub.user_seq == token.seq, JoinClub.clubs_seq == club_seq)
     )

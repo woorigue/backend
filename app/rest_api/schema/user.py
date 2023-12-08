@@ -37,7 +37,6 @@ class UserSchema(BaseModel):
 
 
 class JoinClubSchema(BaseModel):
-    club_seq: StrictInt = Field(title="클럽 시퀸스")
     role: StrictStr = Field(title="클럽 시퀸스")
 
 
