@@ -1,6 +1,6 @@
 from typing import List
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 
 from .profile import GetProfileSchema
 from .club import JoinClubSchema
@@ -31,5 +31,9 @@ class UserSchema(BaseModel):
     join_club: List[JoinClubSchema] = []
 
 
-class UpdateUserClubSchema(BaseModel):
-    clubs: List[StrictInt] = None
+class JoinClubSchema(BaseModel):
+    role: StrictStr = Field(title="클럽 시퀸스")
+
+
+class QuitClubSchema(BaseModel):
+    club_seq: StrictInt = Field(title="클럽 시퀸스")
