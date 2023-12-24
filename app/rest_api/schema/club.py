@@ -1,5 +1,8 @@
-from typing import Union
+from typing import List, Optional, Union
+from app.model.club import Club
 
+from fastapi import Query
+from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, Field, StrictInt, StrictStr, StrictBool
 
 from datetime import date
@@ -29,3 +32,16 @@ class ClubSchema(BaseModel):
 
 class JoinClubSchema(BaseModel):
     club: ClubSchema
+
+
+class FilterClubSchema(Filter):
+    seq__in: Optional[List[int]] = Query(None, title="시퀸스 리스트")
+    name__ilike: Optional[str] = Query(None, title="이름")
+    location__in: Optional[List[str]] = Query(None, title="장소 리스트")
+    age_group__in: Optional[List[str]] = Query(None, title="연령대 리스트")
+    skill__in: Optional[List[str]] = Query(None, title="실력 리스트")
+    membership_fee__lt: Optional[int] = Query(None, title="최소 회비")
+    membership_fee__gt: Optional[int] = Query(None, title="최대 회비")
+
+    class Constants(Filter.Constants):
+        model = Club
