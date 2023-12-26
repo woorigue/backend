@@ -1,5 +1,4 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Date, Boolean
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
