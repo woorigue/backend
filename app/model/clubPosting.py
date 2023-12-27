@@ -22,7 +22,7 @@ class ClubPosting(Base):
 
     join_club_posting = relationship(
         "JoinClubPosting",
-        back_populates="clubPosting",
+        back_populates="club_posting",
         cascade="all, delete-orphan",
     )
 
@@ -36,6 +36,6 @@ class JoinClubPosting(Base):
     )
     club_seq = Column(Integer, ForeignKey("clubs.seq", ondelete="CASCADE"))
     user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
-    accpeted = Column(Boolean, comment="수락 여부")
+    accepted = Column(Boolean, comment="수락 여부")
 
-    club_posting = relationship("ClubPosting", back_populates="join_clubPosting")
+    club_posting = relationship("ClubPosting", back_populates="join_club_posting")
