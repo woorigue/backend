@@ -22,7 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.create_table(
         "banner",
-        sa.Column("id", sa.Integer, primary_key=True, comment="아이디"),
+        sa.Column("seq", sa.Integer, primary_key=True, comment="시퀀스"),
         sa.Column("url", sa.String(255), nullable=False, comment="주소"),
         sa.Column("create_date", sa.DateTime, nullable=False, server_default=func.now(), comment="생성일자")
     )
