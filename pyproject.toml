@@ -21,6 +21,7 @@ python-multipart = "^0.0.6"
 authlib = "^1.2.1"
 itsdangerous = "^2.1.2"
 httpx = "^0.25.0"
+fastapi-filter = "^1.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
