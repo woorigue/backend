@@ -15,6 +15,7 @@ from app.helper.exception import (
     PasswordInvalidException,
     UserNotFoundException,
 )
+from app.model.chat import UserChatRoomAssociation
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -35,11 +36,17 @@ class User(Base):
     join_club = relationship(
         JoinClub, back_populates="user", cascade="all, delete-orphan"
     )
+<<<<<<< HEAD
 >>>>>>> 4a79a2a (added feature to delete user and deactive user)
+=======
+    chatting_rooms = relationship(
+        "ChattingRoom", secondary=UserChatRoomAssociation, back_populates="users"
+    )
+>>>>>>> 6192b89 (feature: rabbitmq)
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:
-        user = db.scalar(select(User).where(User.email == email))
+        user = db.scalar(select(User).where(User.email == email))  # ORM
 
         if user:
             raise EmailConflictException

@@ -5,25 +5,76 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5f806e68-be86-44ff-95a6-0faf72866891" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/app/rest_api/schema/profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/rest_api/schema/profile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alembic.ini" beforeDir="false" afterPath="$PROJECT_DIR$/alembic.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/core/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/core/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/core/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/db/alembic/versions/0cb463fadd24_create_user_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/db/alembic/versions/0cb463fadd24_create_user_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/db/alembic/versions/71c407fe216c_banner_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/db/alembic/versions/71c407fe216c_banner_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/helper/exception.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/helper/exception.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/model/banner.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/model/banner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/model/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/model/user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/rest_api/api/banner.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/rest_api/api/banner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/rest_api/controller/file.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/rest_api/controller/file.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2ZshkhACaz5WFfnsqurgp6uXkB2" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "git-widget-placeholder": "develop",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "watcher.settings"
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/seukjeong/chat&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;watcher.settings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5f806e68-be86-44ff-95a6-0faf72866891" name="Changes" comment="" />
+      <created>1703216838561</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1703216838561</updated>
+      <workItem from="1703216839653" duration="1461000" />
+      <workItem from="1703235377770" duration="188000" />
+      <workItem from="1703632724896" duration="608000" />
+      <workItem from="1703766463873" duration="8895000" />
+      <workItem from="1703834355252" duration="2890000" />
+      <workItem from="1703943843001" duration="3738000" />
+      <workItem from="1704238018651" duration="604000" />
+      <workItem from="1704254428700" duration="912000" />
+      <workItem from="1704257600177" duration="127000" />
+    </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="LAST_COMMIT_MESSAGE" value="" />
