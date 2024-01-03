@@ -1,7 +1,7 @@
 """add_sex_field_in_profile
 
 Revision ID: d35415c31651
-Revises: 71c407fe216c
+Revises: 9b35a9a3efc9
 Create Date: 2023-11-17 20:33:43.393258
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "d35415c31651"
-down_revision: Union[str, None] = "71c407fe216c"
+down_revision: Union[str, None] = "9b35a9a3efc9"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
