@@ -1,8 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, UploadFile
-from sqlalchemy import delete, select
+from fastapi import APIRouter, Depends, UploadFile, Request
+from sqlalchemy import delete, select, and_
 from sqlalchemy.orm import Session
+from fastapi.responses import HTMLResponse, Response
+
+
+from starlette.config import Config
+from authlib.integrations.starlette_client import OAuth
 
 from app.core.deps import get_db
 from app.core.token import (
@@ -20,6 +25,7 @@ from app.helper.exception import (
 from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.model.user import User
+from app.model.club import JoinClub
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
@@ -45,6 +51,8 @@ from app.constants.errors import (
     USER_NOT_FOUND_SYSTEM_CODE,
     USER_PROFILE_REQUIRED_SYSTEM_CODE,
 )
+
+from app.model.sns import Sns
 
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -195,6 +203,8 @@ def update_user_profile(
     profile = token.profile
     position = user_data.position
 
+    token.is_active = user_data.is_active
+
     if not profile:
         profile = Profile(user_seq=token.seq, nickname=user_data.nickname)
         db.add(profile)
@@ -221,6 +231,51 @@ def update_user_profile(
     return {"success": True}
 
 
+@user_router.delete("/me")
+def delete_user(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter_by(seq=token.seq).first()
+
+    if user:
+        db.delete(user)
+        db.flush()
+        db.commit()
+        return {"success": True}
+
+
+@user_router.post("/club/{club_seq}")
+def join_club(
+    club_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq)
+    db.add(join_club)
+
+    db.commit()
+    db.flush()
+
+    return {"success": True}
+
+
+@user_router.delete("/club/{club_seq}")
+def quit_club(
+    club_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    sql = delete(JoinClub).where(
+        and_(JoinClub.user_seq == token.seq, JoinClub.clubs_seq == club_seq)
+    )
+    db.execute(sql)
+
+    db.commit()
+    db.flush()
+    return {"success": True}
+
+
 @user_router.post("/me/profile/img")
 async def create_user_profile_img(
     profile_img: UploadFile,
@@ -239,7 +294,65 @@ def delete_user_profile_img(
 ):
     proflie = token.profile[0]
     proflie.img = ""
-
     db.commit()
     db.flush()
     return {"success": True}
+
+
+GOOGLE_CLIENT_ID = (
+    "389487021466-hvncp2oop9bma1bssqhd7huh16p3m8sn.apps.googleusercontent.com"
+)
+GOOGLE_CLIENT_SECRET = "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"
+
+config_data = {
+    "GOOGLE_CLIENT_ID": GOOGLE_CLIENT_ID,
+    "GOOGLE_CLIENT_SECRET": GOOGLE_CLIENT_SECRET,
+}
+starlette_config = Config(environ=config_data)
+oauth = OAuth(starlette_config)
+oauth.register(
+    name="google",
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={
+        "scope": "openid email profile",
+        "access_type": "offline",
+        "prompt": "consent",
+    },
+)
+
+
+@user_router.get("/sns/login", response_class=HTMLResponse)
+def test(request: Request):
+    return HTMLResponse('<a href="/user/google/login">login</a>')
+
+
+@user_router.get("/google/login")
+async def login(request: Request):
+    redirect_uri = request.url_for("auth")
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+
+@user_router.get("/auth/google")
+async def auth(request: Request, db: Session = Depends(get_db)):
+    access_token = await oauth.google.authorize_access_token(request)
+    user_data = await oauth.google.parse_id_token(
+        access_token, access_token["userinfo"]["nonce"]
+    )
+    request.session["user"] = dict(user_data)
+    request.session.pop("user", None)
+
+    email = user_data["email"]
+
+    # If User does not exists then register User
+    user = db.scalar(select(User).where(User.email == email))
+
+    if user is None:
+        password = user_data["sub"]
+        user_data = EmailRegisterSchema(email=email, password=password)
+        con.email_register_user(db, user_data)
+
+        sns = Sns(sub=user_data["sub"], refresh_token=user_data["refresh_token"])
+        db.add(sns)
+        db.commit()
+
+    return Response(status_code=200)

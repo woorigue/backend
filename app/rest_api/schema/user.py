@@ -1,8 +1,9 @@
 from typing import List
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 
 from .profile import GetProfileSchema
+from .club import JoinClubSchema
 
 
 class EmailLoginSchema(BaseModel):
@@ -27,3 +28,12 @@ class UserSchema(BaseModel):
     email: str = Field(title="이메일")
     is_active: bool = Field(title="계정 활성 여부")
     profile: List[GetProfileSchema]
+    join_club: List[JoinClubSchema] = []
+
+
+class JoinClubSchema(BaseModel):
+    role: StrictStr = Field(title="클럽 시퀸스")
+
+
+class QuitClubSchema(BaseModel):
+    club_seq: StrictInt = Field(title="클럽 시퀸스")
