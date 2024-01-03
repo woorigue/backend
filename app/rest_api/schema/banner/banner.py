@@ -6,4 +6,4 @@ class BannerRegisterSchema(BaseModel):
     url: str = Field(title="주소")
     
 class BannerDeleteSchema(BaseModel):
-    id: int = Field(title="아이디")
+    seq: int = Field(title="아이디")
