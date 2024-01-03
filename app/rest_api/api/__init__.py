@@ -16,6 +16,8 @@ from app.rest_api.api.banner.banner import banner_router
 
 from app.rest_api.api.banner import banner_router
 from app.rest_api.api.club import club_router
+from app.rest_api.api.clubPosting import clubPosting_router
+
 
 
 rest_router = APIRouter()
@@ -27,3 +29,4 @@ rest_router.include_router(faq_router)
 rest_router.include_router(match_router)
 rest_router.include_router(guest_router)
 rest_router.include_router(club_router)
+rest_router.include_router(clubPosting_router)

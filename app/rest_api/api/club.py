@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
+from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
@@ -8,7 +9,11 @@ from app.core.token import get_current_user
 
 from app.model.club import Club, JoinClub
 
-from app.rest_api.schema.club import ClubSchema, UpdateClubSchema
+from app.rest_api.schema.club import (
+    ClubSchema,
+    UpdateClubSchema,
+    FilterClubSchema,
+)
 
 club_router = APIRouter(tags=["club"], prefix="/club")
 
@@ -61,12 +66,7 @@ def update_club(
 
 @club_router.get("")
 def query_clubs(
-    seq: int = Query(None, title="클럽 시퀸스"),
-    name: str = Query(None, title="클럽명"),
-    location: str = Query(None, title="활동 장소"),
-    age_group: str = Query(None, title="나이대"),
-    skill: str = Query(None, title="실력"),
-    max_membership_fee: int = Query(None, title="최대 회비"),
+    club_filter: FilterClubSchema = FilterDepends(FilterClubSchema),
     page: int = Query(1, title="페이지", ge=1),
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
@@ -75,19 +75,7 @@ def query_clubs(
         Club.name, Club.location, Club.age_group, Club.skill, Club.membership_fee
     )
 
-    if seq:
-        query = query.filter(Club.seq == seq)
-    if name:
-        query = query.filter(Club.name == name)
-    if location:
-        query = query.filter(Club.location == location)
-    if age_group:
-        query = query.filter(Club.age_group == age_group)
-    if skill:
-        query = query.filter(Club.skill == skill)
-    if max_membership_fee:
-        query = query.filter(Club.membership_fee <= max_membership_fee)
-
+    query = club_filter.filter(query)
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
 
