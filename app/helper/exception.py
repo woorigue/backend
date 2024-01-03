@@ -7,8 +7,9 @@ from app.constants.errors import (
     BANNER_NOT_FOUND_SYSTEM_CODE,
     FAQ_NOT_FOUND_SYSTEM_CODE,
     MATCH_NOT_FOUND_SYSTEM_CODE,
-    GUEST_NOT_FOUND_SYSTEM_CODE
+    GUEST_NOT_FOUND_SYSTEM_CODE,
 )
+
 
 class RestException(Exception):
     status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -76,40 +77,44 @@ class UserPasswordNotMatchException(RestException):
     user_message = "비밀번호가 틀렸습니다."
     system_code = PASSWORD_INVALID_SYSTEM_CODE
     system_message = "User's password is not matched"
-    
+
 
 class BannerNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     user_message = "배너가 존재하지 않습니다."
     system_code = BANNER_NOT_FOUND_SYSTEM_CODE
-    system_message = "Banner not found"    
+    system_message = "Banner not found"
 
 
 class FaqNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     user_message = "질문게시글이 존재하지 않습니다."
     system_code = FAQ_NOT_FOUND_SYSTEM_CODE
-    system_message = "Faq not found"   
-    
+    system_message = "Faq not found"
+
 
 class MatchNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     user_message = "매치글이 존재하지 않습니다."
     system_code = MATCH_NOT_FOUND_SYSTEM_CODE
-    system_message = "Match not found"   
-    
+    system_message = "Match not found"
+
+
 class GuestNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     user_message = "용병글이 존재하지 않습니다."
     system_code = GUEST_NOT_FOUND_SYSTEM_CODE
-    system_message = "Guest not found"   
+    system_message = "Guest not found"
 
-    
+
 class RegisterException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
-    
+
     def __init__(self, missing_field: str):
         user_message = f"'{missing_field}'이 존재하지 않습니다."
         system_message = f"'{missing_field}' is required"
-        super().__init__(status_code=self.status_code, user_message=user_message, system_message=system_message)
-        
+        super().__init__(
+            status_code=self.status_code,
+            user_message=user_message,
+            system_message=system_message,
+        )

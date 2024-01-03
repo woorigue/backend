@@ -36,4 +36,5 @@ class FileController:
         return "drl2968ia795g.cloudfront.net/" + url
 
 
+
 file_controller = FileController()
