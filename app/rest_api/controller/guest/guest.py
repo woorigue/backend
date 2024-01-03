@@ -9,4 +9,3 @@ class GuestController:
         Guest.create(guest_data, db)
         
 guest_controller = GuestController()
-
