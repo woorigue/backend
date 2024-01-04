@@ -6,7 +6,7 @@ from app.model.banner import Banner
 
 from app.rest_api.controller.file import file_controller as file_con
 
-from app.rest_api.schema.banner import BannerRegisterSchema, BannerDeleteSchema
+from app.rest_api.schema.banner.banner import BannerRegisterSchema, BannerDeleteSchema
 
 from app.helper.exception import BannerNotFoundException
 

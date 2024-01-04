@@ -4,20 +4,19 @@ from app.rest_api.api.position import position_router
 from app.rest_api.api.province import province_router
 from app.rest_api.api.user import user_router
 
-
 # Match
 from app.rest_api.api.match.match import match_router
+
 # Guest
 from app.rest_api.api.guest.guest import guest_router
+
 # Notfication
 from app.rest_api.api.notification.faq import faq_router
-# Etc(banner...)
-from app.rest_api.api.banner.banner import banner_router
+
 
 from app.rest_api.api.banner import banner_router
 from app.rest_api.api.club import club_router
 from app.rest_api.api.clubPosting import clubPosting_router
-
 
 
 rest_router = APIRouter()
