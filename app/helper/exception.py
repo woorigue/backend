@@ -5,12 +5,9 @@ from app.constants.errors import (
     PASSWORD_INVALID_SYSTEM_CODE,
     USER_NOT_FOUND_SYSTEM_CODE,
     BANNER_NOT_FOUND_SYSTEM_CODE,
-<<<<<<< HEAD
     FAQ_NOT_FOUND_SYSTEM_CODE,
     MATCH_NOT_FOUND_SYSTEM_CODE,
     GUEST_NOT_FOUND_SYSTEM_CODE,
-=======
->>>>>>> 8bec115 (feature: rabbitmq)
 )
 
 
@@ -87,7 +84,6 @@ class BannerNotFoundException(RestException):
     user_message = "배너가 존재하지 않습니다."
     system_code = BANNER_NOT_FOUND_SYSTEM_CODE
     system_message = "Banner not found"
-<<<<<<< HEAD
 
 
 class FaqNotFoundException(RestException):
@@ -122,5 +118,3 @@ class RegisterException(RestException):
             user_message=user_message,
             system_message=system_message,
         )
-=======
->>>>>>> 8bec115 (feature: rabbitmq)
