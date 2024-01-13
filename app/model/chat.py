@@ -6,12 +6,10 @@ from sqlalchemy import (
     Table,
     Text,
 )
-from sqlalchemy.orm import relationship
-
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
 from app.db.session import Base
+from sqlalchemy.orm import relationship
 
 UserChatRoomAssociation = Table(
     "user_chatroom_association",
@@ -20,7 +18,7 @@ UserChatRoomAssociation = Table(
     Column(
         "chat_room_seq",
         Integer,
-        ForeignKey("chattingRoom.seq"),
+        ForeignKey("chatting_room.seq"),
         primary_key=True,
     ),
     Column("joinDate", DateTime, nullable=False, comment="참여 일자"),
@@ -36,10 +34,12 @@ class ChattingRoom(Base):
     )
     # 채팅방에 참여하는 사용자들
     users = relationship(
-        "User", secondary=UserChatRoomAssociation, back_populates="chatting_rooms"
+        "User",
+        secondary=UserChatRoomAssociation,
+        back_populates="chatting_rooms",
     )
-    # 채팅방의 메시지 내용
-    messages = relationship("ChattingContent", back_populates="chatting_room")
+    # # 채팅방의 메시지 내용
+    # messages = relationship("ChattingContent", back_populates="chatting_room")
 
 
 class ChattingContent(Base):
@@ -60,8 +60,8 @@ class ChattingContent(Base):
         DateTime, default=datetime.utcnow, nullable=True, comment="생성 시간"
     )
 
-    # 메시지를 소유한 채팅방
-    chatting_room = relationship("ChattingRoom", back_populates="messages")
-
-    # 메시지를 보낸 사용자
-    user = relationship("User")
+    # # 메시지를 소유한 채팅방
+    # chatting_room = relationship("ChattingRoom", back_populates="messages")
+    #
+    # # 메시지를 보낸 사용자
+    # user = relationship("User")
