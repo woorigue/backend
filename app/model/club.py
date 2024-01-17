@@ -30,18 +30,8 @@ class JoinClub(Base):
     __tablename__ = "join_club"
 
     seq = Column(Integer, primary_key=True, comment="시퀀스")
-<<<<<<< HEAD
-    clubs_seq = Column(Integer, ForeignKey("clubs.seq"))
-<<<<<<< HEAD:app/model/club.py
-    user_seq = Column(Integer, ForeignKey("users.seq"))
-=======
     clubs_seq = Column(Integer, ForeignKey("clubs.seq", ondelete="CASCADE"))
     user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
->>>>>>> 86c036a (modified/added club related model fields and api)
     role = Column(String(10), comment="역할")
-=======
-    user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
->>>>>>> 4a79a2a (added feature to delete user and deactive user):app/model/clubs.py
-
     club = relationship("Club", back_populates="join_club")
     user = relationship("User", back_populates="join_club")

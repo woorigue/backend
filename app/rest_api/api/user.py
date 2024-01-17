@@ -25,10 +25,7 @@ from app.helper.exception import (
 from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.model.user import User
-<<<<<<< HEAD
-=======
 from app.model.club import JoinClub
->>>>>>> 4fc8d31 (refactor: club)
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
@@ -45,14 +42,8 @@ from app.rest_api.schema.user import (
     EmailRegisterSchema,
     ResetPasswordSchema,
     UserSchema,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     JoinClubSchema,
     QuitClubSchema,
->>>>>>> 86c036a (modified/added club related model fields and api)
-=======
->>>>>>> cf57ab1 (modified api  to improve code design cosistency)
 )
 from app.constants.errors import (
     EMAIL_CONFLICT_SYSTEM_CODE,
@@ -242,9 +233,6 @@ def update_user_profile(
     return {"success": True}
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 @user_router.patch("/active_status")
 def update_user_active_status(
     token: Annotated[str, Depends(get_current_user)],
@@ -255,8 +243,6 @@ def update_user_active_status(
     return {"success": True}
 
 
-=======
->>>>>>> 0ae5873 (update user is_active status)
 @user_router.delete("/me")
 def delete_user(
     token: Annotated[str, Depends(get_current_user)],
@@ -302,7 +288,6 @@ def quit_club(
     return {"success": True}
 
 
->>>>>>> 4a79a2a (added feature to delete user and deactive user)
 @user_router.post("/me/profile/img")
 async def create_user_profile_img(
     profile_img: UploadFile,

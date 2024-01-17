@@ -6,10 +6,7 @@ from app.db.session import Base
 
 from .email import Email
 from .profile import Profile
-<<<<<<< HEAD
-=======
 from .club import JoinClub
->>>>>>> 4fc8d31 (refactor: club)
 from app.helper.exception import (
     EmailConflictException,
     PasswordInvalidException,
@@ -28,21 +25,13 @@ class User(Base):
     email = Column(String(128), unique=True, comment="이메일")
     password = Column(String(256), comment="비밀번호")
     is_active = Column(Boolean, default=True, comment="활성화 여부")
-
-<<<<<<< HEAD
-    profile = relationship(Profile, back_populates="user")
-=======
     profile = relationship(Profile, back_populates="user", cascade="all, delete-orphan")
     join_club = relationship(
         JoinClub, back_populates="user", cascade="all, delete-orphan"
     )
-<<<<<<< HEAD
->>>>>>> 4a79a2a (added feature to delete user and deactive user)
-=======
     chatting_rooms = relationship(
         "ChattingRoom", secondary=UserChatRoomAssociation, back_populates="users"
     )
->>>>>>> 6192b89 (feature: rabbitmq)
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:
