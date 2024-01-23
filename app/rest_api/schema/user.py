@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 
 from .profile import GetProfileSchema
-from .club import JoinClubSchema
+from .club.club import JoinClubSchema
 
 
 class EmailLoginSchema(BaseModel):

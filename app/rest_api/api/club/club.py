@@ -8,8 +8,7 @@ from app.core.deps import get_db
 from app.core.token import get_current_user
 
 from app.model.club import Club, JoinClub
-
-from app.rest_api.schema.club import (
+from app.rest_api.schema.club.club import (
     ClubSchema,
     UpdateClubSchema,
     FilterClubSchema,
@@ -20,11 +19,11 @@ club_router = APIRouter(tags=["club"], prefix="/club")
 
 @club_router.post("")
 def create_club(
-    club_data: ClubSchema,
     token: Annotated[str, Depends(get_current_user)],
+    club_data: ClubSchema,
     db: Session = Depends(get_db),
 ):
-    club_data = Club(
+    club = Club(
         name=club_data.name,
         register_date=club_data.register_date,
         location=club_data.location,
@@ -34,38 +33,39 @@ def create_club(
         img=club_data.img,
         uniform_color=club_data.uniform_color,
     )
-    db.add(club_data)
+    db.add(club)
     db.commit()
-    db.refresh(club_data)
 
-    join_club_data = JoinClub(clubs_seq=club_data.seq, user_seq=token.seq, role="회장")
-    db.add(join_club_data)
+    join_club = JoinClub(clubs_seq=club.seq, user_seq=token.seq, role="회장")
+    db.add(join_club)
     db.commit()
-    db.flush()
 
     return {"success": True}
 
 
 @club_router.patch("/{club_seq}")
 def update_club(
+    token: Annotated[str, Depends(get_current_user)],
     club_seq: int,
     update_club_data: UpdateClubSchema,
     db: Session = Depends(get_db),
 ):
-    club = db.query(Club).filter_by(seq=club_seq).first()
+    club = db.query(Club).filter(Club.seq == club_seq).first()
 
-    if club:
-        for key, value in update_club_data.dict(exclude_none=True).items():
-            setattr(club, key, value)
+    # if not club:
+    #     raise ClubNotFoundException
 
-        db.commit()
-        db.refresh(club)
+    for key, value in update_club_data.dict(exclude_none=True).items():
+        setattr(club, key, value)
+
+    db.commit()
 
     return {"success": True}
 
 
 @club_router.get("")
-def query_clubs(
+def filter_clubs(
+    token: Annotated[str, Depends(get_current_user)],
     club_filter: FilterClubSchema = FilterDepends(FilterClubSchema),
     page: int = Query(1, title="페이지", ge=1),
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
@@ -74,7 +74,6 @@ def query_clubs(
     query = db.query(
         Club.name, Club.location, Club.age_group, Club.skill, Club.membership_fee
     )
-
     query = club_filter.filter(query)
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
@@ -91,3 +90,20 @@ def query_clubs(
     ]
 
     return clubs
+
+
+@club_router.delete("/{club_seq}")
+def delete_club(
+    token: Annotated[str, Depends(get_current_user)],
+    club_seq: int,
+    db: Session = Depends(get_db),
+):
+    club = db.query(Club).filter(Club.seq == club_seq).first()
+
+    # if not club:
+    #     raise ClubNotFoundException
+
+    db.delete(club)
+    db.commit()
+
+    return {"message": "클럽이 성공적으로 삭제되었습니다."}

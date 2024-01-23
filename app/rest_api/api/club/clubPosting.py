@@ -8,8 +8,7 @@ from app.core.deps import get_db
 from app.core.token import get_current_user
 
 from app.model.clubPosting import ClubPosting, JoinClubPosting
-
-from app.rest_api.schema.clubPosting import (
+from app.rest_api.schema.club.clubPosting import (
     ClubPostingSchema,
     UpdateClubPostingSchema,
     FilterClubPostingSchema,
@@ -20,8 +19,8 @@ clubPosting_router = APIRouter(tags=["clubPosting"], prefix="/clubPosting")
 
 @clubPosting_router.post("")
 def create_clubPosting(
-    clubPosting_data: ClubPostingSchema,
     token: Annotated[str, Depends(get_current_user)],
+    clubPosting_data: ClubPostingSchema,
     db: Session = Depends(get_db),
 ):
     clubPosting_data = ClubPosting(
@@ -39,7 +38,6 @@ def create_clubPosting(
     )
     db.add(clubPosting_data)
     db.commit()
-    db.refresh(clubPosting_data)
 
     join_clubPosting_data = JoinClubPosting(
         club_posting_seq=clubPosting_data.seq,
@@ -49,31 +47,33 @@ def create_clubPosting(
     )
     db.add(join_clubPosting_data)
     db.commit()
-    db.flush()
 
     return {"success": True}
 
 
 @clubPosting_router.patch("/{club_posting_seq}")
 def update_clubPosting(
+    token: Annotated[str, Depends(get_current_user)],
     club_posting_seq: int,
     update_club_data: UpdateClubPostingSchema,
     db: Session = Depends(get_db),
 ):
-    club = db.query(ClubPosting).filter_by(seq=club_posting_seq).first()
+    club = db.query(ClubPosting).filter_by(ClubPosting.seq == club_posting_seq).first()
 
-    if club:
-        for key, value in update_club_data.dict(exclude_none=True).items():
-            setattr(club, key, value)
+    # if not club:
+    #     raise ClubNotFoundException
 
-        db.commit()
-        db.refresh(club)
+    for key, value in update_club_data.dict(exclude_none=True).items():
+        setattr(club, key, value)
+
+    db.commit()
 
     return {"success": True}
 
 
 @clubPosting_router.get("")
-def query_clubPosting(
+def filter_clubPosting(
+    token: Annotated[str, Depends(get_current_user)],
     club_posting_filter: FilterClubPostingSchema = FilterDepends(
         FilterClubPostingSchema
     ),
@@ -85,7 +85,25 @@ def query_clubPosting(
     query = club_posting_filter.filter(query)
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
-
     club_posting = query.all()
 
     return club_posting
+
+
+@clubPosting_router.delete("/{club_posting_seq}")
+def delete_clubPosting(
+    token: Annotated[str, Depends(get_current_user)],
+    club_posting_seq: int,
+    db: Session = Depends(get_db),
+):
+    clubPosting = (
+        db.query(ClubPosting).filter(ClubPosting.seq == club_posting_seq).first()
+    )
+
+    # if not clubPosting:
+    #     raise clubPostingNotFoundException
+
+    db.delete(clubPosting)
+    db.commit()
+
+    return {"message": "매치게시글이 성공적으로 삭제되었습니다."}

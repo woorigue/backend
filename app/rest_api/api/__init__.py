@@ -7,8 +7,8 @@ from app.rest_api.api.match.match import match_router
 from app.rest_api.api.guest.guest import guest_router
 from app.rest_api.api.notification.faq import faq_router
 from app.rest_api.api.banner import banner_router
-from app.rest_api.api.club import club_router
-from app.rest_api.api.clubPosting import clubPosting_router
+from app.rest_api.api.club.club import club_router
+from app.rest_api.api.club.clubPosting import clubPosting_router
 from app.rest_api.api.chat import chat_router
 
 
