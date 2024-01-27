@@ -301,9 +301,9 @@ def delete_user_profile_img(
 
 
 GOOGLE_CLIENT_ID = (
-    "389487021466-hvncp2oop9bma1bssqhd7huh16p3m8sn.apps.googleusercontent.com"
+    "146852932624-pem0s58lvodu3v25gnbgaqcov2ba9o7t.apps.googleusercontent.com"
 )
-GOOGLE_CLIENT_SECRET = "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"
+GOOGLE_CLIENT_SECRET = "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"
 
 config_data = {
     "GOOGLE_CLIENT_ID": GOOGLE_CLIENT_ID,
@@ -355,7 +355,6 @@ async def auth(request: Request, db: Session = Depends(get_db)):
 
     email = user_data["email"]
 
-    # If User does not exists then register User
     user = db.scalar(select(User).where(User.email == email))
 
     if user is None:
@@ -363,11 +362,20 @@ async def auth(request: Request, db: Session = Depends(get_db)):
         user_login_data = EmailRegisterSchema(email=email, password=password)
         con.email_register_user(db, user_login_data)
 
-        sns = Sns(sub=user_data["sub"], refresh_token=access_token["refresh_token"])
+        sns = Sns(
+            sub=user_data["sub"],
+            refresh_token=access_token["refresh_token"],
+            type="google",
+        )
         db.add(sns)
         db.commit()
 
-    return Response(status_code=200)
+    else:
+        user_login_data = EmailRegisterSchema(email=user.email, password=user.password)
+
+    token = email_login(user_login_data, db)
+
+    return token
 
 
 KAKAO_CLIENT_ID = "71cda8d5771dce9ff79f0c09292078e2"
@@ -420,11 +428,10 @@ async def kakao_auth(request: Request, db: Session = Depends(get_db)):
 
     async with httpx.AsyncClient() as client:
         response = await client.post(token_url, headers=headers, data=data)
+
         if response.status_code == 200:
-            token = response.json()
-            print(token)
-            user_data = await get_kako_user_info(token["access_token"])
-            print(user_data)
+            sns_token = response.json()
+            user_data = await get_kako_user_info(sns_token["access_token"])
 
             email = user_data["kakao_account"]["profile"]["nickname"]
             user = db.scalar(select(User).where(User.email == email))
@@ -434,11 +441,23 @@ async def kakao_auth(request: Request, db: Session = Depends(get_db)):
                 user_login_data = EmailRegisterSchema(email=email, password=password)
                 con.email_register_user(db, user_login_data)
 
-                sns = Sns(sub="temp_passowrd", refresh_token=token["refresh_token"])
+                sns = Sns(
+                    sub="temp_passowrd",
+                    refresh_token=sns_token["refresh_token"],
+                    type="kako",
+                )
                 db.add(sns)
                 db.commit()
 
-            return Response(status_code=200)
+            else:
+                user_login_data = EmailRegisterSchema(
+                    email=user.email, password=user.password
+                )
+
+            token = email_login(user_login_data, db)
+
+            return token
+
         else:
             print("Token request failed:", response.status_code, response.text)
 
@@ -454,8 +473,6 @@ async def get_kako_user_info(access_token):
         response = await client.get(user_info_url, headers=headers)
         if response.status_code == 200:
             user_data = response.json()
-            print(user_data)
-            print(type(user_data))
             return user_data
         else:
             print("Token request failed:", response.status_code, response.text)
