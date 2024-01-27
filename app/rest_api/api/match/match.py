@@ -14,19 +14,21 @@ from sqlalchemy.sql import func
 from sqlalchemy import extract
 
 # Schema
-from app.rest_api.schema.match.match import (MatchListSchema,MatchRegisterSchema,MatchUpdateSchema)
+from app.rest_api.schema.match.match import (
+    MatchListSchema,
+    MatchRegisterSchema,
+    MatchUpdateSchema,
+)
 
 # Controller
 from app.rest_api.controller.match.match import match_controller as con
 
-from app.helper.exception import(
-    ProfileRequired,
-    MatchNotFoundException
-)
+from app.helper.exception import ProfileRequired, MatchNotFoundException
 
 from datetime import datetime, time
 
 match_router = APIRouter(tags=["match"], prefix="/match")
+
 
 def get_time_range(range_str):
     ranges = {
@@ -38,13 +40,14 @@ def get_time_range(range_str):
         "20-24": (20, 24),
     }
     return ranges.get(range_str, (0, 23))
-    
+
+
 def get_user_info_with_profile(token: Annotated[str, Depends(get_current_user)]):
     if not token.profile:
         raise ProfileRequired
-        
+
     return True
-    
+
 
 @match_router.get("")
 def list_matches(
@@ -52,10 +55,9 @@ def list_matches(
     match_data: MatchListSchema = Depends(),
     # match_data: MatchListSchema
     db: Session = Depends(get_db),
-    ):
-    
-    # get_user_info_with_profile(token) 
-    
+):
+    # get_user_info_with_profile(token)
+
     match_type = match_data.match_type
     location = match_data.location
     match_time = match_data.match_time
@@ -79,50 +81,59 @@ def list_matches(
     if team_size:
         query = query.filter(Match.team_size == team_size)
     if gender:
-        query = query.filter(Match.gender == gender)        
+        query = query.filter(Match.gender == gender)
 
     if time_range:
         start_hour, end_hour = get_time_range(time_range)
         # 종료 시간 조정
         end_hour = end_hour if end_hour < 24 else 23
-        query = query.filter(extract('hour', Match.match_time).between(start_hour, end_hour))
-        
+        query = query.filter(
+            extract("hour", Match.match_time).between(start_hour, end_hour)
+        )
+
     matches = query.all()
     return matches
-    
+
+
 @match_router.get("/{match_id}")
 def get_match(
-    # token: Annotated[str, Depends(get_current_user)], 
-    match_id: int, db: Session = Depends(get_db)):
-    
-    # get_user_info_with_profile(token) 
-    
+    # token: Annotated[str, Depends(get_current_user)],
+    match_id: int,
+    db: Session = Depends(get_db),
+):
+    # get_user_info_with_profile(token)
+
     match = db.query(Match).filter(Match.seq == match_id).first()
     if match is None:
         raise MatchNotFoundException
     return match
-    
+
+
 @match_router.post("")
 def create_match(
-    # token: Annotated[str, Depends(get_current_user)], 
-    match_data:MatchRegisterSchema, db: Session = Depends(get_db)):
-    
-    # get_user_info_with_profile(token) 
-    
+    # token: Annotated[str, Depends(get_current_user)],
+    match_data: MatchRegisterSchema,
+    db: Session = Depends(get_db),
+):
+    # get_user_info_with_profile(token)
+
     con.register_match(match_data, db)
     return {"success": True}
-    
+
+
 @match_router.patch("/{match_id}")
 def edit_match(
-    # token: Annotated[str, Depends(get_current_user)], 
-    match_id:int, match_data: MatchUpdateSchema, db: Session = Depends(get_db)):
-    
-    # get_user_info_with_profile(token) 
-    
+    # token: Annotated[str, Depends(get_current_user)],
+    match_id: int,
+    match_data: MatchUpdateSchema,
+    db: Session = Depends(get_db),
+):
+    # get_user_info_with_profile(token)
+
     match = db.query(Match).filter(Match.seq == match_id).first()
     if not match:
         raise MatchNotFoundException
-        
+
     for key, value in match_data.dict(exclude_unset=True).items():
         setattr(match, key, value)
 
@@ -130,18 +141,19 @@ def edit_match(
     db.commit()
     return {"success": True}
 
+
 @match_router.delete("/{match_id}")
 def delete_match(
-    # token: Annotated[str, Depends(get_current_user)], 
-    match_id:int, db: Session = Depends(get_db)):
-    
-    # get_user_info_with_profile(token) 
-    
+    # token: Annotated[str, Depends(get_current_user)],
+    match_id: int,
+    db: Session = Depends(get_db),
+):
+    # get_user_info_with_profile(token)
+
     match = db.query(Match).filter(Match.seq == match_id).first()
     if not match:
         raise MatchNotFoundException
-        
+
     db.delete(match)
     db.commit()
     return {"message": "매치게시글이 성공적으로 삭제되었습니다."}
-    

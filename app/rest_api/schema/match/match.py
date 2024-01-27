@@ -1,6 +1,6 @@
 from typing import List
 from pydantic import BaseModel, Field
-from datetime import datetime 
+from datetime import datetime
 from typing import Optional
 
 
@@ -18,6 +18,7 @@ class MatchListSchema(BaseModel):
     guests: Optional[int] = Field(None, title="용병id")
     club_seq: Optional[int] = Field(None, title="클럽id")
 
+
 class MatchRegisterSchema(BaseModel):
     match_type: str = Field(title="매치유형")
     location: str = Field(title="매치장소")
@@ -25,12 +26,13 @@ class MatchRegisterSchema(BaseModel):
     skill: str = Field(title="레벨")
     team_size: int = Field(title="매치인원")
     gender: str = Field(title="성별")
-    match_fee:int = Field(title="매치비용")
-    notice:str = Field(title="공지사항")
-    status:str = Field(title="매치상태")
-    guests:int = Field(title="용병id")
-    club_seq:int = Field(title="클럽id")
-    
+    match_fee: int = Field(title="매치비용")
+    notice: str = Field(title="공지사항")
+    status: str = Field(title="매치상태")
+    guests: int = Field(title="용병id")
+    club_seq: int = Field(title="클럽id")
+
+
 class MatchUpdateSchema(BaseModel):
     match_type: Optional[str] = None
     location: Optional[str] = None
