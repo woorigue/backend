@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session, relationship
 
 from app.db.session import Base
 
-from .email import Email
 from .profile import Profile
 from .club import JoinClub
 from app.helper.exception import (
@@ -34,6 +33,8 @@ class User(Base):
     chatting_rooms = relationship(
         "ChattingRoom", secondary=UserChatRoomAssociation, back_populates="users"
     )
+    poll = relationship("Poll", back_populates="user")
+    join_poll = relationship("JoinPoll", back_populates="user")
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:

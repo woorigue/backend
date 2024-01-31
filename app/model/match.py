@@ -1,10 +1,7 @@
 from sqlalchemy import Column, String, Integer, DateTime
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 
 from app.db.session import Base
-
-from datetime import datetime
-from dataclasses import dataclass
 
 from app.rest_api.schema.match.match import MatchRegisterSchema
 
@@ -26,6 +23,8 @@ class Match(Base):
     status = Column(String(24), nullable=False, comment="매치상태")
     guests = Column(Integer, nullable=False, comment="용병id")
     club_seq = Column(Integer, nullable=False, comment="클럽id")
+
+    poll = relationship("Poll", back_populates="match")
 
     @staticmethod
     def create(match_data: MatchRegisterSchema, db: Session) -> None:
