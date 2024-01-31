@@ -107,6 +107,20 @@ class GuestNotFoundException(RestException):
     system_message = "Guest not found"
 
 
+class PollNotFoundException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    user_message = "투표가 존재하지 않습니다"
+    system_code = GUEST_NOT_FOUND_SYSTEM_CODE
+    system_message = "Poll has not found"
+
+
+class ProfileRequired(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    user_message = "프로필 설정이 필요합니다."
+    system_code = "USER_PROFILE_DATA_REQUIRED"
+    system_message = "User's Profile data is reuqired"
+
+
 class RegisterException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
 
