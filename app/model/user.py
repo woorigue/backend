@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from sqlalchemy import Boolean, Column, Integer, String, select
+from sqlalchemy import ARRAY, Boolean, Column, Integer, String, select
 from sqlalchemy.orm import Session, relationship
 
 from app.db.session import Base
@@ -25,6 +25,8 @@ class User(Base):
     email = Column(String(128), unique=True, comment="이메일")
     password = Column(String(256), comment="비밀번호")
     is_active = Column(Boolean, default=True, comment="활성화 여부")
+    clubs = Column(ARRAY(Integer), nullable=True, comment="클럽")
+
     profile = relationship(Profile, back_populates="user", cascade="all, delete-orphan")
     join_club = relationship(
         JoinClub, back_populates="user", cascade="all, delete-orphan"
@@ -32,6 +34,8 @@ class User(Base):
     chatting_rooms = relationship(
         "ChattingRoom", secondary=UserChatRoomAssociation, back_populates="users"
     )
+    poll = relationship("Poll", back_populates="user")
+    join_poll = relationship("JoinPoll", back_populates="user")
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:
