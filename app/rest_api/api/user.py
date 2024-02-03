@@ -42,6 +42,8 @@ from app.rest_api.schema.user import (
     EmailRegisterSchema,
     ResetPasswordSchema,
     UserSchema,
+    JoinClubSchema,
+    QuitClubSchema,
 )
 from app.constants.errors import (
     EMAIL_CONFLICT_SYSTEM_CODE,
@@ -228,6 +230,16 @@ def update_user_profile(
 
     db.commit()
     db.flush()
+    return {"success": True}
+
+
+@user_router.patch("/active_status")
+def update_user_active_status(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    token.is_active = not token.is_active
+    db.commit()
     return {"success": True}
 
 

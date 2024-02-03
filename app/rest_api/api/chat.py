@@ -64,9 +64,9 @@ def create_match_chat(
 
 
 @chat_router.get("/match/{chat_room_id}")
-def create_match_chat(
+def get_match_chats(
     chat_room_id: int,
-    # token: Annotated[str, Depends(get_current_user)],
+    token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
     contents = (

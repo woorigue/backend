@@ -33,6 +33,5 @@ class JoinClub(Base):
     clubs_seq = Column(Integer, ForeignKey("clubs.seq", ondelete="CASCADE"))
     user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
     role = Column(String(10), comment="역할")
-
     club = relationship("Club", back_populates="join_club")
     user = relationship("User", back_populates="join_club")

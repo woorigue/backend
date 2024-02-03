@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session, relationship
 
 from app.db.session import Base
 
+from .email import Email
 from .profile import Profile
 from .club import JoinClub
 from app.helper.exception import (
