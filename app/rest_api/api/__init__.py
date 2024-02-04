@@ -10,6 +10,7 @@ from app.rest_api.api.banner import banner_router
 from app.rest_api.api.club.club import club_router
 from app.rest_api.api.club.clubPosting import clubPosting_router
 from app.rest_api.api.chat import chat_router
+from app.rest_api.api.poll import poll_router
 
 
 rest_router = APIRouter()
@@ -23,3 +24,4 @@ rest_router.include_router(guest_router)
 rest_router.include_router(club_router)
 rest_router.include_router(clubPosting_router)
 rest_router.include_router(chat_router)
+rest_router.include_router(poll_router)

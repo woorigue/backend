@@ -28,14 +28,12 @@ class FileController:
         db.add(banner)
         db.commit()
         db.flush()
-        
+
     def edit_banner_img(self, file, file_name):
         url = f"banner/{file_name}"
         content = BytesIO(file)
         self.s3_client.upload_fileobj(content, "our-league", url)
         return "drl2968ia795g.cloudfront.net/" + url
-
-
 
 
 file_controller = FileController()

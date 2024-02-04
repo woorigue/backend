@@ -1,5 +1,7 @@
 from typing import List
 
+
+from app.rest_api.schema.club import JoinClubSchema
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 
 from .profile import GetProfileSchema
@@ -34,6 +36,3 @@ class UserSchema(BaseModel):
 class JoinClubSchema(BaseModel):
     role: StrictStr = Field(title="클럽 시퀸스")
 
-
-class QuitClubSchema(BaseModel):
-    club_seq: StrictInt = Field(title="클럽 시퀸스")

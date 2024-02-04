@@ -34,6 +34,8 @@ class User(Base):
     chatting_rooms = relationship(
         "ChattingRoom", secondary=UserChatRoomAssociation, back_populates="users"
     )
+    poll = relationship("Poll", back_populates="user")
+    join_poll = relationship("JoinPoll", back_populates="user")
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:
