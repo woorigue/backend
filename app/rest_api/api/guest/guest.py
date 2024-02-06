@@ -45,6 +45,18 @@ def create_guest(
     return {"success": True}
 
 
+@guest_router.get("/{guest_seq}")
+def get_guest(
+    token: Annotated[str, Depends(get_current_user)],
+    guest_seq: int,
+    db: Session = Depends(get_db),
+):
+    guest = db.query(Guest).filter(Guest.seq == guest_seq).first()
+    if guest is None:
+        raise GuestNotFoundException
+    return guest
+
+
 @guest_router.patch("/{guest_seq}")
 def update_guest(
     token: Annotated[str, Depends(get_current_user)],
@@ -65,23 +77,6 @@ def update_guest(
     return {"success": True}
 
 
-@guest_router.get("")
-def filter_guests(
-    token: Annotated[str, Depends(get_current_user)],
-    guest_filter: FilterGuestSchema = FilterDepends(FilterGuestSchema),
-    page: int = Query(1, title="페이지", ge=1),
-    per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
-    db: Session = Depends(get_db),
-):
-    query = db.query(Guest)
-    query = guest_filter.filter(query)
-    offset = (page - 1) * per_page
-    query = query.limit(per_page).offset(offset)
-    guests = query.all()
-
-    return guests
-
-
 @guest_router.delete("/{guest_seq}")
 def delete_guest(
     token: Annotated[str, Depends(get_current_user)],
@@ -97,3 +92,20 @@ def delete_guest(
     db.commit()
 
     return {"message": "용병게시글이 성공적으로 삭제되었습니다."}
+
+
+@guest_router.get("")
+def filter_guests(
+    token: Annotated[str, Depends(get_current_user)],
+    guest_filter: FilterGuestSchema = FilterDepends(FilterGuestSchema),
+    page: int = Query(1, title="페이지", ge=1),
+    per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Guest)
+    query = guest_filter.filter(query)
+    offset = (page - 1) * per_page
+    query = query.limit(per_page).offset(offset)
+    guests = query.all()
+
+    return guests

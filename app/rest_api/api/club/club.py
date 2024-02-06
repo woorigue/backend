@@ -43,6 +43,20 @@ def create_club(
     return {"success": True}
 
 
+@club_router.get("/{club_seq}")
+def get_club(
+    token: Annotated[str, Depends(get_current_user)],
+    club_seq: int,
+    db: Session = Depends(get_db),
+):
+    club = db.query(Club).filter(Club.seq == club_seq).first()
+
+    # if club is None:
+    #     raise ClubNotFoundException
+
+    return club
+
+
 @club_router.patch("/{club_seq}")
 def update_club(
     token: Annotated[str, Depends(get_current_user)],

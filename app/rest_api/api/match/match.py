@@ -47,6 +47,20 @@ def create_match(
     return {"success": True}
 
 
+@match_router.get("/{match_seq}")
+def get_match(
+    token: Annotated[str, Depends(get_current_user)],
+    match_seq: int,
+    db: Session = Depends(get_db),
+):
+    match = db.query(Match).filter(Match.seq == match_seq).first()
+
+    if match is None:
+        raise MatchNotFoundException
+
+    return match
+
+
 @match_router.patch("/{match_seq}")
 def update_match(
     token: Annotated[str, Depends(get_current_user)],
@@ -67,23 +81,6 @@ def update_match(
     return {"success": True}
 
 
-@match_router.get("")
-def filter_matches(
-    token: Annotated[str, Depends(get_current_user)],
-    match_filter: FilterMatchSchema = FilterDepends(FilterMatchSchema),
-    page: int = Query(1, title="페이지", ge=1),
-    per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
-    db: Session = Depends(get_db),
-):
-    query = db.query(Match)
-    query = match_filter.filter(query)
-    offset = (page - 1) * per_page
-    query = query.limit(per_page).offset(offset)
-    matches = query.all()
-
-    return matches
-
-
 @match_router.delete("/{match_seq}")
 def delete_match(
     token: Annotated[str, Depends(get_current_user)],
@@ -99,3 +96,20 @@ def delete_match(
     db.commit()
 
     return {"message": "매치게시글이 성공적으로 삭제되었습니다."}
+
+
+@match_router.get("")
+def filter_matches(
+    token: Annotated[str, Depends(get_current_user)],
+    match_filter: FilterMatchSchema = FilterDepends(FilterMatchSchema),
+    page: int = Query(1, title="페이지", ge=1),
+    per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Match)
+    query = match_filter.filter(query)
+    offset = (page - 1) * per_page
+    query = query.limit(per_page).offset(offset)
+    matches = query.all()
+
+    return matches

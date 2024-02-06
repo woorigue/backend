@@ -37,3 +37,7 @@ class FilterGuestSchema(Filter):
 
     class Constants(Filter.Constants):
         model = Guest
+
+
+class JoinGuestSchema(BaseModel):
+    guest: GuestSchema

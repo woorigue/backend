@@ -32,7 +32,7 @@ class UpdateClubPostingSchema(BaseModel):
 
 
 class JoinClubPostingSchema(BaseModel):
-    club: ClubPostingSchema
+    club_posting: ClubPostingSchema
 
 
 class FilterClubPostingSchema(Filter):

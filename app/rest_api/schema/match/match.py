@@ -51,3 +51,7 @@ class FilterMatchSchema(Filter):
 
     class Constants(Filter.Constants):
         model = Match
+
+
+class JoinMatchSchema(BaseModel):
+    match: MatchSchema

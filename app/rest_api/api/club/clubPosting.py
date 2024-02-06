@@ -51,20 +51,38 @@ def create_clubPosting(
     return {"success": True}
 
 
+@clubPosting_router.get("/{club_posting_seq}")
+def get_clubPosting(
+    token: Annotated[str, Depends(get_current_user)],
+    club_posting_seq: int,
+    db: Session = Depends(get_db),
+):
+    club_posting = (
+        db.query(ClubPosting).filter(ClubPosting.seq == club_posting_seq).first()
+    )
+
+    # if club_posting is None:
+    #     raise ClubPostingNotFoundException
+
+    return club_posting
+
+
 @clubPosting_router.patch("/{club_posting_seq}")
 def update_clubPosting(
     token: Annotated[str, Depends(get_current_user)],
     club_posting_seq: int,
-    update_club_data: UpdateClubPostingSchema,
+    update_club_posting_data: UpdateClubPostingSchema,
     db: Session = Depends(get_db),
 ):
-    club = db.query(ClubPosting).filter_by(ClubPosting.seq == club_posting_seq).first()
+    club_posting = (
+        db.query(ClubPosting).filter_by(ClubPosting.seq == club_posting_seq).first()
+    )
 
     # if not club:
     #     raise ClubNotFoundException
 
-    for key, value in update_club_data.dict(exclude_none=True).items():
-        setattr(club, key, value)
+    for key, value in update_club_posting_data.dict(exclude_none=True).items():
+        setattr(club_posting, key, value)
 
     db.commit()
 
