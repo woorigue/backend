@@ -1,12 +1,9 @@
-from sqlalchemy import ARRAY, Column, String, Integer, DateTime
-from sqlalchemy.orm import Session
+from sqlalchemy import ARRAY, Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
-from datetime import datetime
 from dataclasses import dataclass
-
-from app.rest_api.schema.guest.guest import GuestRegisterSchema
 
 from app.helper.exception import RegisterException
 
@@ -24,44 +21,20 @@ class Guest(Base):
     status = Column(String(24), nullable=False, comment="용병상태")
     notice = Column(String(255), nullable=False, comment="공지사항")
 
-    @staticmethod
-    def create(guest_data: GuestRegisterSchema, db: Session) -> None:
-        print("----create----", guest_data)
-        club = guest_data.club
-        match = guest_data.match
-        position = guest_data.position
-        skill = guest_data.skill
-        guest_number = guest_data.guest_number
-        match_fee = guest_data.match_fee
-        status = guest_data.status
-        notice = guest_data.notice
+    join_guest = relationship(
+        "JoinGuest",
+        back_populates="guest",
+        cascade="all, delete-orphan",
+    )
 
-        if not club:
-            raise RegisterException("club")
-        if not match:
-            raise RegisterException("match")
-        if not position:
-            raise RegisterException("position")
-        if not skill:
-            raise RegisterException("skill")
-        if not guest_number:
-            raise RegisterException("guest_number")
-        if not match_fee:
-            raise RegisterException("match_fee")
-        if not status:
-            raise RegisterException("status")
-        if not notice:
-            raise RegisterException("notice")
 
-        guest = Guest(
-            club=club,
-            match=match,
-            position=position,
-            skill=skill,
-            guest_number=guest_number,
-            match_fee=match_fee,
-            status=status,
-            notice=notice,
-        )
-        db.add(guest)
-        db.commit()
+class JoinGuest(Base):
+    __tablename__ = "join_guest"
+
+    seq = Column(Integer, primary_key=True, comment="시퀀스")
+    guest_seq = Column(Integer, ForeignKey("guest.seq", ondelete="CASCADE"))
+    user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
+    accepted = Column(Boolean, comment="수락 여부")
+
+    guest = relationship("Guest", back_populates="join_guest")
+    user = relationship("User", back_populates="join_guest")

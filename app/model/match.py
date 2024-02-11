@@ -1,7 +1,7 @@
-from sqlalchemy import Column, String, Integer, DateTime
-from sqlalchemy.orm import Session, relationship
-from app.rest_api.schema.match.match import MatchRegisterSchema
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
+from app.db.session import Base
 from app.helper.exception import RegisterException
 
 
@@ -19,6 +19,24 @@ class Match(Base):
     notice = Column(String(255), nullable=True, comment="공지사항")
     status = Column(String(24), nullable=False, comment="매치상태")
     guests = Column(Integer, nullable=False, comment="용병id")
+    user_seq = Column(Integer, nullable=False, comment="유저 시퀸스")
     club_seq = Column(Integer, nullable=False, comment="클럽id")
-    
+
     poll = relationship("Poll", back_populates="match")
+    join_match = relationship(
+        "JoinMatch",
+        back_populates="match",
+        cascade="all, delete-orphan",
+    )
+
+
+class JoinMatch(Base):
+    __tablename__ = "join_match"
+
+    seq = Column(Integer, primary_key=True, comment="시퀀스")
+    match_seq = Column(Integer, ForeignKey("match.seq", ondelete="CASCADE"))
+    home_club_seq = Column(Integer, ForeignKey("clubs.seq", ondelete="CASCADE"))
+    away_club_seq = Column(Integer, ForeignKey("clubs.seq", ondelete="CASCADE"))
+    accepted = Column(Boolean, comment="수락 여부")
+
+    match = relationship("Match", back_populates="join_match")

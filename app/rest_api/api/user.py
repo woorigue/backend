@@ -43,8 +43,6 @@ from app.rest_api.schema.user import (
     EmailRegisterSchema,
     ResetPasswordSchema,
     UserSchema,
-    JoinClubSchema,
-    QuitClubSchema,
 )
 from app.constants.errors import (
     EMAIL_CONFLICT_SYSTEM_CODE,
@@ -209,7 +207,14 @@ def update_user_profile(
     token.is_active = user_data.is_active
 
     if not profile:
-        profile = Profile(user_seq=token.seq, nickname=user_data.nickname)
+        profile = Profile(
+            user_seq=token.seq,
+            nickname=user_data.nickname,
+            gender=user_data.gender,
+            location=user_data.location,
+            age_group=user_data.age_group,
+            foot=user_data.foot,
+        )
         db.add(profile)
         db.commit()
         db.refresh(profile)
@@ -264,7 +269,7 @@ def join_club(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq)
+    join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="회원")
     db.add(join_club)
 
     db.commit()

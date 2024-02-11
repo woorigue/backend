@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from sqlalchemy import ARRAY, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -39,3 +39,4 @@ class JoinClubPosting(Base):
     accepted = Column(Boolean, comment="수락 여부")
 
     club_posting = relationship("ClubPosting", back_populates="join_club_posting")
+    user = relationship("User", back_populates="join_club_posting")

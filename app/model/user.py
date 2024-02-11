@@ -7,6 +7,9 @@ from app.db.session import Base
 from .email import Email
 from .profile import Profile
 from .club import JoinClub
+from .clubPosting import JoinClubPosting
+from .guest import JoinGuest
+from .memberPosting import JoinMemberPosting
 from app.helper.exception import (
     EmailConflictException,
     PasswordInvalidException,
@@ -31,6 +34,16 @@ class User(Base):
     join_club = relationship(
         JoinClub, back_populates="user", cascade="all, delete-orphan"
     )
+    join_club_posting = relationship(
+        JoinClubPosting, back_populates="user", cascade="all, delete-orphan"
+    )
+    join_guest = relationship(
+        JoinGuest, back_populates="user", cascade="all, delete-orphan"
+    )
+    join_member_posting = relationship(
+        JoinMemberPosting, back_populates="user", cascade="all, delete-orphan"
+    )
+
     chatting_rooms = relationship(
         "ChattingRoom", secondary=UserChatRoomAssociation, back_populates="users"
     )
