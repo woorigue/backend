@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 from typing import List, Optional
 
 from app.model.match import Match
@@ -10,7 +10,9 @@ from pydantic import BaseModel, Field
 class MatchSchema(BaseModel):
     match_type: str = Field(title="매치유형")
     location: str = Field(title="매치장소")
-    match_time: datetime = Field(title="매치일정")
+    match_date: datetime = Field(title="매치일")
+    start_time: time = Field(title="매치 시작 시간")
+    end_time: time = Field(title="매치 종료 시간")
     skill: str = Field(title="레벨")
     team_size: int = Field(title="매치인원")
     gender: str = Field(title="성별")

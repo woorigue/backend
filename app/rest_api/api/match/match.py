@@ -15,8 +15,7 @@ from app.rest_api.schema.match.match import (
     FilterMatchSchema,
 )
 
-# from app.rest_api.controller.match.match import match_controller as con
-from app.helper.exception import ProfileRequired, MatchNotFoundException
+from app.helper.exception import MatchNotFoundException
 
 
 match_router = APIRouter(tags=["match"], prefix="/match")

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 class ClubPostingSchema(BaseModel):
     club_seq: int = Field(title="클럽 시퀸스")
     title: str = Field(title="제목")
-    intro: str = Field(title="클럽 소개글")
+    notice: str = Field(title="클럽 소개글")
     recruitment_number: int = Field(title="모집 회원 수")
     location: str = Field(title="활동 장소")
     age_group: str = Field(title="연령대")
@@ -21,7 +21,7 @@ class ClubPostingSchema(BaseModel):
 
 class UpdateClubPostingSchema(BaseModel):
     title: str = Field(None, title="제목")
-    intro: str = Field(None, title="클럽 소개글")
+    notice: str = Field(None, title="클럽 소개글")
     recruitment_number: int = Field(None, title="모집 회원 수")
     location: str = Field(None, title="활동 장소")
     age_group: str = Field(None, title="연령대")

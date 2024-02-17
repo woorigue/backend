@@ -25,8 +25,8 @@ guest_router = APIRouter(tags=["guest"], prefix="/guest")
 
 @guest_router.post("")
 def create_guest(
-    token: Annotated[str, Depends(get_current_user)],
     guest_data: GuestSchema,
+    token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
     guest = Guest(

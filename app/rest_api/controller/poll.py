@@ -53,7 +53,9 @@ class PollController(PollValidator):
         if not poll:
             raise PollNotFoundException
 
-        poll.update({"expired_at": data.expired_at, "vote_closed": data.vote_closed})
+        self.db.query(Poll).filter(
+            Poll.seq == poll_id, Poll.user_seq == self.user.seq
+        ).update({"expired_at": data.expired_at, "vote_closed": data.vote_closed})
         self.db.commit()
         self.db.flush()
 
