@@ -21,5 +21,5 @@ class GetProfileSchema(BaseModel):
     location: str = Field(title="활동 장소")
     age_group: str = Field(title="연령대")
     foot: str = Field(title="주발")
-    join_profile: List[JoinPositionSchema] = []
+    join_position: List[JoinPositionSchema] = []
     img: Union[str, None] = Field(title="이미지 URL", default=None)

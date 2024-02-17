@@ -21,4 +21,4 @@ class JoinPosition(Base):
     profile_seq = Column(Integer, ForeignKey("profile.seq", ondelete="CASCADE"))
 
     position = relationship("Position", back_populates="join_position")
-    profile = relationship("Profile", back_populates="join_profile")
+    profile = relationship("Profile", back_populates="join_position")

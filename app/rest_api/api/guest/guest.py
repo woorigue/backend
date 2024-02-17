@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
+
 from app.core.deps import get_db
 from app.core.token import (
     get_current_user,
@@ -30,8 +31,9 @@ def create_guest(
     db: Session = Depends(get_db),
 ):
     guest = Guest(
-        club=guest_data.club_seq,
-        match=guest_data.match_seq,
+        user_seq=token.seq,
+        club_seq=guest_data.club_seq,
+        match_seq=guest_data.match_seq,
         position=guest_data.position,
         skill=guest_data.skill,
         guest_number=guest_data.guest_number,

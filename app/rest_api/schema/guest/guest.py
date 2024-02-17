@@ -30,8 +30,10 @@ class UpdateGuestSchema(BaseModel):
 
 class FilterGuestSchema(Filter):
     seq__in: Optional[List[int]] = Field(None, title="시퀸스 리스트")
-    match__in: Optional[List[int]] = Field(None, title="매치 시퀸스 리스트")
-    position__in: Optional[List[int]] = Field(None, title="포지션")
+    user_seq__in: Optional[List[int]] = Field(None, title="유저 시퀸스 리스트")
+    club_seq__in: Optional[List[int]] = Field(None, title="매치 시퀸스 리스트")
+    match_seq__in: Optional[List[int]] = Field(None, title="매치 시퀸스 리스트")
+    # position: Optional[List[int]] = Field(None, title="포지션")
     skill__in: Optional[List[str]] = Field(None, title="실력 리스트")
     status: Optional[str] = Field(None, title="용병 상태")
 

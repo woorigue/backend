@@ -9,6 +9,9 @@ class Match(Base):
     __tablename__ = "match"
 
     seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
+    user_seq = Column(Integer, nullable=False, comment="유저 시퀸스")
+    home_club_seq = Column(Integer, nullable=False, comment="홈 클럽 시퀸스")
+    away_club_seq = Column(Integer, comment="원정 클럽 시퀸스")
     match_type = Column(String(24), nullable=False, comment="매치유형")
     location = Column(String(128), nullable=False, comment="매치장소")
     match_time = Column(DateTime, nullable=False, comment="매치일정")
@@ -18,9 +21,7 @@ class Match(Base):
     match_fee = Column(Integer, nullable=True, comment="매치비용")
     notice = Column(String(255), nullable=True, comment="공지사항")
     status = Column(String(24), nullable=False, comment="매치상태")
-    guests = Column(Integer, nullable=False, comment="용병id")
-    user_seq = Column(Integer, nullable=False, comment="유저 시퀸스")
-    club_seq = Column(Integer, nullable=False, comment="클럽id")
+    guest_seq = Column(Integer, nullable=False, comment="용병 게시글 시퀸스")
 
     poll = relationship("Poll", back_populates="match")
     join_match = relationship(
@@ -35,7 +36,6 @@ class JoinMatch(Base):
 
     seq = Column(Integer, primary_key=True, comment="시퀀스")
     match_seq = Column(Integer, ForeignKey("match.seq", ondelete="CASCADE"))
-    home_club_seq = Column(Integer, ForeignKey("clubs.seq", ondelete="CASCADE"))
     away_club_seq = Column(Integer, ForeignKey("clubs.seq", ondelete="CASCADE"))
     accepted = Column(Boolean, comment="수락 여부")
 
