@@ -19,14 +19,14 @@ clubPosting_router = APIRouter(tags=["clubPosting"], prefix="/clubPosting")
 
 @clubPosting_router.post("")
 def create_clubPosting(
-    token: Annotated[str, Depends(get_current_user)],
     clubPosting_data: ClubPostingSchema,
+    token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
     clubPosting_data = ClubPosting(
         club_seq=clubPosting_data.club_seq,
         title=clubPosting_data.title,
-        intro=clubPosting_data.intro,
+        notice=clubPosting_data.notice,
         recruitment_number=clubPosting_data.recruitment_number,
         location=clubPosting_data.location,
         age_group=clubPosting_data.age_group,

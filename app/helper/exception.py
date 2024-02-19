@@ -107,7 +107,6 @@ class GuestNotFoundException(RestException):
     system_message = "Guest not found"
 
 
-
 class PollNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     user_message = "투표가 존재하지 않습니다"

@@ -14,9 +14,9 @@ class ClubSchema(BaseModel):
     age_group: str = Field(title="연령대")
     membership_fee: int = Field(0, title="회비")
     skill: str = Field(title="실력")
-    emblem_img: str = Field(None, title="클럽 엠블럼 URL")
-    img: str = Field(None, title="클럽 이미지 URL")
-    uniform_color: str = Field(None, title="유니폼 색")
+    emblem_img: Optional[str] = Field(None, title="클럽 엠블럼 URL")
+    img: Optional[str] = Field(None, title="클럽 이미지 URL")
+    uniform_color: Optional[str] = Field(None, title="유니폼 색")
 
 
 class UpdateClubSchema(BaseModel):

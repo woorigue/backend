@@ -33,6 +33,7 @@ class Faq(Base):
     @staticmethod
     def edit(faq_id: int, faq_data: FaqEditSchema, db: Session) -> None:
         faq = db.query(Faq).filter(Faq.seq == faq_id).first()
+        print(faq, faq_data)
         if not faq:
             raise FaqNotFoundException
 

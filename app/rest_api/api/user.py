@@ -202,7 +202,7 @@ def update_user_profile(
     db: Session = Depends(get_db),
 ):
     profile = token.profile
-    position = user_data.position
+    position = user_data.positions
 
     token.is_active = user_data.is_active
 
@@ -212,8 +212,9 @@ def update_user_profile(
             nickname=user_data.nickname,
             gender=user_data.gender,
             location=user_data.location,
-            age_group=user_data.age_group,
+            age=user_data.age,
             foot=user_data.foot,
+            positions=user_data.positions,
         )
         db.add(profile)
         db.commit()

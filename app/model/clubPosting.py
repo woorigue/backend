@@ -10,7 +10,7 @@ class ClubPosting(Base):
     seq = Column(Integer, primary_key=True, comment="시퀀스")
     club_seq = Column(Integer, comment="클럽 시퀸스")
     title = Column(String(128), comment="제목")
-    intro = Column(String(255), comment="클럽 소개글")
+    notice = Column(String(255), comment="클럽 소개글")
     recruitment_number = Column(Integer, comment="모집 회원 수")
     location = Column(String(24), comment="활동 장소")
     age_group = Column(String(24), comment="연령대")
