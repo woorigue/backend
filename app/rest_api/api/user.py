@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile, Request
-from sqlalchemy import delete, select, and_
+from sqlalchemy import delete, select, and_, union_all
 from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse, Response
 
@@ -9,6 +9,8 @@ from fastapi.responses import HTMLResponse, Response
 from starlette.config import Config
 from starlette.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
+
+from operator import attrgetter
 
 from app.core.deps import get_db
 from app.core.token import (
@@ -27,6 +29,10 @@ from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.model.user import User
 from app.model.club import JoinClub
+from app.model.clubPosting import ClubPosting
+from app.model.match import Match
+from app.model.memberPosting import MemberPosting
+from app.model.guest import Guest
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
@@ -214,6 +220,7 @@ def update_user_profile(
             location=user_data.location,
             age=user_data.age,
             foot=user_data.foot,
+            level=user_data.level,
             positions=user_data.positions,
         )
         db.add(profile)
@@ -316,6 +323,31 @@ def delete_user_profile_img(
     db.commit()
     db.flush()
     return {"success": True}
+
+
+@user_router.get("/posting")
+def get_user_posting(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    tables = [
+        (ClubPosting, "ClubPosting"),
+        (Match, "Match"),
+        (Guest, "Guest"),
+        (MemberPosting, "MemberPosting"),
+    ]
+    my_postings = []
+
+    for table, table_name in tables:
+        postings = db.query(table).filter(table.user_seq == token.seq).all()
+        my_postings.extend([(posting, table_name) for posting in postings])
+
+    my_postings.sort(key=lambda x: getattr(x[0], "date"))
+
+    return [
+        {"table_name": table_name, "posting": posting}
+        for posting, table_name in my_postings
+    ]
 
 
 GOOGLE_CLIENT_ID = (

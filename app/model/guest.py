@@ -1,4 +1,4 @@
-from sqlalchemy import ARRAY, Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -12,6 +12,7 @@ class Guest(Base):
     __tablename__ = "guest"
 
     seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
+    date = Column(DateTime, nullable=False, comment="게시일")
     user_seq = Column(Integer, nullable=False, comment="작성자 유저 시퀀스")
     club_seq = Column(Integer, nullable=False, comment="클럽 시퀀스")
     match_seq = Column(Integer, nullable=False, comment="매치 시퀀스")

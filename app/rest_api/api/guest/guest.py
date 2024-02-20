@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -31,6 +32,7 @@ def create_guest(
     db: Session = Depends(get_db),
 ):
     guest = Guest(
+        date=datetime.now(),
         user_seq=token.seq,
         club_seq=guest_data.club_seq,
         match_seq=guest_data.match_seq,
