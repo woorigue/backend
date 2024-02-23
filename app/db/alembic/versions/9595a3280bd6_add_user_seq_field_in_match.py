@@ -19,10 +19,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "match",
-        sa.Column("user_seq", sa.Integer, nullable=False, comment="원정팀 시퀸스"),
-    )
+    print("HERE")
+    pass
 
 
 def downgrade() -> None:

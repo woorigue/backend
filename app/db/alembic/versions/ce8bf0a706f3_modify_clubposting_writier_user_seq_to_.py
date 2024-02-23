@@ -19,7 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.alter_column("clubPosting", "writer_user_seq", new_column_name="user_seq")
+    print("HERE")
 
 
 def downgrade() -> None:
