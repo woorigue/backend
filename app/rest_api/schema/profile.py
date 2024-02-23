@@ -23,5 +23,5 @@ class GetProfileSchema(BaseModel):
     age: Union[str, None] = Field(title="연령대", default=None)
     foot: Union[str, None] = Field(title="주발", default=None)
     level: Union[int, None] = Field(title="레벨", default=None)
-    join_profile: List[JoinPositionSchema] = []
+    join_position: List[JoinPositionSchema] = []
     img: Union[str, None] = Field(title="이미지 URL", default=None)

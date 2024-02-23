@@ -30,6 +30,7 @@ def create_club(
         age_group=club_data.age_group,
         membership_fee=club_data.membership_fee,
         skill=club_data.skill,
+        emblem_img=club_data.emblem_img,
         img=club_data.img,
         uniform_color=club_data.uniform_color,
     )

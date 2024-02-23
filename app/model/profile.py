@@ -19,6 +19,6 @@ class Profile(Base):
     user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
 
     user = relationship("User", back_populates="profile")
-    join_profile = relationship(
+    join_position = relationship(
         "JoinPosition", back_populates="profile", cascade="all, delete-orphan"
     )

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -24,6 +25,7 @@ def create_clubPosting(
     db: Session = Depends(get_db),
 ):
     clubPosting_data = ClubPosting(
+        date=datetime.now(),
         club_seq=clubPosting_data.club_seq,
         title=clubPosting_data.title,
         notice=clubPosting_data.notice,

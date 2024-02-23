@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -28,17 +29,21 @@ def create_match(
     db: Session = Depends(get_db),
 ):
     match = Match(
+        date=datetime.now(),
+        user_seq=token.seq,
+        home_club_seq=match_data.home_club_seq,
         match_type=match_data.match_type,
         location=match_data.location,
-        match_time=match_data.match_time,
+        match_date=match_data.match_date,
+        start_time=match_data.start_time,
+        end_time=match_data.end_time,
         skill=match_data.skill,
         team_size=match_data.team_size,
         gender=match_data.gender,
         match_fee=match_data.match_fee,
         notice=match_data.notice,
         status=match_data.status,
-        guests=match_data.guests,
-        club_seq=match_data.club_seq,
+        guest_seq=match_data.guest_seq,
     )
     db.add(match)
     db.commit()
