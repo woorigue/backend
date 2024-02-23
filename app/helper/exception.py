@@ -8,6 +8,7 @@ from app.constants.errors import (
     FAQ_NOT_FOUND_SYSTEM_CODE,
     MATCH_NOT_FOUND_SYSTEM_CODE,
     GUEST_NOT_FOUND_SYSTEM_CODE,
+    JOIN_CLUB_NOT_FOUND_SYSTEM_CODE,
 )
 
 
@@ -112,6 +113,13 @@ class PollNotFoundException(RestException):
     user_message = "투표가 존재하지 않습니다"
     system_code = GUEST_NOT_FOUND_SYSTEM_CODE
     system_message = "Poll has not found"
+
+
+class JoinClubNotFoundException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    user_message = "해당 클럽에 소속되어 있지 않습니다."
+    system_code = JOIN_CLUB_NOT_FOUND_SYSTEM_CODE
+    system_message = "JoinClub has not found"
 
 
 class ProfileRequired(RestException):
