@@ -101,7 +101,9 @@ def filter_memberPosting(
     db: Session = Depends(get_db),
 ):
     query = db.query(MemberPosting)
-    query = member_posting_filter.filter(query)
+    query = member_posting_filter.filter(query).options(
+        joinedload(MemberPosting.user_profile)
+    )
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
     member_posting = query.all()
