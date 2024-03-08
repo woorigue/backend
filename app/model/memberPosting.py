@@ -9,16 +9,13 @@ class MemberPosting(Base):
 
     seq = Column(Integer, primary_key=True, comment="시퀀스")
     date = Column(DateTime, nullable=False, comment="게시일")
-    user_seq = Column(Integer, comment="유저 시퀸스")
+    user_seq = Column(Integer, ForeignKey("profile.user_seq"), comment="유저 시퀸스")
     club_seq = Column(Integer, comment="클럽 시퀸스")
     title = Column(String(128), comment="제목")
-    intro = Column(String(255), comment="소개글")
-    age_group = Column(String(24), comment="연령대")
-    gender = Column(String(12), comment="성별")
-    skill = Column(String(24), comment="실력")
-    location = Column(String(24), comment="활동 장소")
+    notice = Column(String(255), comment="소개글")
     status = Column(String(24), comment="상태")
 
+    user_profile = relationship("Profile", backref="member_postings")
     join_member_posting = relationship(
         "JoinMemberPosting",
         back_populates="member_posting",
