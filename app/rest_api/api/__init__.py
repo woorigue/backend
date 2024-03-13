@@ -7,10 +7,11 @@ from app.rest_api.api.match.match import match_router
 from app.rest_api.api.guest.guest import guest_router
 from app.rest_api.api.notification.faq import faq_router
 from app.rest_api.api.banner import banner_router
-from app.rest_api.api.club import club_router
-from app.rest_api.api.clubPosting import clubPosting_router
+from app.rest_api.api.club.club import club_router
+from app.rest_api.api.club.clubPosting import clubPosting_router
 from app.rest_api.api.chat import chat_router
 from app.rest_api.api.poll import poll_router
+from app.rest_api.api.memberPosting import memberPosting_router
 
 
 rest_router = APIRouter()
@@ -25,3 +26,4 @@ rest_router.include_router(club_router)
 rest_router.include_router(clubPosting_router)
 rest_router.include_router(chat_router)
 rest_router.include_router(poll_router)
+rest_router.include_router(memberPosting_router)

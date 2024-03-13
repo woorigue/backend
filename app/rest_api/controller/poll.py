@@ -1,9 +1,14 @@
 from app.model.user import User
 from app.model.match import Match
 from app.model.poll import Poll, JoinPoll
+from app.model.club import JoinClub
 
 from sqlalchemy.orm import Session
-from app.helper.exception import MatchNotFoundException, PollNotFoundException
+from app.helper.exception import (
+    MatchNotFoundException,
+    PollNotFoundException,
+    JoinClubNotFoundException,
+)
 
 
 class PollValidator:
@@ -53,7 +58,9 @@ class PollController(PollValidator):
         if not poll:
             raise PollNotFoundException
 
-        poll.update({"expired_at": data.expired_at, "vote_closed": data.vote_closed})
+        self.db.query(Poll).filter(
+            Poll.seq == poll_id, Poll.user_seq == self.user.seq
+        ).update({"expired_at": data.expired_at, "vote_closed": data.vote_closed})
         self.db.commit()
         self.db.flush()
 
@@ -68,4 +75,25 @@ class PollController(PollValidator):
             raise PollNotFoundException
 
         self.db.delete(poll)
+        self.db.commit()
+
+    def join_poll(self, poll_id: int):
+        poll = self.db.query(Poll).filter(Poll.seq == poll_id).first()
+
+        if not poll:
+            raise PollNotFoundException
+
+        club_seq = poll.match.club_seq
+
+        join_club = (
+            self.db.query(JoinClub)
+            .filter(JoinClub.clubs_seq == club_seq, JoinClub.user_seq == self.user.seq)
+            .first()
+        )
+
+        if not join_club:
+            raise JoinClubNotFoundException
+
+        join_poll = JoinPoll(attend=True, user_seq=self.user.seq, poll_seq=poll.seq)
+        self.db.add(join_poll)
         self.db.commit()

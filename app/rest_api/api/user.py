@@ -1,13 +1,16 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile, Request
-from sqlalchemy import delete, select, and_
+from sqlalchemy import delete, select, and_, union_all
 from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse, Response
 
 
 from starlette.config import Config
+from starlette.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
+
+from operator import attrgetter
 
 from app.core.deps import get_db
 from app.core.token import (
@@ -26,6 +29,10 @@ from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.model.user import User
 from app.model.club import JoinClub
+from app.model.clubPosting import ClubPosting
+from app.model.match import Match
+from app.model.memberPosting import MemberPosting
+from app.model.guest import Guest
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
@@ -42,8 +49,6 @@ from app.rest_api.schema.user import (
     EmailRegisterSchema,
     ResetPasswordSchema,
     UserSchema,
-    JoinClubSchema,
-    QuitClubSchema,
 )
 from app.constants.errors import (
     EMAIL_CONFLICT_SYSTEM_CODE,
@@ -55,7 +60,7 @@ from app.constants.errors import (
 )
 
 from app.model.sns import Sns
-
+import httpx
 
 user_router = APIRouter(tags=["user"], prefix="/user")
 
@@ -203,12 +208,21 @@ def update_user_profile(
     db: Session = Depends(get_db),
 ):
     profile = token.profile
-    position = user_data.position
+    position = user_data.positions
 
     token.is_active = user_data.is_active
 
     if not profile:
-        profile = Profile(user_seq=token.seq, nickname=user_data.nickname)
+        profile = Profile(
+            user_seq=token.seq,
+            nickname=user_data.nickname,
+            gender=user_data.gender,
+            location=user_data.location,
+            age=user_data.age,
+            foot=user_data.foot,
+            level=user_data.level,
+            positions=user_data.positions,
+        )
         db.add(profile)
         db.commit()
         db.refresh(profile)
@@ -263,7 +277,7 @@ def join_club(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq)
+    join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="회원")
     db.add(join_club)
 
     db.commit()
@@ -311,10 +325,35 @@ def delete_user_profile_img(
     return {"success": True}
 
 
+@user_router.get("/posting")
+def get_user_posting(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    tables = [
+        (ClubPosting, "ClubPosting"),
+        (Match, "Match"),
+        (Guest, "Guest"),
+        (MemberPosting, "MemberPosting"),
+    ]
+    my_postings = []
+
+    for table, table_name in tables:
+        postings = db.query(table).filter(table.user_seq == token.seq).all()
+        my_postings.extend([(posting, table_name) for posting in postings])
+
+    my_postings.sort(key=lambda x: getattr(x[0], "date"), reverse=True)
+
+    return [
+        {"table_name": table_name, "posting": posting}
+        for posting, table_name in my_postings
+    ]
+
+
 GOOGLE_CLIENT_ID = (
-    "389487021466-hvncp2oop9bma1bssqhd7huh16p3m8sn.apps.googleusercontent.com"
+    "146852932624-pem0s58lvodu3v25gnbgaqcov2ba9o7t.apps.googleusercontent.com"
 )
-GOOGLE_CLIENT_SECRET = "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"
+GOOGLE_CLIENT_SECRET = "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"
 
 config_data = {
     "GOOGLE_CLIENT_ID": GOOGLE_CLIENT_ID,
@@ -335,13 +374,24 @@ oauth.register(
 
 @user_router.get("/sns/login", response_class=HTMLResponse)
 def test(request: Request):
-    return HTMLResponse('<a href="/user/google/login">login</a>')
+    html_content = """
+    <html>
+    <body>
+        <a href="/user/google/login">google login</a>
+        <br>
+        <a href="/user/kakao/login">kako login</a>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 
 @user_router.get("/google/login")
 async def login(request: Request):
     redirect_uri = request.url_for("auth")
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    return await oauth.google.authorize_redirect(
+        request, redirect_uri, access_type="offline"
+    )
 
 
 @user_router.get("/auth/google")
@@ -355,16 +405,146 @@ async def auth(request: Request, db: Session = Depends(get_db)):
 
     email = user_data["email"]
 
-    # If User does not exists then register User
     user = db.scalar(select(User).where(User.email == email))
 
     if user is None:
         password = user_data["sub"]
-        user_data = EmailRegisterSchema(email=email, password=password)
-        con.email_register_user(db, user_data)
+        user_login_data = EmailRegisterSchema(email=email, password=password)
+        con.email_register_user(db, user_login_data)
 
-        sns = Sns(sub=user_data["sub"], refresh_token=user_data["refresh_token"])
+        sns = Sns(
+            sub=user_data["sub"],
+            refresh_token=access_token["refresh_token"],
+            type="google",
+        )
         db.add(sns)
         db.commit()
 
-    return Response(status_code=200)
+    else:
+        user_login_data = EmailRegisterSchema(email=user.email, password=user.password)
+
+    token = email_login(user_login_data, db)
+
+    return token
+
+
+KAKAO_CLIENT_ID = "71cda8d5771dce9ff79f0c09292078e2"
+KAKAO_CLIENT_SECRET = "7WIPuibxSxC20kWEu4DzkPKBs2EpFFH1"
+
+config_kako = {
+    "KAKAO_CLIENT_ID": KAKAO_CLIENT_ID,
+    "KAKAO_CLIENT_SECRET": KAKAO_CLIENT_SECRET,
+}
+starlette_config_kakao = Config(environ=config_kako)
+oauth_kako = OAuth(starlette_config_kakao)
+oauth_kako.register(
+    name="kakao",
+    authorize_url="https://kauth.kakao.com/oauth/authorize",
+    authorize_params=None,
+    authorize_params_extra=None,
+    authorize_handler=None,
+    authorize_callback=None,
+    token_endpoint="https://kauth.kakao.com//oauth/token",
+    token_params_extra=None,
+    client_kwargs={
+        "scope": "profile_nickname",
+        "grant_type": "authorization_code",
+        "token_endpoint_auth_method": "client_secret_basic",
+    },
+)
+
+
+@user_router.get("/kakao/login")
+async def login(request: Request):
+    redirect_uri = request.url_for("kakao_auth")
+    print(redirect_uri)
+    return await oauth_kako.kakao.authorize_redirect(request, redirect_uri)
+
+
+@user_router.get("/auth/kako")
+async def kakao_auth(request: Request, db: Session = Depends(get_db)):
+    # token = await oauth_kako.kakao.authorize_access_token(request)
+
+    token_url = "https://kauth.kakao.com/oauth/token"
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    data = {
+        "grant_type": "authorization_code",
+        "client_id": KAKAO_CLIENT_ID,
+        "redirect_uri": "http://127.0.0.1:8000/user/auth/kako",
+        "code": request.query_params.get("code"),
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(token_url, headers=headers, data=data)
+
+        if response.status_code == 200:
+            sns_token = response.json()
+            user_data = await get_kako_user_info(sns_token["access_token"])
+
+            email = user_data["kakao_account"]["profile"]["nickname"]
+            user = db.scalar(select(User).where(User.email == email))
+
+            if user is None:
+                password = "temp_password"
+                user_login_data = EmailRegisterSchema(email=email, password=password)
+                con.email_register_user(db, user_login_data)
+
+                sns = Sns(
+                    sub="temp_passowrd",
+                    refresh_token=sns_token["refresh_token"],
+                    type="kako",
+                )
+                db.add(sns)
+                db.commit()
+
+            else:
+                user_login_data = EmailRegisterSchema(
+                    email=user.email, password=user.password
+                )
+
+            token = email_login(user_login_data, db)
+
+            return token
+
+        else:
+            print("Token request failed:", response.status_code, response.text)
+
+
+@user_router.get("/kako/user_info")
+async def get_kako_user_info(access_token):
+    user_info_url = "https://kapi.kakao.com/v2/user/me"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(user_info_url, headers=headers)
+        if response.status_code == 200:
+            user_data = response.json()
+            return user_data
+        else:
+            print("Token request failed:", response.status_code, response.text)
+
+
+@user_router.get("/kako/token/refresh")
+async def get_kako_access_token(refresh_token):
+    token_url = "https://kauth.kakao.com/oauth/token"
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+    }
+    data = {
+        "grant_type": "refresh_token",
+        "client_id": KAKAO_CLIENT_ID,
+        "client_secret": KAKAO_CLIENT_SECRET,
+        "refresh_token": refresh_token,
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(token_url, headers=headers, data=data)
+        if response.status_code == 200:
+            user_data = response.json()
+            return user_data
+        else:
+            print("Token request failed:", response.status_code, response.text)

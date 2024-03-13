@@ -3,12 +3,13 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
 from app.model.faq import Faq
-from sqlalchemy.sql import func
+from typing import Annotated
+from app.core.token import (
+    get_current_user,
+)
 
 # Schema
 from app.rest_api.schema.notification.faq import (
-    FaqGetSchema,
-    FaqDeleteSchema,
     FaqCreateSchema,
     FaqEditSchema,
 )
@@ -36,23 +37,36 @@ def get_faq(faq_id: int, db: Session = Depends(get_db)):
 
 
 @faq_router.post("")
-def create_faq(faq_data: FaqCreateSchema, db: Session = Depends(get_db)):
+def create_faq(
+    faq_data: FaqCreateSchema,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
     con.create_faq(faq_data, db)
     return {"success": True}
 
 
 @faq_router.patch("/{faq_id}")
-def edit_faq(faq_id: int, faq_data: FaqEditSchema, db: Session = Depends(get_db)):
+def edit_faq(
+    faq_id: int,
+    faq_data: FaqEditSchema,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
     con.edit_faq(faq_id, faq_data, db)
     return {"success": True}
 
 
 @faq_router.delete("/{faq_id}")
-def delete_faq(faq_id: int, db: Session = Depends(get_db)):
+def delete_faq(
+    faq_id: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
     faq = db.query(Faq).filter(Faq.seq == faq_id).first()
     if not faq:
         raise FaqNotFoundException
 
     db.delete(faq)
     db.commit()
-    return {"message": "게시글이 성공적으로 삭제되었습니다."}
+    return {"success": True}

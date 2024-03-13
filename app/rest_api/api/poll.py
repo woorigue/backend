@@ -90,3 +90,15 @@ def delete_poll_of_match(
 
     poll_controller.delete_poll(poll_id)
     return {"success": True}
+
+
+@poll_router.post("/{poll_id}/join")
+def join_poll_of_match(
+    poll_id: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    poll_controller = PollController(token, db)
+
+    poll_controller.join_poll(poll_id)
+    return {"success": True}
