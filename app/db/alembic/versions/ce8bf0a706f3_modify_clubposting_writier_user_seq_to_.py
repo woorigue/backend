@@ -5,6 +5,7 @@ Revises: 9595a3280bd6
 Create Date: 2024-02-19 00:46:19.771796
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -19,7 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    print("HERE")
+    op.alter_column("clubPosting", "writer_user_seq", new_column_name="user_seq")
 
 
 def downgrade() -> None:

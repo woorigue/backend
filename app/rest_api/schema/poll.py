@@ -7,6 +7,7 @@ from pydantic import Field
 
 class CreatePollSchema(BaseModel):
     match_seq: int
+    club_seq: int
     expired_at: Optional[date] = None
 
 

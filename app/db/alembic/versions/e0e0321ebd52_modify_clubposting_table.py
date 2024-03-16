@@ -5,6 +5,7 @@ Revises: 702f43f1b165
 Create Date: 2024-01-30 19:23:36.056757
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -23,4 +24,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.alter_column("clubPosting", "user_seq", new_column_name="writer_user_seq")
+    op.alter_column("clubPosting", "writer_user_seq", new_column_name="user_seq")

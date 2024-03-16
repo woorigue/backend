@@ -7,6 +7,7 @@ from app.constants.errors import (
     BANNER_NOT_FOUND_SYSTEM_CODE,
     FAQ_NOT_FOUND_SYSTEM_CODE,
     MATCH_NOT_FOUND_SYSTEM_CODE,
+    JOIN_MATCH_NOT_FOUND_SYSTEM_CODE,
     GUEST_NOT_FOUND_SYSTEM_CODE,
     JOIN_CLUB_NOT_FOUND_SYSTEM_CODE,
 )
@@ -99,6 +100,13 @@ class MatchNotFoundException(RestException):
     user_message = "매치글이 존재하지 않습니다."
     system_code = MATCH_NOT_FOUND_SYSTEM_CODE
     system_message = "Match not found"
+
+
+class JoinMatchNotFoundException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    user_message = "매치 신청이 존재하지 않습니다."
+    system_code = JOIN_MATCH_NOT_FOUND_SYSTEM_CODE
+    system_message = "Join Match not found"
 
 
 class GuestNotFoundException(RestException):

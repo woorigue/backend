@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile, Request
-from sqlalchemy import delete, select, and_, union_all
+from sqlalchemy import delete, select, and_, func
 from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse, Response
 
@@ -28,11 +28,12 @@ from app.helper.exception import (
 from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.model.user import User
-from app.model.club import JoinClub
+from app.model.club import Club, JoinClub
 from app.model.clubPosting import ClubPosting
 from app.model.match import Match
 from app.model.memberPosting import MemberPosting
 from app.model.guest import Guest
+from app.model.poll import Poll, JoinPoll
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
@@ -348,6 +349,27 @@ def get_user_posting(
         {"table_name": table_name, "posting": posting}
         for posting, table_name in my_postings
     ]
+
+
+@user_router.get("/match_history")
+def get_match_history(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    club_seq_counts = (
+        db.query(Poll.club_seq, func.count())
+        .join(JoinPoll, Poll.seq == JoinPoll.poll_seq)
+        .filter(JoinPoll.user_seq == token.seq, JoinPoll.attend == True)
+        .group_by(Poll.club_seq)
+        .all()
+    )
+
+    club_info = []
+    for club_seq, count in club_seq_counts:
+        club = db.query(Club).filter(Club.seq == club_seq).first()
+        club_info.append({"club": club, "match_count": count})
+
+    return club_info
 
 
 GOOGLE_CLIENT_ID = (

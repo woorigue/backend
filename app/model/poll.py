@@ -17,10 +17,12 @@ class Poll(Base):
     # FK
     match_seq = Column(Integer, ForeignKey("match.seq"))
     user_seq = Column(Integer, ForeignKey("users.seq"))
+    club_seq = Column(Integer, ForeignKey("clubs.seq"))
 
     # relation
     user = relationship("User", back_populates="poll")
     match = relationship("Match", back_populates="poll")
+    club = relationship("Club", back_populates="poll")
     join_poll = relationship("JoinPoll", back_populates="poll")
 
 

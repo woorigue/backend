@@ -9,14 +9,14 @@ from app.core.deps import get_db
 from app.core.token import (
     get_current_user,
 )
-from app.model.match import Match
+from app.model.match import Match, JoinMatch
 from app.rest_api.schema.match.match import (
     MatchSchema,
     UpdateMatchSchema,
     FilterMatchSchema,
 )
 
-from app.helper.exception import MatchNotFoundException
+from app.helper.exception import MatchNotFoundException, JoinMatchNotFoundException
 
 
 match_router = APIRouter(tags=["match"], prefix="/match")
@@ -103,7 +103,7 @@ def delete_match(
 
 
 @match_router.get("")
-def filter_matches(
+def filter_match(
     token: Annotated[str, Depends(get_current_user)],
     match_filter: FilterMatchSchema = FilterDepends(FilterMatchSchema),
     page: int = Query(1, title="페이지", ge=1),
@@ -117,3 +117,59 @@ def filter_matches(
     matches = query.all()
 
     return matches
+
+
+@match_router.post("/{match_seq}/join")
+def join_match(
+    match_seq: int,
+    away_club_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    match = db.query(Match).filter(Match.seq == match_seq).first()
+
+    if not match:
+        raise MatchNotFoundException
+
+    if match.away_club_seq is not None:
+        # TODO: validate match is pending/accepted
+        raise MatchNotFoundException
+
+    join_match = JoinMatch(
+        match_seq=match.seq, user_seq=token.seq, away_club_seq=away_club_seq
+    )
+    db.add(join_match)
+    db.commit()
+
+    return {"success": True}
+
+
+@match_router.patch("/{match_seq}/accept")
+def accept_match(
+    match_seq: int,
+    away_club_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    match = db.query(Match).filter(Match.seq == match_seq).first()
+    join_match = (
+        db.query(JoinMatch)
+        .filter(
+            JoinMatch.match_seq == match_seq, JoinMatch.away_club_seq == away_club_seq
+        )
+        .first()
+    )
+
+    if not match:
+        raise MatchNotFoundException
+
+    if not join_match:
+        raise JoinMatchNotFoundException
+
+    # TODO: validate club owner / matcher poster
+
+    join_match.accepted = True
+    match.away_club_seq = away_club_seq
+    db.commit()
+
+    return {"success": True}

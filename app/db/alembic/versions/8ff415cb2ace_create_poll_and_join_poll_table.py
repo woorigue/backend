@@ -21,7 +21,12 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.create_table(
         "poll",
-        sa.Column("seq", sa.Integer, autoincrement=True, nullable=False, comment="시퀀스"),
+        sa.Column(
+            "seq",
+            sa.Integer,
+            primary_key=True,
+            comment="시퀀스",
+        ),
         sa.Column("expired_at", sa.DateTime, nullable=True, comment="투표 종료 시간"),
         sa.Column(
             "vote_closed",
@@ -50,7 +55,12 @@ def upgrade() -> None:
     )
     op.create_table(
         "join_poll",
-        sa.Column("seq", sa.Integer, autoincrement=True, nullable=False, comment="시퀀스"),
+        sa.Column(
+            "seq",
+            sa.Integer,
+            primary_key=True,
+            comment="시퀀스",
+        ),
         sa.Column("attend", sa.Boolean, nullable=True, comment="참석 여부"),
         sa.Column(
             "created_at",

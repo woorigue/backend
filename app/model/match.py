@@ -40,6 +40,7 @@ class JoinMatch(Base):
     seq = Column(Integer, primary_key=True, comment="시퀀스")
     match_seq = Column(Integer, ForeignKey("match.seq", ondelete="CASCADE"))
     away_club_seq = Column(Integer, ForeignKey("clubs.seq", ondelete="CASCADE"))
+    user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
     accepted = Column(Boolean, comment="수락 여부")
 
     match = relationship("Match", back_populates="join_match")
