@@ -31,7 +31,78 @@ bcrypt = "4.0.1"
 black = "^23.7.0"
 mypy = "^1.5.1"
 isort = "^5.12.0"
+pre-commit = "^3.6.2"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+# Ruff
+[tool.ruff]
+exclude = [
+    ".git",
+    ".git-rewrite",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+fix = true
+# Same as Black.
+line-length = 88
+indent-width = 4
+# Assume Python 3.11
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    "W",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-comprehensions
+    "C4",
+    # flake8-simplify
+    "SIM",
+    # flake8-print
+    "T20",
+    # isort
+    "I",
+    # pep8
+    "N",
+    # mccabe-complex structer
+    "C90"
+]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.ruff.mccabe]
+max-complexity = 8
+
+# Mypy
+[tool.mypy]
+python_version = "3.11"
+disallow_untyped_defs = true
+check_untyped_defs = true
+warn_return_any = true
+show_error_codes = true
+show_error_context = true

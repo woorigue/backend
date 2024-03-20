@@ -1,14 +1,13 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, UploadFile
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
-from app.model.banner import Banner
 from app.core.token import get_current_user
-
-from app.rest_api.controller.file import file_controller as file_con
-
 from app.helper.exception import BannerNotFoundException
-from typing import Annotated
+from app.model.banner import Banner
+from app.rest_api.controller.file import file_controller as file_con
 
 banner_router = APIRouter(tags=["banner"], prefix="/banner")
 
@@ -33,6 +32,7 @@ async def add_banner(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
+    print("HERE")
     banner_content = await banner_img.read()
     file_con.upload_banner_img(banner_content, banner_img.filename, db)
     return {"success": True}
