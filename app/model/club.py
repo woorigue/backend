@@ -20,6 +20,7 @@ class Club(Base):
     uniform_color = Column(String(24), comment="유니폼 색")
     deleted = Column(Boolean, default=False, comment="삭제 여부")
 
+    poll = relationship("Poll", back_populates="club")
     join_club = relationship(
         "JoinClub",
         back_populates="club",

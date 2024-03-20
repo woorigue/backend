@@ -5,6 +5,7 @@ Revises: 7421372e6015
 Create Date: 2024-02-22 20:09:36.208514
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -43,5 +44,9 @@ def downgrade() -> None:
     op.add_column(
         "memberPosting",
         sa.Column("location", sa.String(24), comment="활동 장소"),
+    )
+    op.add_column(
+        "memberPosting",
+        sa.Column("membership_fee", sa.Integer, comment="회비"),
     )
     op.alter_column("memberPosting", "notice", new_column_name="intro")

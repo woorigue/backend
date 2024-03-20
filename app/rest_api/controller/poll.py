@@ -34,9 +34,15 @@ class PollController(PollValidator):
     def create_poll(self, data):
         expired_at = data.expired_at
         match_seq = data.match_seq
+        club_seq = data.club_seq
         self._validate_process(match_seq, self.db)
 
-        poll = Poll(match_seq=match_seq, expired_at=expired_at, user_seq=self.user.seq)
+        poll = Poll(
+            match_seq=match_seq,
+            expired_at=expired_at,
+            user_seq=self.user.seq,
+            club_seq=club_seq,
+        )
         self.db.add(poll)
         self.db.commit()
 
@@ -83,11 +89,11 @@ class PollController(PollValidator):
         if not poll:
             raise PollNotFoundException
 
-        club_seq = poll.match.club_seq
-
         join_club = (
             self.db.query(JoinClub)
-            .filter(JoinClub.clubs_seq == club_seq, JoinClub.user_seq == self.user.seq)
+            .filter(
+                JoinClub.clubs_seq == poll.club_seq, JoinClub.user_seq == self.user.seq
+            )
             .first()
         )
 

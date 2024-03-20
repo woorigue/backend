@@ -5,6 +5,7 @@ Revises: 04214ef83305
 Create Date: 2024-02-16 21:09:46.769181
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -19,8 +20,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    print("HERE")
-    pass
+    op.add_column(
+        "match",
+        sa.Column("user_seq", sa.Integer, comment="유저 시퀸스"),
+    )
 
 
 def downgrade() -> None:

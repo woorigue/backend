@@ -5,6 +5,7 @@ Revises: 50432d531f5c
 Create Date: 2024-01-05 15:08:46.248336
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -80,5 +81,5 @@ def upgrade():
 
 def downgrade():
     op.drop_table("chatting_content")
-    op.drop_table("chatting_room")
     op.drop_table("user_chatroom_association")
+    op.drop_table("chatting_room")
