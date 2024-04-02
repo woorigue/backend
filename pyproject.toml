@@ -25,6 +25,7 @@ fastapi-filter = "^1.0.0"
 pika = "^1.3.2"
 bleach = "^6.1.0"
 bcrypt = "4.0.1"
+isort = "^5.13.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -106,3 +107,13 @@ check_untyped_defs = true
 warn_return_any = true
 show_error_codes = true
 show_error_context = true
+strict = true
+
+# Black
+[tool.black]
+line-length = 88
+
+# isort
+[tool.isort]
+profile = "black"
+line_length = 88
