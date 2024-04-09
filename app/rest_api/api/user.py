@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile, Request
@@ -71,7 +72,7 @@ user_router = APIRouter(tags=["user"], prefix="/user")
     description=f"""
     **[API Description]** <br><br>
     Request verify code for register user and duplicated check of email <br><br>
-    **[Exception List]** <br><br> 
+    **[Exception List]** <br><br>
     {EMAIL_CONFLICT_SYSTEM_CODE}: 이메일 중복 오류(409)
     """,
 )
@@ -343,7 +344,7 @@ def get_user_posting(
         postings = db.query(table).filter(table.user_seq == token.seq).all()
         my_postings.extend([(posting, table_name) for posting in postings])
 
-    my_postings.sort(key=lambda x: getattr(x[0], "date"), reverse=True)
+    my_postings.sort(key=lambda x: x[0].date, reverse=True)
 
     return [
         {"table_name": table_name, "posting": posting}
@@ -364,12 +365,37 @@ def get_match_history(
         .all()
     )
 
-    club_info = []
+    match_history = []
     for club_seq, count in club_seq_counts:
         club = db.query(Club).filter(Club.seq == club_seq).first()
-        club_info.append({"club": club, "match_count": count})
+        match_history.append({"club": club, "match_count": count})
 
-    return club_info
+    return match_history
+
+
+@user_router.get("/match_schedule")
+def get_match_schedule(
+    token: Annotated[str, Depends(get_current_user)],
+    include_match_history: bool,
+    db: Session = Depends(get_db),
+):
+    subquery = (
+        db.query(Poll.match_seq)
+        .join(JoinPoll, Poll.seq == JoinPoll.poll_seq)
+        .filter(JoinPoll.user_seq == token.seq, JoinPoll.attend == True)
+        .subquery()
+    )
+
+    if include_match_history:
+        match_schedule = db.query(Match).filter(Match.seq.in_(subquery)).all()
+    else:
+        match_schedule = (
+            db.query(Match)
+            .filter(Match.seq.in_(subquery), Match.date >= datetime.today())
+            .all()
+        )
+
+    return match_schedule
 
 
 GOOGLE_CLIENT_ID = (
