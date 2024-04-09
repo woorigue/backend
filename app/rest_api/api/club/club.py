@@ -1,4 +1,4 @@
-from typing import Annotated, List
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.deps import get_db
 from app.core.token import get_current_user
-from app.model.position import JoinPosition
 from app.model.club import Club, JoinClub
 from app.model.match import Match
+from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.rest_api.schema.club.club import (
     ClubSchema,
@@ -138,7 +138,7 @@ def delete_club(
 
 @club_router.get(
     "/{club_seq}/members",
-    response_model=List[GetProfileSchema],
+    response_model=list[GetProfileSchema],
 )
 def get_members(
     token: Annotated[str, Depends(get_current_user)],

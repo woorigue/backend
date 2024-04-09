@@ -28,6 +28,11 @@ def create_match(
     match_data: MatchSchema,
     db: Session = Depends(get_db),
 ):
+    if match_data.match_type == "private":
+        status = "found"
+    else:
+        status = "pending"
+
     match = Match(
         date=datetime.now(),
         user_seq=token.seq,
@@ -42,7 +47,7 @@ def create_match(
         gender=match_data.gender,
         match_fee=match_data.match_fee,
         notice=match_data.notice,
-        status=match_data.status,
+        status=status,
         guest_seq=match_data.guest_seq,
     )
     db.add(match)
@@ -136,7 +141,10 @@ def join_match(
         raise MatchNotFoundException
 
     join_match = JoinMatch(
-        match_seq=match.seq, user_seq=token.seq, away_club_seq=away_club_seq
+        match_seq=match.seq,
+        user_seq=token.seq,
+        away_club_seq=away_club_seq,
+        accepted=False,
     )
     db.add(join_match)
     db.commit()

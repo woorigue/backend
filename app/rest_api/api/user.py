@@ -1,18 +1,22 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, UploadFile, Request
-from sqlalchemy import delete, select, and_, func
-from sqlalchemy.orm import Session
-from fastapi.responses import HTMLResponse, Response
-
-
-from starlette.config import Config
-from starlette.responses import RedirectResponse
+import httpx
 from authlib.integrations.starlette_client import OAuth
+from fastapi import APIRouter, Depends, Request, UploadFile
+from fastapi.responses import HTMLResponse
+from sqlalchemy import and_, delete, func, select
+from sqlalchemy.orm import Session
+from starlette.config import Config
 
-from operator import attrgetter
-
+from app.constants.errors import (
+    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
+    EMAIL_CONFLICT_SYSTEM_CODE,
+    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
+    PASSWORD_INVALID_SYSTEM_CODE,
+    USER_NOT_FOUND_SYSTEM_CODE,
+    USER_PROFILE_REQUIRED_SYSTEM_CODE,
+)
 from app.core.deps import get_db
 from app.core.token import (
     create_access_token,
@@ -26,15 +30,16 @@ from app.helper.exception import (
     UserNotFoundException,
     UserPasswordNotMatchException,
 )
-from app.model.position import JoinPosition
-from app.model.profile import Profile
-from app.model.user import User
 from app.model.club import Club, JoinClub
 from app.model.clubPosting import ClubPosting
+from app.model.guest import Guest
 from app.model.match import Match
 from app.model.memberPosting import MemberPosting
-from app.model.guest import Guest
-from app.model.poll import Poll, JoinPoll
+from app.model.poll import JoinPoll, Poll
+from app.model.position import JoinPosition
+from app.model.profile import Profile
+from app.model.sns import Sns
+from app.model.user import User
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
@@ -52,17 +57,6 @@ from app.rest_api.schema.user import (
     ResetPasswordSchema,
     UserSchema,
 )
-from app.constants.errors import (
-    EMAIL_CONFLICT_SYSTEM_CODE,
-    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
-    PASSWORD_INVALID_SYSTEM_CODE,
-    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
-    USER_NOT_FOUND_SYSTEM_CODE,
-    USER_PROFILE_REQUIRED_SYSTEM_CODE,
-)
-
-from app.model.sns import Sns
-import httpx
 
 user_router = APIRouter(tags=["user"], prefix="/user")
 
@@ -72,7 +66,7 @@ user_router = APIRouter(tags=["user"], prefix="/user")
     description=f"""
     **[API Description]** <br><br>
     Request verify code for register user and duplicated check of email <br><br>
-    **[Exception List]** <br><br>
+    **[Exception List]** <br><br> 
     {EMAIL_CONFLICT_SYSTEM_CODE}: 이메일 중복 오류(409)
     """,
 )
