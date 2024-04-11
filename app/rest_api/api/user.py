@@ -1,17 +1,22 @@
+from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, UploadFile, Request
-from sqlalchemy import delete, select, and_, func
-from sqlalchemy.orm import Session
-from fastapi.responses import HTMLResponse, Response
-
-
-from starlette.config import Config
-from starlette.responses import RedirectResponse
+import httpx
 from authlib.integrations.starlette_client import OAuth
+from fastapi import APIRouter, Depends, Request, UploadFile
+from fastapi.responses import HTMLResponse
+from sqlalchemy import and_, delete, func, select
+from sqlalchemy.orm import Session
+from starlette.config import Config
 
-from operator import attrgetter
-
+from app.constants.errors import (
+    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
+    EMAIL_CONFLICT_SYSTEM_CODE,
+    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
+    PASSWORD_INVALID_SYSTEM_CODE,
+    USER_NOT_FOUND_SYSTEM_CODE,
+    USER_PROFILE_REQUIRED_SYSTEM_CODE,
+)
 from app.core.deps import get_db
 from app.core.token import (
     create_access_token,
@@ -25,15 +30,16 @@ from app.helper.exception import (
     UserNotFoundException,
     UserPasswordNotMatchException,
 )
-from app.model.position import JoinPosition
-from app.model.profile import Profile
-from app.model.user import User
 from app.model.club import Club, JoinClub
 from app.model.clubPosting import ClubPosting
+from app.model.guest import Guest
 from app.model.match import Match
 from app.model.memberPosting import MemberPosting
-from app.model.guest import Guest
-from app.model.poll import Poll, JoinPoll
+from app.model.poll import JoinPoll, Poll
+from app.model.position import JoinPosition
+from app.model.profile import Profile
+from app.model.sns import Sns
+from app.model.user import User
 from app.rest_api.controller.email import email_controller as email_con
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.controller.user import user_controller as con
@@ -51,17 +57,6 @@ from app.rest_api.schema.user import (
     ResetPasswordSchema,
     UserSchema,
 )
-from app.constants.errors import (
-    EMAIL_CONFLICT_SYSTEM_CODE,
-    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
-    PASSWORD_INVALID_SYSTEM_CODE,
-    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
-    USER_NOT_FOUND_SYSTEM_CODE,
-    USER_PROFILE_REQUIRED_SYSTEM_CODE,
-)
-
-from app.model.sns import Sns
-import httpx
 
 user_router = APIRouter(tags=["user"], prefix="/user")
 
@@ -343,7 +338,7 @@ def get_user_posting(
         postings = db.query(table).filter(table.user_seq == token.seq).all()
         my_postings.extend([(posting, table_name) for posting in postings])
 
-    my_postings.sort(key=lambda x: getattr(x[0], "date"), reverse=True)
+    my_postings.sort(key=lambda x: x[0].date, reverse=True)
 
     return [
         {"table_name": table_name, "posting": posting}
@@ -364,12 +359,37 @@ def get_match_history(
         .all()
     )
 
-    club_info = []
+    match_history = []
     for club_seq, count in club_seq_counts:
         club = db.query(Club).filter(Club.seq == club_seq).first()
-        club_info.append({"club": club, "match_count": count})
+        match_history.append({"club": club, "match_count": count})
 
-    return club_info
+    return match_history
+
+
+@user_router.get("/match_schedule")
+def get_match_schedule(
+    token: Annotated[str, Depends(get_current_user)],
+    include_match_history: bool,
+    db: Session = Depends(get_db),
+):
+    subquery = (
+        db.query(Poll.match_seq)
+        .join(JoinPoll, Poll.seq == JoinPoll.poll_seq)
+        .filter(JoinPoll.user_seq == token.seq, JoinPoll.attend == True)
+        .subquery()
+    )
+
+    if include_match_history:
+        match_schedule = db.query(Match).filter(Match.seq.in_(subquery)).all()
+    else:
+        match_schedule = (
+            db.query(Match)
+            .filter(Match.seq.in_(subquery), Match.date >= datetime.today())
+            .all()
+        )
+
+    return match_schedule
 
 
 GOOGLE_CLIENT_ID = (

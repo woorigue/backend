@@ -2,17 +2,21 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
-from sqlalchemy.orm import Session
+from sqlalchemy import or_
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.deps import get_db
 from app.core.token import get_current_user
-
 from app.model.club import Club, JoinClub
+from app.model.match import Match
+from app.model.position import JoinPosition
+from app.model.profile import Profile
 from app.rest_api.schema.club.club import (
     ClubSchema,
-    UpdateClubSchema,
     FilterClubSchema,
+    UpdateClubSchema,
 )
+from app.rest_api.schema.profile import GetProfileSchema
 
 club_router = APIRouter(tags=["club"], prefix="/club")
 
@@ -87,7 +91,13 @@ def filter_clubs(
     db: Session = Depends(get_db),
 ):
     query = db.query(
-        Club.name, Club.location, Club.age_group, Club.skill, Club.membership_fee
+        Club.seq,
+        Club.name,
+        Club.location,
+        Club.age_group,
+        Club.skill,
+        Club.membership_fee,
+        Club.emblem_img,
     )
     query = club_filter.filter(query)
     offset = (page - 1) * per_page
@@ -95,13 +105,15 @@ def filter_clubs(
 
     clubs = [
         {
+            "seq": seq,
             "name": name,
             "location": location,
             "age_group": age_group,
             "skill": skill,
             "membership_fee": membership_fee,
+            "emblem_img": emblem_img,
         }
-        for name, location, age_group, skill, membership_fee in query.all()
+        for seq, name, location, age_group, skill, membership_fee, emblem_img in query.all()
     ]
 
     return clubs
@@ -122,3 +134,38 @@ def delete_club(
     db.commit()
 
     return {"message": "클럽이 성공적으로 삭제되었습니다."}
+
+
+@club_router.get(
+    "/{club_seq}/members",
+    response_model=list[GetProfileSchema],
+)
+def get_members(
+    token: Annotated[str, Depends(get_current_user)],
+    club_seq: int,
+    db: Session = Depends(get_db),
+):
+    members = (
+        db.query(Profile)
+        .join(JoinClub, Profile.user_seq == JoinClub.user_seq)
+        .filter(JoinClub.clubs_seq == club_seq)
+        .options(joinedload(Profile.join_position).joinedload(JoinPosition.position))
+        .all()
+    )
+
+    return members
+
+
+@club_router.get("/{club_seq}/match_schedule")
+def get_match_schedule(
+    token: Annotated[str, Depends(get_current_user)],
+    club_seq: int,
+    db: Session = Depends(get_db),
+):
+    match_scehdule = (
+        db.query(Match)
+        .filter(or_(Match.home_club_seq == club_seq, Match.away_club_seq == club_seq))
+        .all()
+    )
+
+    return match_scehdule
