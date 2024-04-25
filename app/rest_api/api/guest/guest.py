@@ -5,22 +5,22 @@ from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
-
 from app.core.deps import get_db
 from app.core.token import (
     get_current_user,
 )
-
-from app.model.guest import Guest
+from app.helper.exception import (
+    GuestNotFoundException,
+    JoinGuestNotFoundException,
+)
+from app.model.guest import Guest, JoinGuest
+from app.model.poll import JoinPoll, Poll
 from app.rest_api.schema.guest.guest import (
+    FilterGuestSchema,
+    GuestResponseSchema,
     GuestSchema,
     UpdateGuestSchema,
-    FilterGuestSchema,
 )
-
-# from app.rest_api.controller.guest.guest import guest_controller as con
-from app.helper.exception import ProfileRequired, GuestNotFoundException
-
 
 guest_router = APIRouter(tags=["guest"], prefix="/guest")
 
@@ -49,7 +49,7 @@ def create_guest(
     return {"success": True}
 
 
-@guest_router.get("/{guest_seq}")
+@guest_router.get("/{guest_seq}", response_model=GuestResponseSchema)
 def get_guest(
     token: Annotated[str, Depends(get_current_user)],
     guest_seq: int,
@@ -98,7 +98,10 @@ def delete_guest(
     return {"message": "용병게시글이 성공적으로 삭제되었습니다."}
 
 
-@guest_router.get("")
+@guest_router.get(
+    "",
+    response_model=list[GuestResponseSchema],
+)
 def filter_guests(
     token: Annotated[str, Depends(get_current_user)],
     guest_filter: FilterGuestSchema = FilterDepends(FilterGuestSchema),
@@ -113,3 +116,68 @@ def filter_guests(
     guests = query.all()
 
     return guests
+
+
+@guest_router.post("/{guest_seq}/join")
+def join_guest(
+    guest_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    guest = db.query(Guest).filter(Guest.seq == guest_seq).first()
+
+    if not guest:
+        raise GuestNotFoundException
+
+    join_guest = JoinGuest(
+        guest_seq=guest.seq,
+        user_seq=token.seq,
+        accepted=False,
+    )
+    db.add(join_guest)
+    db.commit()
+
+    return {"success": True}
+
+
+@guest_router.patch("/{guest_seq}/accept")
+def accept_guest(
+    guest_seq: int,
+    user_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    guest = db.query(Guest).filter(Guest.seq == guest_seq).first()
+
+    if not guest:
+        raise GuestNotFoundException
+
+    join_guest = (
+        db.query(JoinGuest)
+        .filter(
+            JoinGuest.guest_seq == guest_seq,
+            JoinGuest.user_seq == user_seq,
+        )
+        .first()
+    )
+
+    if not join_guest:
+        raise JoinGuestNotFoundException
+
+    # TODO: validate club owner / matcher poster
+
+    join_guest.accepted = True
+
+    poll = (
+        db.query(Poll)
+        .filter(Poll.match_seq == guest.match_seq, Poll.club_seq == guest.club_seq)
+        .first()
+    )
+    join_poll = JoinPoll(
+        attend=True, user_seq=user_seq, poll_seq=poll.seq, attendee_type="guest"
+    )
+
+    db.add(join_poll)
+    db.commit()
+
+    return {"success": True}

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Date, Boolean
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -35,5 +35,7 @@ class JoinClub(Base):
     clubs_seq = Column(Integer, ForeignKey("clubs.seq", ondelete="CASCADE"))
     user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
     role = Column(String(10), comment="역할")
+    accepted = Column(Boolean, comment="수락 여부")
+
     club = relationship("Club", back_populates="join_club")
     user = relationship("User", back_populates="join_club")

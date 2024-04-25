@@ -5,7 +5,7 @@ import httpx
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Depends, Request, UploadFile
 from fastapi.responses import HTMLResponse
-from sqlalchemy import and_, delete, func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 from starlette.config import Config
 
@@ -30,7 +30,7 @@ from app.helper.exception import (
     UserNotFoundException,
     UserPasswordNotMatchException,
 )
-from app.model.club import Club, JoinClub
+from app.model.club import Club
 from app.model.clubPosting import ClubPosting
 from app.model.guest import Guest
 from app.model.match import Match
@@ -66,7 +66,7 @@ user_router = APIRouter(tags=["user"], prefix="/user")
     description=f"""
     **[API Description]** <br><br>
     Request verify code for register user and duplicated check of email <br><br>
-    **[Exception List]** <br><br> 
+    **[Exception List]** <br><br>
     {EMAIL_CONFLICT_SYSTEM_CODE}: 이메일 중복 오류(409)
     """,
 )
@@ -214,7 +214,7 @@ def update_user_profile(
             nickname=user_data.nickname,
             gender=user_data.gender,
             location=user_data.location,
-            age=user_data.age,
+            birth_date=user_data.birth_date,
             foot=user_data.foot,
             level=user_data.level,
             positions=user_data.positions,
@@ -265,37 +265,6 @@ def delete_user(
         db.flush()
         db.commit()
         return {"success": True}
-
-
-@user_router.post("/club/{club_seq}")
-def join_club(
-    club_seq: int,
-    token: Annotated[str, Depends(get_current_user)],
-    db: Session = Depends(get_db),
-):
-    join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="회원")
-    db.add(join_club)
-
-    db.commit()
-    db.flush()
-
-    return {"success": True}
-
-
-@user_router.delete("/club/{club_seq}")
-def quit_club(
-    club_seq: int,
-    token: Annotated[str, Depends(get_current_user)],
-    db: Session = Depends(get_db),
-):
-    sql = delete(JoinClub).where(
-        and_(JoinClub.user_seq == token.seq, JoinClub.clubs_seq == club_seq)
-    )
-    db.execute(sql)
-
-    db.commit()
-    db.flush()
-    return {"success": True}
 
 
 @user_router.post("/me/profile/img")

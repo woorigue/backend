@@ -5,23 +5,20 @@ from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session, joinedload
 
-
 from app.core.deps import get_db
 from app.core.token import get_current_user
-
-from app.model.profile import Profile
-from app.model.memberPosting import MemberPosting, JoinMemberPosting
+from app.model.memberPosting import JoinMemberPosting, MemberPosting
 from app.rest_api.schema.memberPosting import (
+    FilterMemberPostingSchema,
     MemberPostingSchema,
     UpdateMemberPostingSchema,
-    FilterMemberPostingSchema,
 )
 
 memberPosting_router = APIRouter(tags=["memberPosting"], prefix="/memberPosting")
 
 
 @memberPosting_router.post("")
-def create_clubPosting(
+def create_memberPosting(
     memberPosting_data: MemberPostingSchema,
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
@@ -112,7 +109,7 @@ def filter_memberPosting(
 
 
 @memberPosting_router.delete("/{member_posting_seq}")
-def delete_clubPosting(
+def delete_memberPosting(
     token: Annotated[str, Depends(get_current_user)],
     member_posting_seq: int,
     db: Session = Depends(get_db),
@@ -128,3 +125,63 @@ def delete_clubPosting(
     db.commit()
 
     return {"message": "매치게시글이 성공적으로 삭제되었습니다."}
+
+
+@memberPosting_router.post("/{member_posting_seq}/join")
+def join_memberPosting(
+    member_posting_seq: int,
+    club_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    member_posting = (
+        db.query(MemberPosting).filter(MemberPosting.seq == member_posting_seq).first()
+    )
+
+    # if not member_posting:
+    #     raise MemberPostingNotFoundException
+
+    join_member_posting = JoinMemberPosting(
+        member_posting_seq=member_posting.seq,
+        club_seq=club_seq,
+        user_seq=token.seq,
+        accepted=False,
+    )
+    db.add(join_member_posting)
+    db.commit()
+
+    return {"success": True}
+
+
+@memberPosting_router.patch("/{member_posting_seq}/accept")
+def accept_memberPosting(
+    member_posting_seq: int,
+    club_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    member_posting = (
+        db.query(MemberPosting).filter(MemberPosting.seq == member_posting_seq).first()
+    )
+    join_member_posting = (
+        db.query(JoinMemberPosting)
+        .filter(
+            JoinMemberPosting.member_posting_seq == member_posting_seq,
+            JoinMemberPosting.club_seq == club_seq,
+            JoinMemberPosting.user_seq == token.seq,
+        )
+        .first()
+    )
+
+    # if not member_posting:
+    #     raise MemberPostingNotFoundException
+
+    # if not join_member_posting:
+    #     raise JoinMemberPostingNotFoundException
+
+    # TODO: validate club owner / matcher poster
+
+    join_member_posting.accepted = True
+    db.commit()
+
+    return {"success": True}

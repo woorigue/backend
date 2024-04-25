@@ -1,14 +1,15 @@
-from app.model.user import User
-from app.model.match import Match
-from app.model.poll import Poll, JoinPoll
-from app.model.club import JoinClub
-
+from sqlalchemy import exists, func
 from sqlalchemy.orm import Session
+
 from app.helper.exception import (
+    JoinClubNotFoundException,
     MatchNotFoundException,
     PollNotFoundException,
-    JoinClubNotFoundException,
 )
+from app.model.club import JoinClub
+from app.model.match import Match
+from app.model.poll import JoinPoll, Poll
+from app.model.user import User
 
 
 class PollValidator:
@@ -45,6 +46,8 @@ class PollController(PollValidator):
         )
         self.db.add(poll)
         self.db.commit()
+
+        return poll
 
     def retrieve_poll(self, poll_id: int):
         poll = self.db.query(Poll).filter(Poll.seq == poll_id).first()
@@ -83,7 +86,7 @@ class PollController(PollValidator):
         self.db.delete(poll)
         self.db.commit()
 
-    def join_poll(self, poll_id: int):
+    def join_poll(self, poll_id: int, attend: bool):
         poll = self.db.query(Poll).filter(Poll.seq == poll_id).first()
 
         if not poll:
@@ -100,6 +103,51 @@ class PollController(PollValidator):
         if not join_club:
             raise JoinClubNotFoundException
 
-        join_poll = JoinPoll(attend=True, user_seq=self.user.seq, poll_seq=poll.seq)
-        self.db.add(join_poll)
+        user_has_voted = self.db.query(
+            exists().where(
+                (JoinPoll.user_seq == self.user.seq) & (JoinPoll.poll_seq == poll.seq)
+            )
+        ).scalar()
+
+        if user_has_voted:
+            join_poll = (
+                self.db.query(JoinPoll)
+                .filter(
+                    JoinPoll.user_seq == self.user.seq,
+                    JoinPoll.poll_seq == poll.seq,
+                )
+                .one()
+            )
+            join_poll.attend = attend
+        else:
+            join_poll = JoinPoll(
+                attend=attend,
+                user_seq=self.user.seq,
+                poll_seq=poll.seq,
+                attendee_type="member",
+            )
+
+        self.db.merge(join_poll)
         self.db.commit()
+
+    def poll_status(self, poll_id: int):
+        poll = self.db.query(Poll).filter(Poll.seq == poll_id).first()
+
+        if not poll:
+            raise PollNotFoundException
+
+        poll_status = (
+            self.db.query(
+                JoinPoll.attend, JoinPoll.attendee_type, func.count().label("count")
+            )
+            .filter(JoinPoll.poll_seq == poll_id)
+            .group_by(JoinPoll.attend, JoinPoll.attendee_type)
+            .all()
+        )
+
+        poll_status_list = [
+            {"attend": attend, "attendee_type": attendee_type, "count": count}
+            for attend, attendee_type, count in poll_status
+        ]
+
+        return poll_status_list
