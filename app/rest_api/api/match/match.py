@@ -9,15 +9,17 @@ from app.core.deps import get_db
 from app.core.token import (
     get_current_user,
 )
-from app.model.match import Match, JoinMatch
+from app.helper.exception import JoinMatchNotFoundException, MatchNotFoundException
+from app.model.match import JoinMatch, Match
+from app.rest_api.controller.poll import PollController
 from app.rest_api.schema.match.match import (
+    FilterMatchSchema,
     MatchSchema,
     UpdateMatchSchema,
-    FilterMatchSchema,
 )
-
-from app.helper.exception import MatchNotFoundException, JoinMatchNotFoundException
-
+from app.rest_api.schema.poll import (
+    CreatePollSchema,
+)
 
 match_router = APIRouter(tags=["match"], prefix="/match")
 
@@ -51,6 +53,17 @@ def create_match(
         guest_seq=match_data.guest_seq,
     )
     db.add(match)
+    db.commit()
+
+    poll_data = CreatePollSchema(
+        match_seq=match.seq,
+        club_seq=match.home_club_seq,
+        expired_at=datetime.combine(match.match_date, match.end_time),
+    )
+    poll_controller = PollController(token, db)
+    poll = poll_controller.create_poll(poll_data)
+    match.home_club_poll_seq = poll.seq
+
     db.commit()
 
     return {"success": True}
@@ -176,8 +189,19 @@ def accept_match(
 
     # TODO: validate club owner / matcher poster
 
-    join_match.accepted = True
+    match.status = "found"
     match.away_club_seq = away_club_seq
+    join_match.accepted = True
+
+    poll_data = CreatePollSchema(
+        match_seq=match.seq,
+        club_seq=match.away_club_seq,
+        expired_at=datetime.combine(match.match_date, match.end_time),
+    )
+    poll_controller = PollController(token, db)
+    poll = poll_controller.create_poll(poll_data)
+    match.away_club_poll_seq = poll.seq
+
     db.commit()
 
     return {"success": True}

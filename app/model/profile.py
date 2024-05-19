@@ -1,4 +1,4 @@
-from sqlalchemy import ARRAY, Column, ForeignKey, Integer, String
+from sqlalchemy import ARRAY, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -11,7 +11,7 @@ class Profile(Base):
     nickname = Column(String(24), comment="닉네임")
     gender = Column(String(12), comment="성별")
     location = Column(String(24), comment="활동 장소")
-    age = Column(String(24), comment="나이")
+    birth_date = Column(DateTime, comment="생년월일")
     foot = Column(String(12), comment="주발")
     level = Column(Integer, comment="레벨")
     positions = Column(ARRAY(Integer), nullable=True, comment="포지션")

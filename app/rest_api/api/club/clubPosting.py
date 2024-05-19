@@ -7,12 +7,11 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
 from app.core.token import get_current_user
-
 from app.model.clubPosting import ClubPosting, JoinClubPosting
 from app.rest_api.schema.club.clubPosting import (
     ClubPostingSchema,
-    UpdateClubPostingSchema,
     FilterClubPostingSchema,
+    UpdateClubPostingSchema,
 )
 
 clubPosting_router = APIRouter(tags=["clubPosting"], prefix="/clubPosting")
@@ -127,3 +126,63 @@ def delete_clubPosting(
     db.commit()
 
     return {"message": "매치게시글이 성공적으로 삭제되었습니다."}
+
+
+@clubPosting_router.post("/{club_posting_seq}/join")
+def join_clubPosting(
+    club_posting_seq: int,
+    club_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    club_posting = (
+        db.query(ClubPosting).filter(ClubPosting.seq == club_posting_seq).first()
+    )
+
+    # if not club_posting:
+    #     raise ClubPostingNotFoundException
+
+    join_club_posting = JoinClubPosting(
+        club_posting_seq=club_posting.seq,
+        club_seq=club_seq,
+        user_seq=token.seq,
+        accepted=False,
+    )
+    db.add(join_club_posting)
+    db.commit()
+
+    return {"success": True}
+
+
+@clubPosting_router.patch("/{club_posting_seq}/accept")
+def join_clubPosting(
+    club_posting_seq: int,
+    club_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    club_posting = (
+        db.query(ClubPosting).filter(ClubPosting.seq == club_posting_seq).first()
+    )
+    join_club_posting = (
+        db.query(JoinClubPosting)
+        .filter(
+            JoinClubPosting.club_posting_seq == club_posting.seq,
+            JoinClubPosting.club_seq == club_seq,
+            JoinClubPosting.user_seq == token.seq,
+        )
+        .first()
+    )
+
+    # if not club_posting:
+    #     raise GuestNotFoundException
+
+    # if not join_club_posting:
+    #     raise JoinGuestNotFoundException
+
+    # TODO: validate club owner / matcher poster
+
+    join_club_posting.accepted = True
+    db.commit()
+
+    return {"success": True}

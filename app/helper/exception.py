@@ -1,15 +1,18 @@
 from fastapi import status
+
 from app.constants.errors import (
-    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
-    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
-    PASSWORD_INVALID_SYSTEM_CODE,
-    USER_NOT_FOUND_SYSTEM_CODE,
     BANNER_NOT_FOUND_SYSTEM_CODE,
+    CLUB_NOT_FOUND_SYSTEM_CODE,
+    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
+    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
     FAQ_NOT_FOUND_SYSTEM_CODE,
-    MATCH_NOT_FOUND_SYSTEM_CODE,
-    JOIN_MATCH_NOT_FOUND_SYSTEM_CODE,
     GUEST_NOT_FOUND_SYSTEM_CODE,
     JOIN_CLUB_NOT_FOUND_SYSTEM_CODE,
+    JOIN_GUEST_NOT_FOUND_SYSTEM_CODE,
+    JOIN_MATCH_NOT_FOUND_SYSTEM_CODE,
+    MATCH_NOT_FOUND_SYSTEM_CODE,
+    PASSWORD_INVALID_SYSTEM_CODE,
+    USER_NOT_FOUND_SYSTEM_CODE,
 )
 
 
@@ -95,6 +98,20 @@ class FaqNotFoundException(RestException):
     system_message = "Faq not found"
 
 
+class ClubNotFoundException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    user_message = "클럽이 존재하지 않습니다."
+    system_code = CLUB_NOT_FOUND_SYSTEM_CODE
+    system_message = "Club not found"
+
+
+class JoinClubNotFoundException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    user_message = "해당 클럽에 소속되어 있지 않습니다."
+    system_code = JOIN_CLUB_NOT_FOUND_SYSTEM_CODE
+    system_message = "JoinClub has not found"
+
+
 class MatchNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     user_message = "매치글이 존재하지 않습니다."
@@ -116,18 +133,18 @@ class GuestNotFoundException(RestException):
     system_message = "Guest not found"
 
 
+class JoinGuestNotFoundException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    user_message = "용병 신청이 존재하지 않습니다."
+    system_code = JOIN_GUEST_NOT_FOUND_SYSTEM_CODE
+    system_message = "Join Guest not found"
+
+
 class PollNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     user_message = "투표가 존재하지 않습니다"
     system_code = GUEST_NOT_FOUND_SYSTEM_CODE
     system_message = "Poll has not found"
-
-
-class JoinClubNotFoundException(RestException):
-    status_code = status.HTTP_404_NOT_FOUND
-    user_message = "해당 클럽에 소속되어 있지 않습니다."
-    system_code = JOIN_CLUB_NOT_FOUND_SYSTEM_CODE
-    system_message = "JoinClub has not found"
 
 
 class ProfileRequired(RestException):

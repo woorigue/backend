@@ -1,8 +1,7 @@
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
-from app.helper.exception import RegisterException
 
 
 class Match(Base):
@@ -25,6 +24,15 @@ class Match(Base):
     notice = Column(String(255), nullable=True, comment="공지사항")
     status = Column(String(24), nullable=False, comment="매치상태")
     guest_seq = Column(Integer, nullable=False, comment="용병 게시글 시퀸스")
+    home_club_poll_seq = Column(
+        Integer,
+        nullable=False,
+        comment="홈 클럽 투표 시퀸스",
+    )
+    away_club_poll_seq = Column(
+        Integer,
+        comment="원정 클럽 투표 시퀸스",
+    )
 
     poll = relationship("Poll", back_populates="match")
     join_match = relationship(

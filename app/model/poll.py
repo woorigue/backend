@@ -1,6 +1,7 @@
-from sqlalchemy import Boolean, Column, Integer, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
 from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
@@ -32,6 +33,7 @@ class JoinPoll(Base):
     seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
     attend = Column(Boolean, comment="참석 여부")
     created_at = Column(DateTime, default=datetime.utcnow, comment="생성 시간")
+    attendee_type = Column(String(16), default=datetime.utcnow, comment="생성 시간")
 
     # FK
     user_seq = Column(Integer, ForeignKey("users.seq"))
