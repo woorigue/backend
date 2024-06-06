@@ -165,3 +165,15 @@ class RegisterException(RestException):
             user_message=user_message,
             system_message=system_message,
         )
+
+
+class NotFoudnJoinClub(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    user_message = "소속된 클럽 정보가 존재하지 않습니다"
+    system_code = "NOT_FOUND_JOIN_CLUB"
+
+
+class RegisterMatchError(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    user_message = "매칭을 생성하는데 실패하였습니다"
+    system_code = "REGISTER_MATCH_ERROR"

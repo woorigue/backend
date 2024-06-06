@@ -9,8 +9,13 @@ from app.core.deps import get_db
 from app.core.token import (
     get_current_user,
 )
-from app.helper.exception import JoinMatchNotFoundException, MatchNotFoundException
+from app.helper.exception import (
+    JoinMatchNotFoundException,
+    MatchNotFoundException,
+    RegisterMatchError,
+)
 from app.model.match import JoinMatch, Match
+from app.rest_api.controller.match.match import MatchController
 from app.rest_api.controller.poll import PollController
 from app.rest_api.schema.match.match import (
     FilterMatchSchema,
@@ -34,6 +39,11 @@ def create_match(
         status = "found"
     else:
         status = "pending"
+    controller = MatchController(db)
+    is_validate = controller.validate_match_register(match_data, token.seq)
+
+    if not is_validate:
+        raise RegisterMatchError
 
     match = Match(
         date=datetime.now(),
