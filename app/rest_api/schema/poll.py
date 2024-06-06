@@ -1,22 +1,20 @@
 from datetime import date, datetime
-from pydantic import BaseModel
-from typing import Optional
 
-from pydantic import Field
+from pydantic import BaseModel
 
 
 class CreatePollSchema(BaseModel):
     match_seq: int
     club_seq: int
-    expired_at: Optional[date] = None
+    expired_at: datetime | None = None
 
 
 class RetrievePollSchema(BaseModel):
     seq: int
     match_seq: int
     user_seq: int
-    expired_at: Optional[date]
-    vote_closed: Optional[bool]
+    expired_at: date | None
+    vote_closed: bool | None
     created_at: datetime
     updated_at: datetime
 
@@ -25,8 +23,8 @@ class RetrievePollSchema(BaseModel):
 
 
 class UpdatePollSchema(BaseModel):
-    expired_at: Optional[date] = None
-    vote_closed: Optional[bool] = None
+    expired_at: date | None = None
+    vote_closed: bool | None = None
 
     class Config:
         orm_mode = True
