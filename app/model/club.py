@@ -14,7 +14,7 @@ class Club(Base):
     location = Column(String(24), comment="활동 장소")
     age_group = Column(String(24), comment="연령대")
     membership_fee = Column(Integer, comment="회비")
-    skill = Column(String(24), comment="실력")
+    level = Column(Integer, comment="레벨")
     emblem_img = Column(String(256), comment="클럽 엠블럼 URL")
     img = Column(String(256), comment="클럽 이미지 URL")
     uniform_color = Column(String(24), comment="유니폼 색")

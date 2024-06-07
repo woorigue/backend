@@ -1,6 +1,7 @@
 from datetime import date
+from pydantic import BaseModel, Field, StrictBool, StrictStr, conlist, conint
+from typing import Literal, List
 
-from pydantic import BaseModel, Field, StrictBool, StrictInt, StrictStr
 
 from .position import JoinPositionSchema
 
@@ -8,12 +9,16 @@ from .position import JoinPositionSchema
 class UpdateProfileSchema(BaseModel):
     is_active: StrictBool = Field(title="활동 여부", default=True)
     nickname: StrictStr = Field(title="닉네임")
-    gender: str = Field(title="성별", default=None)
+    gender: Literal["M", "F", "U"] = Field(title="성별", default=None)
     location: str = Field(title="활동 장소", default=None)
     birth_date: date = Field(title="연령대", default=None)
-    foot: str = Field(title="주발", default=None)
-    level: int = Field(title="레벨", default=None)
-    positions: list[StrictInt] = Field(title="포지션")
+    foot: Literal["R", "L", "B"] = Field(title="주발", default=None)
+    level: conint(ge=0, le=4) = Field(title="레벨", default=None)
+    positions: List[conint(ge=1, le=15)] = Field(title="포지션")
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
 class GetProfileSchema(BaseModel):
@@ -25,3 +30,7 @@ class GetProfileSchema(BaseModel):
     level: int | None = Field(title="레벨", default=None)
     join_position: list[JoinPositionSchema] = []
     img: str | None = Field(title="이미지 URL", default=None)
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
