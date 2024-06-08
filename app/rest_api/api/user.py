@@ -29,6 +29,7 @@ from app.helper.exception import (
     ProfileRequired,
     UserNotFoundException,
     UserPasswordNotMatchException,
+    SnsRequired,
 )
 from app.model.club import Club
 from app.model.clubPosting import ClubPosting
@@ -419,24 +420,21 @@ async def auth(request: Request, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == email))
 
     if user is None:
-        password = user_data["sub"]
-        user_login_data = EmailRegisterSchema(email=email, password=password)
-        con.email_register_user(db, user_login_data)
-
+        user_login_data = EmailRegisterSchema(email=email, password=user_data["sub"])
+        user = con.email_register_user(db, user_login_data)
         sns = Sns(
             sub=user_data["sub"],
             refresh_token=access_token["refresh_token"],
+            user_seq=user.seq,
             type="google",
         )
         db.add(sns)
         db.commit()
 
-    else:
-        user_login_data = EmailRegisterSchema(email=user.email, password=user.password)
+    access_token = create_access_token(data={"sub": str(email)})
+    refresh_token = create_refresh_token(data={"sub": str(email)})
 
-    token = email_login(user_login_data, db)
-
-    return token
+    return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 KAKAO_CLIENT_ID = "71cda8d5771dce9ff79f0c09292078e2"
@@ -500,24 +498,21 @@ async def kakao_auth(request: Request, db: Session = Depends(get_db)):
             if user is None:
                 password = "temp_password"
                 user_login_data = EmailRegisterSchema(email=email, password=password)
-                con.email_register_user(db, user_login_data)
+                user = con.email_register_user(db, user_login_data)
 
                 sns = Sns(
                     sub="temp_passowrd",
                     refresh_token=sns_token["refresh_token"],
+                    user_seq=user.seq,
                     type="kako",
                 )
                 db.add(sns)
                 db.commit()
 
-            else:
-                user_login_data = EmailRegisterSchema(
-                    email=user.email, password=user.password
-                )
+            access_token = create_access_token(data={"sub": str(email)})
+            refresh_token = create_refresh_token(data={"sub": str(email)})
 
-            token = email_login(user_login_data, db)
-
-            return token
+            return {"access_token": access_token, "refresh_token": refresh_token}
 
         else:
             print("Token request failed:", response.status_code, response.text)
@@ -559,3 +554,15 @@ async def get_kako_access_token(refresh_token):
             return user_data
         else:
             print("Token request failed:", response.status_code, response.text)
+
+
+@user_router.get("/user/sns/refresh_token")
+def get_sns_refresh_token(
+    token: Annotated[str, Depends(get_current_user)], db: Session = Depends(get_db)
+):
+    sns = db.query(Sns).filter(Sns.user_seq == token.seq).first()
+
+    if not sns:
+        return SnsRequired
+
+    return sns

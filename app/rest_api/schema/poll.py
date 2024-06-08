@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class CreatePollSchema(BaseModel):
     match_seq: int
     club_seq: int
-    expired_at: Optional[datetime] = None
+    expired_at: datetime = None
 
 
 class RetrievePollSchema(BaseModel):
