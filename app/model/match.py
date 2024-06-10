@@ -17,7 +17,7 @@ class Match(Base):
     match_date = Column(DateTime, nullable=False, comment="매칭일")
     start_time = Column(DateTime, nullable=False, comment="매치 시작 시간")
     end_time = Column(DateTime, nullable=False, comment="매치 종료 시간")
-    skill = Column(String(24), nullable=False, comment="레벨")
+    level = Column(Integer, nullable=False, comment="레벨")
     team_size = Column(Integer, nullable=False, comment="매치인원")
     gender = Column(String(12), nullable=False, comment="성별")
     match_fee = Column(Integer, nullable=True, comment="매치비용")

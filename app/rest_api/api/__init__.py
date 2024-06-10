@@ -12,6 +12,7 @@ from app.rest_api.api.poll import poll_router
 from app.rest_api.api.position import position_router
 from app.rest_api.api.province import province_router
 from app.rest_api.api.user import user_router
+from app.rest_api.api.firebase.firebase import firebase_router
 
 rest_router = APIRouter()
 rest_router.include_router(user_router)
@@ -26,3 +27,4 @@ rest_router.include_router(clubPosting_router)
 rest_router.include_router(chat_router)
 rest_router.include_router(poll_router)
 rest_router.include_router(memberPosting_router)
+rest_router.include_router(firebase_router)

@@ -54,7 +54,7 @@ def create_match(
         match_date=match_data.match_date,
         start_time=match_data.start_time,
         end_time=match_data.end_time,
-        skill=match_data.skill,
+        level=match_data.level,
         team_size=match_data.team_size,
         gender=match_data.gender,
         match_fee=match_data.match_fee,

@@ -17,6 +17,7 @@ from app.rest_api.schema.club.club import (
     ClubSchema,
     FilterClubSchema,
     UpdateClubSchema,
+    GetClubMemberSchema,
 )
 from app.rest_api.schema.profile import GetProfileSchema
 
@@ -35,7 +36,7 @@ def create_club(
         location=club_data.location,
         age_group=club_data.age_group,
         membership_fee=club_data.membership_fee,
-        skill=club_data.skill,
+        level=club_data.level,
         emblem_img=club_data.emblem_img,
         img=club_data.img,
         uniform_color=club_data.uniform_color,
@@ -44,7 +45,7 @@ def create_club(
     db.commit()
 
     join_club = JoinClub(
-        clubs_seq=club.seq, user_seq=token.seq, role="회장", accepted=True
+        clubs_seq=club.seq, user_seq=token.seq, role="owner", accepted=True
     )
     db.add(join_club)
     db.commit()
@@ -116,7 +117,7 @@ def join_club(
     ).scalar()
 
     if not join_status:
-        join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="회원")
+        join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="member")
         db.merge(join_club)
         db.commit()
         db.flush()
@@ -189,22 +190,29 @@ def delete_club(
 
 @club_router.get(
     "/{club_seq}/members",
-    response_model=list[GetProfileSchema],
+    response_model=list[GetClubMemberSchema],
 )
 def get_members(
     token: Annotated[str, Depends(get_current_user)],
     club_seq: int,
     db: Session = Depends(get_db),
 ):
-    members = (
-        db.query(Profile)
+    members_query = (
+        db.query(Profile, JoinClub.role)
         .join(JoinClub, Profile.user_seq == JoinClub.user_seq)
         .filter(JoinClub.clubs_seq == club_seq, JoinClub.accepted == True)
         .options(joinedload(Profile.join_position).joinedload(JoinPosition.position))
         .all()
     )
 
-    return members
+    member = [
+        GetClubMemberSchema(
+            profile=GetProfileSchema.from_orm(member[0]), role=member[1]
+        )
+        for member in members_query
+    ]
+
+    return member
 
 
 @club_router.get("/{club_seq}/match_schedule")

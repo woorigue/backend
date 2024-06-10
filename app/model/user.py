@@ -10,6 +10,7 @@ from .club import JoinClub
 from .clubPosting import JoinClubPosting
 from .guest import JoinGuest
 from .memberPosting import JoinMemberPosting
+from .firebase import Firebase
 from app.helper.exception import (
     EmailConflictException,
     PasswordInvalidException,
@@ -43,12 +44,14 @@ class User(Base):
     join_member_posting = relationship(
         JoinMemberPosting, back_populates="user", cascade="all, delete-orphan"
     )
-
     chatting_rooms = relationship(
         "ChattingRoom", secondary=UserChatRoomAssociation, back_populates="users"
     )
     poll = relationship("Poll", back_populates="user")
     join_poll = relationship("JoinPoll", back_populates="user")
+    firebase = relationship(
+        Firebase, back_populates="user", cascade="all, delete-orphan"
+    )
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:
@@ -63,7 +66,7 @@ class User(Base):
         user = User(email=email, password=pwd_context.hash(password))
         db.add(user)
         db.commit()
-        return None
+        return user
 
     @staticmethod
     def resset_password(db: Session, email: str, password: str):

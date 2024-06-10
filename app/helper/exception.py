@@ -154,6 +154,13 @@ class ProfileRequired(RestException):
     system_message = "User's Profile data is reuqired"
 
 
+class SnsRequired(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    user_message = "SNS 로그인이 필요합니다."
+    system_code = "SNS_LOGIN_REQUIRED"
+    system_message = "SNS login is reuqired"
+
+
 class RegisterException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
 
