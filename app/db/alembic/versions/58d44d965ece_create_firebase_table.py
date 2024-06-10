@@ -32,9 +32,7 @@ def upgrade() -> None:
             nullable=False,
             comment="유저 시퀸스",
         ),
-        sa.Column(
-            "refresh_token", sa.String(128), nullable=False, comment="리프레시 토큰"
-        ),
+        sa.Column("refresh_token", sa.String(128), nullable=False, comment="리프레시 토큰"),
     )
 
 

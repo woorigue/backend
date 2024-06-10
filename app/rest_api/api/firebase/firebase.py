@@ -30,7 +30,6 @@ def create_firebase_refresh_token(
     refresh_token: str,
     db: Session = Depends(get_db),
 ):
-
     firebase_refresh_token = Firebase(
         user_seq=token.seq,
         refresh_token=refresh_token,
