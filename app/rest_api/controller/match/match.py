@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.model.club import JoinClub
 from app.rest_api.schema.match.match import MatchSchema
+from app.model.match import Match
 
 
 class MatchController:
@@ -17,4 +18,13 @@ class MatchController:
                 JoinClub.clubs_seq == match_data.home_club_seq,
             )
         )
-        return join_club
+
+        # 내가 이미 생성해놓은 매치의 start_time & end_time range를 체크하는 로직
+        match = self.db.scalar(
+            select(Match).where(
+                Match.start_time >= match_data.start_time,
+                Match.end_time <= match_data.end_time,
+            )
+        )
+
+        return not (join_club or match)
