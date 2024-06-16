@@ -1,10 +1,16 @@
 from datetime import date, time
-from typing import Literal, List
+from enum import Enum
+from typing import Literal
 
 from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, Field, conint
 
 from app.model.match import Match
+
+
+class GenderEnum(str, Enum):
+    female = "여성"
+    male = "남성"
 
 
 class MatchSchema(BaseModel):
@@ -16,7 +22,7 @@ class MatchSchema(BaseModel):
     end_time: time = Field(title="매치 종료 시간")
     level: conint(ge=0, le=4) = Field(title="레벨")
     team_size: int = Field(title="매치인원")
-    gender: Literal["M", "F", "U"] = Field(title="성별")
+    gender: GenderEnum = Field(title="성별")
     match_fee: int = Field(title="매치비용")
     notice: str = Field(title="공지사항")
     guest_seq: int = Field(title="용병 게시글 시퀸스")
