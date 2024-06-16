@@ -161,19 +161,6 @@ class SnsRequired(RestException):
     system_message = "SNS login is reuqired"
 
 
-class RegisterException(RestException):
-    status_code = status.HTTP_400_BAD_REQUEST
-
-    def __init__(self, missing_field: str):
-        user_message = f"'{missing_field}'이 존재하지 않습니다."
-        system_message = f"'{missing_field}' is required"
-        super().__init__(
-            status_code=self.status_code,
-            user_message=user_message,
-            system_message=system_message,
-        )
-
-
 class NotFoudnJoinClub(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     user_message = "소속된 클럽 정보가 존재하지 않습니다"

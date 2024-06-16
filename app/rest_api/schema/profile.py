@@ -1,7 +1,14 @@
 from datetime import date
-from pydantic import BaseModel, Field, StrictBool, StrictStr, conlist, conint
-from typing import Literal, List
+from typing import Literal
 
+from pydantic import (
+    BaseModel,
+    Field,
+    StrictBool,
+    StrictStr,
+    conint,
+    model_validator,
+)
 
 from .position import JoinPositionSchema
 
@@ -14,7 +21,7 @@ class UpdateProfileSchema(BaseModel):
     birth_date: date = Field(title="연령대", default=None)
     foot: Literal["R", "L", "B"] = Field(title="주발", default=None)
     level: conint(ge=0, le=4) = Field(title="레벨", default=None)
-    positions: List[conint(ge=1, le=15)] = Field(title="포지션")
+    positions: list[conint(ge=1, le=15)] = Field(title="포지션")
 
     class Config:
         orm_mode = True
@@ -30,6 +37,12 @@ class GetProfileSchema(BaseModel):
     level: int | None = Field(title="레벨", default=None)
     join_position: list[JoinPositionSchema] = []
     img: str | None = Field(title="이미지 URL", default=None)
+
+    @model_validator(mode="after")
+    def representation_fields(self):
+        gender_map = {"F": "여성", "M": "남성"}
+        self.gender = gender_map.get(self.gender)
+        return self
 
     class Config:
         orm_mode = True
