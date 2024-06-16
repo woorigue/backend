@@ -1,16 +1,9 @@
 from passlib.context import CryptContext
-from sqlalchemy import ARRAY, Boolean, Column, Integer, String, select
+from sqlalchemy import Boolean, Column, Integer, String, select
 from sqlalchemy.orm import Session, relationship
 
+from app.core.utils import get_position_type
 from app.db.session import Base
-
-from .email import Email
-from .profile import Profile
-from .club import JoinClub
-from .clubPosting import JoinClubPosting
-from .guest import JoinGuest
-from .memberPosting import JoinMemberPosting
-from .firebase import Firebase
 from app.helper.exception import (
     EmailConflictException,
     PasswordInvalidException,
@@ -18,6 +11,12 @@ from app.helper.exception import (
 )
 from app.model.chat import UserChatRoomAssociation
 
+from .club import JoinClub
+from .clubPosting import JoinClubPosting
+from .firebase import Firebase
+from .guest import JoinGuest
+from .memberPosting import JoinMemberPosting
+from .profile import Profile
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -29,7 +28,7 @@ class User(Base):
     email = Column(String(128), unique=True, comment="이메일")
     password = Column(String(256), comment="비밀번호")
     is_active = Column(Boolean, default=True, comment="활성화 여부")
-    clubs = Column(ARRAY(Integer), nullable=True, comment="클럽")
+    clubs = Column(get_position_type(), nullable=True, comment="클럽")
 
     profile = relationship(Profile, back_populates="user", cascade="all, delete-orphan")
     join_club = relationship(

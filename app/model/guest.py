@@ -1,11 +1,8 @@
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
+from app.core.utils import get_position_type
 from app.db.session import Base
-
-from dataclasses import dataclass
-
-from app.helper.exception import RegisterException
 
 
 class Guest(Base):
@@ -16,7 +13,7 @@ class Guest(Base):
     user_seq = Column(Integer, nullable=False, comment="작성자 유저 시퀀스")
     club_seq = Column(Integer, nullable=False, comment="클럽 시퀀스")
     match_seq = Column(Integer, nullable=False, comment="매치 시퀀스")
-    position = Column(ARRAY(Integer), comment="포지션")
+    position = Column(get_position_type(), comment="포지션")
     skill = Column(String(24), nullable=False, comment="레벨")
     guest_number = Column(Integer, nullable=False, comment="모집인원")
     match_fee = Column(Integer, comment="매치비용")

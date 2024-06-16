@@ -1,10 +1,14 @@
+import os
+
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    SQLALCHEMY_DATABASE_URL: str = "postgresql://postgres:1q2w3e4r##@database-1.c88pfbyh9brw.ap-northeast-2.rds.amazonaws.com:5432/our_league"
+    SQLALCHEMY_DATABASE_URL: str = os.getenv(
+        "DATABASE_URL",
+        "postgresql://postgres:1q2w3e4r##@database-1.c88pfbyh9brw.ap-northeast-2.rds.amazonaws.com:5432/our_league",
+    )
     RABBITMQ_URL: str = "amqp://guest:guest@54.180.94.130/"
-    FOO: str = "TEST"
 
     # TODO: To use in cors function
     CORS_ORIGINS: list[str] = ["*"]
