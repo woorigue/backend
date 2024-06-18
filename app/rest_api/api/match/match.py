@@ -35,10 +35,6 @@ def create_match(
     match_data: MatchSchema,
     db: Session = Depends(get_db),
 ):
-    if match_data.match_type == "private":
-        status = "found"
-    else:
-        status = "pending"
     controller = MatchController(db)
     is_validate = controller.validate_match_register(match_data, token.seq)
 
@@ -49,7 +45,6 @@ def create_match(
         date=datetime.now(),
         user_seq=token.seq,
         home_club_seq=match_data.home_club_seq,
-        match_type=match_data.match_type,
         location=match_data.location,
         match_date=match_data.match_date,
         start_time=match_data.start_time,
@@ -59,8 +54,7 @@ def create_match(
         gender=match_data.gender,
         match_fee=match_data.match_fee,
         notice=match_data.notice,
-        status=status,
-        guest_seq=match_data.guest_seq,
+        status="default",
     )
     db.add(match)
     db.commit()

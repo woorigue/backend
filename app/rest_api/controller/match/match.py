@@ -2,8 +2,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.model.club import JoinClub
-from app.rest_api.schema.match.match import MatchSchema
 from app.model.match import Match
+from app.rest_api.schema.match.match import MatchSchema
 
 
 class MatchController:
@@ -26,5 +26,6 @@ class MatchController:
                 Match.end_time <= match_data.end_time,
             )
         )
-
-        return not (join_club or match)
+        if join_club is not None and match is None:
+            return True
+        return False
