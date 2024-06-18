@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, time, datetime
 from typing import Literal
 
 from fastapi_filter.contrib.sqlalchemy import Filter
@@ -67,13 +67,13 @@ class MatchResponseSchema(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     seq: int = Field(title="시퀸스")
-    date: dt.datetime = Field(title="게시일")
+    date: datetime = Field(title="게시일")
     user_seq: int = Field(title="유저 시퀸스")
     home_club: ClubResponseSchema
     away_club: ClubResponseSchema | None
     match_type: str = Field(title="매치유형")
     location: str = Field(title="매치장소")
-    match_date: dt.date = Field(title="매치일")
+    match_date: date = Field(title="매치일")
     start_time: time = Field(title="매치 시작 시간")
     end_time: time = Field(title="매치 종료 시간")
     level: conint(ge=0, le=4) = Field(title="레벨")
