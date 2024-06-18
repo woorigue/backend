@@ -2,6 +2,7 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
+from app.model.club import Club
 
 
 class Match(Base):
@@ -10,8 +11,15 @@ class Match(Base):
     seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
     date = Column(DateTime, nullable=False, comment="게시일")
     user_seq = Column(Integer, nullable=False, comment="유저 시퀸스")
-    home_club_seq = Column(Integer, nullable=False, comment="홈 클럽 시퀸스")
-    away_club_seq = Column(Integer, comment="원정 클럽 시퀸스")
+    home_club_seq = Column(
+        Integer,
+        ForeignKey("clubs.seq", ondelete="CASCADE"),
+        nullable=False,
+        comment="홈 클럽 시퀸스",
+    )
+    away_club_seq = Column(
+        Integer, ForeignKey("clubs.seq", ondelete="CASCADE"), comment="원정 클럽 시퀸스"
+    )
     location = Column(String(128), nullable=False, comment="매치장소")
     match_date = Column(DateTime, nullable=False, comment="매칭일")
     start_time = Column(DateTime, nullable=False, comment="매치 시작 시간")
@@ -38,6 +46,13 @@ class Match(Base):
         "JoinMatch",
         back_populates="match",
         cascade="all, delete-orphan",
+    )
+
+    home_club = relationship(
+        "Club", foreign_keys=[home_club_seq], back_populates="home_matches"
+    )
+    away_club = relationship(
+        "Club", foreign_keys=[away_club_seq], back_populates="away_matches"
     )
 
 

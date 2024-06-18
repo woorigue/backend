@@ -2,9 +2,10 @@ from datetime import date, time
 from typing import Literal
 
 from fastapi_filter.contrib.sqlalchemy import Filter
-from pydantic import BaseModel, Field, conint
+from pydantic import BaseModel, ConfigDict, Field, conint
 
 from app.model.match import Match
+from app.rest_api.schema.club.club import ClubResponseSchema
 
 
 class MatchSchema(BaseModel):
@@ -60,3 +61,27 @@ class FilterMatchSchema(Filter):
 
 class JoinMatchSchema(BaseModel):
     match: MatchSchema
+
+
+class MatchResponseSchema(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    seq: int = Field(title="시퀸스")
+    date: dt.datetime = Field(title="게시일")
+    user_seq: int = Field(title="유저 시퀸스")
+    home_club: ClubResponseSchema
+    away_club: ClubResponseSchema | None
+    match_type: str = Field(title="매치유형")
+    location: str = Field(title="매치장소")
+    match_date: dt.date = Field(title="매치일")
+    start_time: time = Field(title="매치 시작 시간")
+    end_time: time = Field(title="매치 종료 시간")
+    level: conint(ge=0, le=4) = Field(title="레벨")
+    team_size: int = Field(title="매치인원")
+    gender: Literal["M", "F", "U"] = Field(title="성별")
+    match_fee: int = Field(title="매치비용")
+    notice: str = Field(title="공지사항")
+    status: str = Field(title="매치상태")
+    guest_seq: int | None = Field(title="용병 게시글 시퀸스")
+    home_club_poll_seq: int = Field(title="홈 클럽 투표 시퀸스")
+    away_club_poll_seq: int | None = Field(title="원정 클럽 투표 시퀸스")

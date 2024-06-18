@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.deps import get_db
 from app.core.token import (
@@ -21,6 +21,7 @@ from app.rest_api.schema.match.match import (
     FilterMatchSchema,
     MatchSchema,
     UpdateMatchSchema,
+    MatchResponseSchema,
 )
 from app.rest_api.schema.poll import (
     CreatePollSchema,
@@ -73,13 +74,18 @@ def create_match(
     return {"success": True}
 
 
-@match_router.get("/{match_seq}")
+@match_router.get("/{match_seq}", response_model=MatchResponseSchema)
 def get_match(
     token: Annotated[str, Depends(get_current_user)],
     match_seq: int,
     db: Session = Depends(get_db),
 ):
-    match = db.query(Match).filter(Match.seq == match_seq).first()
+    match = (
+        db.query(Match)
+        .options(joinedload(Match.home_club), joinedload(Match.away_club))
+        .filter(Match.seq == match_seq)
+        .first()
+    )
 
     if match is None:
         raise MatchNotFoundException
@@ -124,7 +130,7 @@ def delete_match(
     return {"message": "매치게시글이 성공적으로 삭제되었습니다."}
 
 
-@match_router.get("")
+@match_router.get("", response_model=list[MatchResponseSchema])
 def filter_match(
     token: Annotated[str, Depends(get_current_user)],
     match_filter: FilterMatchSchema = FilterDepends(FilterMatchSchema),

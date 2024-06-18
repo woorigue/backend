@@ -26,6 +26,18 @@ class Club(Base):
         back_populates="club",
         cascade="all, delete-orphan",
     )
+    home_matches = relationship(
+        "Match",
+        foreign_keys="[Match.home_club_seq]",
+        back_populates="home_club",
+        cascade="all, delete-orphan",
+    )
+    away_matches = relationship(
+        "Match",
+        foreign_keys="[Match.away_club_seq]",
+        back_populates="away_club",
+        cascade="all, delete-orphan",
+    )
 
 
 class JoinClub(Base):
