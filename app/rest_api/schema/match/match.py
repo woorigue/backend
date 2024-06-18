@@ -1,6 +1,4 @@
 from datetime import date, time
-import datetime as dt
-from enum import Enum
 from typing import Literal
 
 from fastapi_filter.contrib.sqlalchemy import Filter
@@ -10,29 +8,17 @@ from app.model.match import Match
 from app.rest_api.schema.club.club import ClubResponseSchema
 
 
-class GenderEnum(str, Enum):
-    female = "여성"
-    male = "남성"
-
-
-class GenderEnum(str, Enum):
-    female = "여성"
-    male = "남성"
-
-
 class MatchSchema(BaseModel):
     home_club_seq: int = Field(title="홈 클럽 시퀸스")
-    match_type: str = Field(title="매치유형")
     location: str = Field(title="매치장소")
     match_date: date = Field(title="매치일")
     start_time: time = Field(title="매치 시작 시간")
     end_time: time = Field(title="매치 종료 시간")
     level: conint(ge=0, le=4) = Field(title="레벨")
     team_size: int = Field(title="매치인원")
-    gender: GenderEnum = Field(title="성별")
+    gender: Literal["M", "F", "U"] = Field(title="성별")
     match_fee: int = Field(title="매치비용")
     notice: str = Field(title="공지사항")
-    guest_seq: int = Field(title="용병 게시글 시퀸스")
 
 
 class UpdateMatchSchema(BaseModel):

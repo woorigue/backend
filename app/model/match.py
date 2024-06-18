@@ -20,7 +20,6 @@ class Match(Base):
     away_club_seq = Column(
         Integer, ForeignKey("clubs.seq", ondelete="CASCADE"), comment="원정 클럽 시퀸스"
     )
-    match_type = Column(String(24), nullable=False, comment="매치유형")
     location = Column(String(128), nullable=False, comment="매치장소")
     match_date = Column(DateTime, nullable=False, comment="매칭일")
     start_time = Column(DateTime, nullable=False, comment="매치 시작 시간")
@@ -31,7 +30,7 @@ class Match(Base):
     match_fee = Column(Integer, nullable=True, comment="매치비용")
     notice = Column(String(255), nullable=True, comment="공지사항")
     status = Column(String(24), nullable=False, comment="매치상태")
-    guest_seq = Column(Integer, nullable=False, comment="용병 게시글 시퀸스")
+    guest_seq = Column(Integer, nullable=True, comment="용병 게시글 시퀸스")
     home_club_poll_seq = Column(
         Integer,
         nullable=False,
