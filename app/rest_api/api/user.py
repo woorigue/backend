@@ -215,7 +215,7 @@ def update_user_profile(
             nickname=user_data.nickname,
             gender=user_data.gender,
             location=user_data.location,
-            birth_date=user_data.birth_date,
+            age=user_data.age,
             foot=user_data.foot,
             level=user_data.level,
             positions=user_data.positions,

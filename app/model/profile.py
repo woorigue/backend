@@ -12,7 +12,7 @@ class Profile(Base):
     nickname = Column(String(24), comment="닉네임")
     gender = Column(String(12), comment="성별")
     location = Column(String(24), comment="활동 장소")
-    birth_date = Column(DateTime, comment="생년월일")
+    age = Column(DateTime, comment="생년월일")
     foot = Column(String(12), comment="주발")
     level = Column(Integer, comment="레벨")
     positions = Column(get_position_type(), nullable=True, comment="포지션")
