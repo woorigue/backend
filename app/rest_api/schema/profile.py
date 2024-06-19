@@ -32,7 +32,7 @@ class GetProfileSchema(BaseModel):
     nickname: StrictStr = Field(title="닉네임", default=None)
     gender: str | None = Field(title="성별", default=None)
     location: str | None = Field(title="활동 장소", default=None)
-    age: str | None = Field(title="연령대", default=None)
+    birth_date: str | None = Field(title="연령대", default=None)
     foot: str | None = Field(title="주발", default=None)
     level: int | None = Field(title="레벨", default=None)
     join_position: list[JoinPositionSchema] = []
