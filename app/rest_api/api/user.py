@@ -27,9 +27,10 @@ from app.core.token import (
 )
 from app.helper.exception import (
     ProfileRequired,
+    SnsRequired,
     UserNotFoundException,
     UserPasswordNotMatchException,
-    SnsRequired,
+    UserRetrieveFailException,
 )
 from app.model.club import Club
 from app.model.clubPosting import ClubPosting
@@ -574,8 +575,10 @@ def get_sns_refresh_token(
 )
 def get_user_detail(
     user_seq: int,
-    token: Annotated[str, Depends(get_current_user)],
+    # token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
     user = db.scalar(select(User).where(User.seq == user_seq))
+    if not user:
+        raise UserRetrieveFailException
     return user

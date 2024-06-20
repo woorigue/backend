@@ -19,20 +19,14 @@ from app.constants.errors import (
 class RestException(Exception):
     status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
     user_message: str | None = None
-    system_code: str | None = None
-    system_message: str | None = None
 
     def __init__(
         self,
         status_code: int | None = None,
         user_message: str | None = None,
-        system_code: str | None = None,
-        system_message: str | None = None,
     ) -> None:
         self.status_code = status_code or self.status_code
         self.user_message = user_message or self.user_message
-        self.system_code = system_code or self.system_code
-        self.system_message = system_message or self.system_message
 
 
 class ProfileRequired(RestException):
@@ -75,6 +69,11 @@ class UserNotFoundException(RestException):
     user_message = "사용자 정보를 찾을 수 없습니다."
     system_code = USER_NOT_FOUND_SYSTEM_CODE
     system_message = "User(email) not found"
+
+
+class UserRetrieveFailException(RestException):
+    error_code = 100000
+    error_detail = "사용자 정보를 조회하는데 실패했습니다."
 
 
 class UserPasswordNotMatchException(RestException):
