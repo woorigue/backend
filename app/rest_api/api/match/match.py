@@ -143,6 +143,9 @@ def filter_match(
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
     matches = query.all()
+    print(matches)
+    for item in matches:
+        print(item.__dict__)
 
     return matches
 

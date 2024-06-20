@@ -11,6 +11,7 @@ class Match(Base):
     seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
     date = Column(DateTime, nullable=False, comment="게시일")
     user_seq = Column(Integer, nullable=False, comment="유저 시퀸스")
+    match_type = Column(String, nullable=False, comment="매치타입")
     home_club_seq = Column(
         Integer,
         ForeignKey("clubs.seq", ondelete="CASCADE"),
