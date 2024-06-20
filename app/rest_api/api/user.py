@@ -566,3 +566,16 @@ def get_sns_refresh_token(
         return SnsRequired
 
     return sns
+
+
+@user_router.get(
+    "/{user_seq}",
+    response_model=UserSchema,
+)
+def get_user_detail(
+    user_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    user = db.scalar(select(User).where(User.seq == user_seq))
+    return user
