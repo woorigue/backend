@@ -10,6 +10,7 @@ from app.rest_api.schema.club.club import ClubResponseSchema
 
 class MatchSchema(BaseModel):
     home_club_seq: int = Field(title="홈 클럽 시퀸스")
+    match_type: Literal["public", "private"] = Field(None, title="매치유형")
     location: str = Field(title="매치장소")
     match_date: date = Field(title="매치일")
     start_time: time = Field(title="매치 시작 시간")
@@ -22,7 +23,7 @@ class MatchSchema(BaseModel):
 
 
 class UpdateMatchSchema(BaseModel):
-    match_type: str = Field(None, title="매치유형")
+    match_type: Literal["public", "private"] = Field(None, title="매치유형")
     location: str = Field(None, title="매치장소")
     match_date: date = Field(None, title="매치일")
     start_time: time = Field(None, title="매치 시작 시간")
@@ -32,7 +33,6 @@ class UpdateMatchSchema(BaseModel):
     gender: Literal["M", "F", "U"] = Field(None, title="성별")
     match_fee: int = Field(None, title="매치비용")
     notice: str = Field(None, title="공지사항")
-    status: str = Field(None, title="매치상태")
     guest_seq: int = Field(None, title="용병 게시글 시퀸스")
 
 
@@ -41,7 +41,7 @@ class FilterMatchSchema(Filter):
     user_seq__in: list[int] | None = Field(None, title="유저 시퀸스")
     home_club_seq__in: list[int] | None = Field(None, title="홈 클럽 시퀸스")
     away_club_seq__in: list[int] | None = Field(None, title="원정 클럽 시퀸스")
-    match_type: list[str] | None = Field(None, title="매치 유형")
+    match_type__in: list[str] | None = Field(None, title="매치 유형")
     location__in: list[str] | None = Field(None, title="장소 리스트")
     match_date__gte: date | None = Field(None, title="최소 매치 날짜")
     match_date__lte: date | None = Field(None, title="최대 매치 날짜")
@@ -76,9 +76,9 @@ class MatchResponseSchema(BaseModel):
     match_date: date = Field(title="매치일")
     start_time: time = Field(title="매치 시작 시간")
     end_time: time = Field(title="매치 종료 시간")
-    level: conint(ge=1, le=5) = Field(title="레벨")
+    level: int = Field(title="레벨")
     team_size: int = Field(title="매치인원")
-    gender: Literal["M", "F", "U"] = Field(title="성별")
+    gender: str = Field(title="성별")
     match_fee: int = Field(title="매치비용")
     notice: str = Field(title="공지사항")
     status: str = Field(title="매치상태")

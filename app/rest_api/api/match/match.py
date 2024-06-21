@@ -42,10 +42,16 @@ def create_match(
     if not is_validate:
         raise RegisterMatchError
 
+    if match_data.match_type == "private":
+        match_status = "found"
+    else:
+        match_status = "pending"
+
     match = Match(
         date=datetime.now(),
         user_seq=token.seq,
         home_club_seq=match_data.home_club_seq,
+        match_type=match_data.match_type,
         location=match_data.location,
         match_date=match_data.match_date,
         start_time=match_data.start_time,
@@ -55,7 +61,7 @@ def create_match(
         gender=match_data.gender,
         match_fee=match_data.match_fee,
         notice=match_data.notice,
-        status="default",
+        status=match_status,
     )
     db.add(match)
     db.commit()

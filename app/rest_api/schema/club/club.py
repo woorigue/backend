@@ -31,10 +31,6 @@ class UpdateClubSchema(BaseModel):
     deleted: bool = Field(False, title="팀 삭제")
 
 
-class JoinClubSchema(BaseModel):
-    club: ClubSchema
-
-
 class FilterClubSchema(Filter):
     seq__in: list[int] | None = Field(None, title="시퀸스 리스트")
     name__ilike: str | None = Field(None, title="이름")
@@ -61,6 +57,10 @@ class ClubResponseSchema(BaseModel):
     emblem_img: str | None = Field(None, title="클럽 엠블럼 URL")
     img: str | None = Field(None, title="클럽 이미지 URL")
     uniform_color: str | None = Field(None, title="유니폼 색")
+
+
+class JoinClubSchema(BaseModel):
+    club: ClubResponseSchema
 
 
 class GetClubMemberSchema(BaseModel):
