@@ -7,8 +7,6 @@ from pydantic import (
     StrictBool,
     StrictStr,
     conint,
-    model_validator,
-    ConfigDict,
 )
 
 from .position import JoinPositionSchema
@@ -38,12 +36,6 @@ class GetProfileSchema(BaseModel):
     level: int | None = Field(title="레벨", default=None)
     join_position: list[JoinPositionSchema] = []
     img: str | None = Field(title="이미지 URL", default=None)
-
-    @model_validator(mode="after")
-    def representation_fields(self):
-        gender_map = {"F": "여성", "M": "남성"}
-        self.gender = gender_map.get(self.gender)
-        return self
 
     class Config:
         orm_mode = True
