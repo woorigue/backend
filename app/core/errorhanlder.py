@@ -12,6 +12,7 @@ def backend_exception_handler(exc: Exception):
     error = serializer_error_message(exc)
 
     return JSONResponse(
+        status_code=error.get("status_code"),
         content={**error},
     )
 
@@ -26,8 +27,8 @@ def generic_exception_handler(_: Request, exc: Exception):
 
 def serializer_error_message(exc: Exception) -> dict:
     error = {
-        "status_code": getattr(exc, "status_code", None),
+        "status_code": getattr(exc, "status_code", 500),
         "error_code": getattr(exc, "error_code", 999999),
-        "error_detail": getattr(exc, "error_detail", None),
+        "error_detail": getattr(exc, "error_detail", "서버 에러"),
     }
     return error

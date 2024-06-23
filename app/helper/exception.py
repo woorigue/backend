@@ -3,7 +3,8 @@ from fastapi import status
 
 class RestException(Exception):
     status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
-    user_message: str | None = None
+    error_code: int = 999999
+    error_detail: str = ""
 
     def __init__(
         self,
