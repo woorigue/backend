@@ -1,20 +1,5 @@
 from fastapi import status
 
-from app.constants.errors import (
-    BANNER_NOT_FOUND_SYSTEM_CODE,
-    CLUB_NOT_FOUND_SYSTEM_CODE,
-    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
-    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
-    FAQ_NOT_FOUND_SYSTEM_CODE,
-    GUEST_NOT_FOUND_SYSTEM_CODE,
-    JOIN_CLUB_NOT_FOUND_SYSTEM_CODE,
-    JOIN_GUEST_NOT_FOUND_SYSTEM_CODE,
-    JOIN_MATCH_NOT_FOUND_SYSTEM_CODE,
-    MATCH_NOT_FOUND_SYSTEM_CODE,
-    PASSWORD_INVALID_SYSTEM_CODE,
-    USER_NOT_FOUND_SYSTEM_CODE,
-)
-
 
 class RestException(Exception):
     status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -23,150 +8,135 @@ class RestException(Exception):
     def __init__(
         self,
         status_code: int | None = None,
-        user_message: str | None = None,
+        error_code: str | None = None,
+        error_detail: str | None = None,
     ) -> None:
         self.status_code = status_code or self.status_code
-        self.user_message = user_message or self.user_message
+        self.error_code = error_code or self.error_code
+        self.error_detail = error_detail or self.error_detail
 
 
 class ProfileRequired(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
-    user_message = "프로필 설정이 필요합니다."
-    system_code = "USER_PROFILE_DATA_REQUIRED"
-    system_message = "User's Profile data is reuqired"
+    error_code = 100000
+    error_detail = "프로필 설정이 필요합니다"
 
 
 class EmailConflictException(RestException):
     status_code = status.HTTP_409_CONFLICT
-    user_message = "이미 사용중인 이메일입니다."
-    system_code = "EMAIL_ALREADY_EXISTS"
-    system_message = "Email is already in use"
+    error_code = 100001
+    error_detail = "프로필 설정이 필요합니다"
 
 
 class EmailExpiredException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
-    user_message = "인증이 만료되었습니다.다시 시도해주세요."
-    system_code = EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE
-    system_message = "Verify code has expired"
+    error_code = 100002
+    error_detail = "인증이 만료되었습니다.다시 시도해주세요."
 
 
 class EmailAuthNumberInvalidException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
-    user_message = "인증번호가 맞지 않습니다.다시 확인해주세요."
-    system_code = EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE
-    system_message = "Auth number is not matched"
+    error_code = 100003
+    error_detail = "인증번호가 맞지 않습니다.다시 확인해주세요."
 
 
 class PasswordInvalidException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
-    user_message = "비밀번호 최소 길이는 6자입니다."
-    system_code = PASSWORD_INVALID_SYSTEM_CODE
-    system_message = "Password need at least 6 characters"
+    error_code = 100003
+    error_detail = "비밀번호 최소 길이는 6자입니다."
 
 
 class UserNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "사용자 정보를 찾을 수 없습니다."
-    system_code = USER_NOT_FOUND_SYSTEM_CODE
-    system_message = "User(email) not found"
+    error_code = 100004
+    error_detail = "사용자 정보를 찾을 수 없습니다."
 
 
 class UserRetrieveFailException(RestException):
-    error_code = 100000
+    status_code = status.HTTP_404_NOT_FOUND
+    error_code = 100005
     error_detail = "사용자 정보를 조회하는데 실패했습니다."
 
 
 class UserPasswordNotMatchException(RestException):
     status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
-    user_message = "비밀번호가 틀렸습니다."
-    system_code = PASSWORD_INVALID_SYSTEM_CODE
-    system_message = "User's password is not matched"
+    error_code = 100006
+    error_detail = "비밀번호가 틀렸습니다."
 
 
 class BannerNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "배너가 존재하지 않습니다."
-    system_code = BANNER_NOT_FOUND_SYSTEM_CODE
-    system_message = "Banner not found"
+    error_code = 100007
+    error_detail = "배너가 존재하지 않습니다."
 
 
 class FaqNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "질문게시글이 존재하지 않습니다."
-    system_code = FAQ_NOT_FOUND_SYSTEM_CODE
-    system_message = "Faq not found"
+    error_code = 100008
+    error_detail = "질문게시글이 존재하지 않습니다."
 
 
 class ClubNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "클럽이 존재하지 않습니다."
-    system_code = CLUB_NOT_FOUND_SYSTEM_CODE
-    system_message = "Club not found"
+    error_code = 100008
+    error_detail = "클럽이 존재하지 않습니다."
 
 
 class JoinClubNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "해당 클럽에 소속되어 있지 않습니다."
-    system_code = JOIN_CLUB_NOT_FOUND_SYSTEM_CODE
-    system_message = "JoinClub has not found"
+    error_code = 100009
+    error_detail = "해당 클럽에 소속되어 있지 않습니다."
 
 
 class MatchNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "매치글이 존재하지 않습니다."
-    system_code = MATCH_NOT_FOUND_SYSTEM_CODE
-    system_message = "Match not found"
+    error_code = 100010
+    error_detail = "매치글이 존재하지 않습니다."
 
 
 class JoinMatchNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "매치 신청이 존재하지 않습니다."
-    system_code = JOIN_MATCH_NOT_FOUND_SYSTEM_CODE
-    system_message = "Join Match not found"
+    error_code = 100011
+    error_detail = "매치 신청이 존재하지 않습니다."
 
 
 class GuestNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "용병글이 존재하지 않습니다."
-    system_code = GUEST_NOT_FOUND_SYSTEM_CODE
-    system_message = "Guest not found"
+    error_code = 100012
+    error_detail = "용병글이 존재하지 않습니다."
 
 
 class JoinGuestNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "용병 신청이 존재하지 않습니다."
-    system_code = JOIN_GUEST_NOT_FOUND_SYSTEM_CODE
-    system_message = "Join Guest not found"
+    error_code = 100013
+    error_detail = "용병 신청이 존재하지 않습니다."
 
 
 class PollNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
-    user_message = "투표가 존재하지 않습니다"
-    system_code = GUEST_NOT_FOUND_SYSTEM_CODE
-    system_message = "Poll has not found"
+    error_code = 100014
+    error_detail = "투표가 존재하지 않습니다"
 
 
 class ProfileRequired(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
-    user_message = "프로필 설정이 필요합니다."
-    system_code = "USER_PROFILE_DATA_REQUIRED"
-    system_message = "User's Profile data is reuqired"
+    error_code = 100015
+    error_detail = "프로필 설정이 필요합니다."
 
 
 class SnsRequired(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
-    user_message = "SNS 로그인이 필요합니다."
-    system_code = "SNS_LOGIN_REQUIRED"
-    system_message = "SNS login is reuqired"
+    error_code = 100016
+    error_detail = "SNS 로그인이 필요합니다."
 
 
 class NotFoudnJoinClub(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
-    user_message = "소속된 클럽 정보가 존재하지 않습니다"
-    system_code = "NOT_FOUND_JOIN_CLUB"
+    error_code = 100017
+    error_detail = "소속된 클럽 정보가 존재하지 않습니다"
 
 
 class RegisterMatchError(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
-    user_message = "매칭을 생성하는데 실패하였습니다"
-    system_code = "REGISTER_MATCH_ERROR"
+    error_code = 100018
+    error_detail = "매칭을 생성하는데 실패하였습니다"

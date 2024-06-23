@@ -26,6 +26,7 @@ def generic_exception_handler(_: Request, exc: Exception):
 
 def serializer_error_message(exc: Exception) -> dict:
     error = {
+        "status_code": getattr(exc, "status_code", None),
         "error_code": getattr(exc, "error_code", 999999),
         "error_detail": getattr(exc, "error_detail", None),
     }

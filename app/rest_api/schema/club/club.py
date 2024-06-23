@@ -15,8 +15,6 @@ class ClubSchema(BaseModel):
     age_group: str = Field(title="연령대")
     membership_fee: int = Field(0, title="회비")
     level: conint(ge=1, le=5) = Field(title="레벨")
-    emblem_img: str | None = Field(None, title="클럽 엠블럼 URL")
-    img: str | None = Field(None, title="클럽 이미지 URL")
     uniform_color: str | None = Field(None, title="유니폼 색")
 
 

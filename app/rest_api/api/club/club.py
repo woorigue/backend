@@ -20,26 +20,48 @@ from app.rest_api.schema.club.club import (
     GetClubMemberSchema,
 )
 from app.rest_api.schema.profile import GetProfileSchema
+from fastapi import UploadFile, File, Form
+from app.rest_api.controller.file import file_controller as file_con
 
 club_router = APIRouter(tags=["club"], prefix="/club")
 
 
+from fastapi import APIRouter, Depends, UploadFile, File, Form
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from typing import Annotated
+from datetime import date
+
+
 @club_router.post("")
-def create_club(
+async def create_club(
     token: Annotated[str, Depends(get_current_user)],
-    club_data: ClubSchema,
+    emblem_img: UploadFile = File(...),
+    img: UploadFile = File(...),
+    level: int = Form(...),
+    register_date: str = Form(...),
+    name: str = Form(...),
+    location: str = Form(...),
+    uniform_color: str = Form(...),
+    membership_fee: int = Form(...),
+    age_group: str = Form(...),
     db: Session = Depends(get_db),
 ):
+    emblem_contents = await emblem_img.read()
+    img_contents = await img.read()
+    emblem_url = file_con.upload_club_img(emblem_contents, emblem_img.filename)
+    img_url = file_con.upload_club_img(img_contents, img.filename)
+
     club = Club(
-        name=club_data.name,
-        register_date=club_data.register_date,
-        location=club_data.location,
-        age_group=club_data.age_group,
-        membership_fee=club_data.membership_fee,
-        level=club_data.level,
-        emblem_img=club_data.emblem_img,
-        img=club_data.img,
-        uniform_color=club_data.uniform_color,
+        name=name,
+        register_date=register_date,
+        location=location,
+        age_group=age_group,
+        membership_fee=membership_fee,
+        level=level,
+        emblem_img=emblem_url,
+        img=img_url,
+        uniform_color=uniform_color,
     )
     db.add(club)
     db.commit()
