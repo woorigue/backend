@@ -20,12 +20,9 @@ class Club(Base):
     uniform_color = Column(String(24), comment="유니폼 색")
     deleted = Column(Boolean, default=False, comment="삭제 여부")
 
+    members = relationship("User", secondary="join_club", back_populates="clubs")
+
     poll = relationship("Poll", back_populates="club")
-    join_club = relationship(
-        "JoinClub",
-        back_populates="club",
-        cascade="all, delete-orphan",
-    )
     home_matches = relationship(
         "Match",
         foreign_keys="[Match.home_club_seq]",
@@ -48,6 +45,3 @@ class JoinClub(Base):
     user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
     role = Column(String(10), comment="역할")
     accepted = Column(Boolean, comment="수락 여부")
-
-    club = relationship("Club", back_populates="join_club")
-    user = relationship("User", back_populates="join_club")

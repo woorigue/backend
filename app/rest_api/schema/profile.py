@@ -34,7 +34,7 @@ class GetProfileSchema(BaseModel):
     age: datetime | None = Field(title="나이", default=None)
     foot: str | None = Field(title="주발", default=None)
     level: int | None = Field(title="레벨", default=None)
-    join_position: list[JoinPositionSchema] = []
+    positions: list[int] | None = Field(title="포지션", default=None)
     img: str | None = Field(title="이미지 URL", default=None)
 
     class Config:

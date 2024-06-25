@@ -28,26 +28,30 @@ class User(Base):
     email = Column(String(128), unique=True, comment="이메일")
     password = Column(String(256), comment="비밀번호")
     is_active = Column(Boolean, default=True, comment="활성화 여부")
-    clubs = Column(get_position_type(), nullable=True, comment="클럽")
 
     profile = relationship(Profile, back_populates="user", cascade="all, delete-orphan")
-    join_club = relationship(
-        JoinClub, back_populates="user", cascade="all, delete-orphan"
-    )
+
+    clubs = relationship("Club", secondary="join_club", back_populates="members")
+
     join_club_posting = relationship(
         JoinClubPosting, back_populates="user", cascade="all, delete-orphan"
     )
+
     join_guest = relationship(
         JoinGuest, back_populates="user", cascade="all, delete-orphan"
     )
+
     join_member_posting = relationship(
         JoinMemberPosting, back_populates="user", cascade="all, delete-orphan"
     )
+
     chatting_rooms = relationship(
         "ChattingRoom", secondary=UserChatRoomAssociation, back_populates="users"
     )
+
     poll = relationship("Poll", back_populates="user")
     join_poll = relationship("JoinPoll", back_populates="user")
+
     firebase = relationship(
         Firebase, back_populates="user", cascade="all, delete-orphan"
     )

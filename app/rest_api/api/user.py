@@ -32,7 +32,7 @@ from app.helper.exception import (
     UserPasswordNotMatchException,
     UserRetrieveFailException,
 )
-from app.model.club import Club
+from app.model.club import Club, JoinClub
 from app.model.clubPosting import ClubPosting
 from app.model.guest import Guest
 from app.model.match import Match
@@ -197,6 +197,23 @@ def get_user_info_with_profile(token: Annotated[str, Depends(get_current_user)])
         raise ProfileRequired
 
     return token
+
+
+@user_router.get(
+    "/{user_seq}",
+    response_model=UserSchema,
+)
+def get_user_detail(
+    user_seq: int,
+    # token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+
+    user = db.query(User).filter(User.seq == user_seq).first()
+    if not user:
+        raise UserRetrieveFailException
+
+    return user
 
 
 @user_router.patch("/me")
@@ -567,18 +584,3 @@ def get_sns_refresh_token(
         return SnsRequired
 
     return sns
-
-
-@user_router.get(
-    "/{user_seq}",
-    response_model=UserSchema,
-)
-def get_user_detail(
-    user_seq: int,
-    # token: Annotated[str, Depends(get_current_user)],
-    db: Session = Depends(get_db),
-):
-    user = db.scalar(select(User).where(User.seq == user_seq))
-    if not user:
-        raise UserRetrieveFailException
-    return user
