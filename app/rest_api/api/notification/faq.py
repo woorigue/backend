@@ -1,12 +1,18 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
-from app.model.faq import Faq
-from typing import Annotated
 from app.core.token import (
     get_current_user,
 )
+from app.core.utils import error_responses
+from app.helper.exception import FaqNotFoundException
+from app.model.faq import Faq
+
+# Controller
+from app.rest_api.controller.notification.faq import faq_controller as con
 
 # Schema
 from app.rest_api.schema.notification.faq import (
@@ -14,21 +20,20 @@ from app.rest_api.schema.notification.faq import (
     FaqEditSchema,
 )
 
-# Controller
-from app.rest_api.controller.notification.faq import faq_controller as con
-
-from app.helper.exception import FaqNotFoundException
-
 faq_router = APIRouter(tags=["faq"], prefix="/faq")
 
 
-@faq_router.get("")
+@faq_router.get("", summary="faq 조회")
 def list_faqs(db: Session = Depends(get_db)):
     faq = db.query(Faq).order_by(Faq.create_date.desc()).all()
     return faq
 
 
-@faq_router.get("/{faq_id}")
+@faq_router.get(
+    "/{faq_id}",
+    summary="faq 상세 조회",
+    responses={404: {"description": error_responses([FaqNotFoundException])}},
+)
 def get_faq(faq_id: int, db: Session = Depends(get_db)):
     faq = db.query(Faq).filter(Faq.seq == faq_id).first()
     if faq is None:
@@ -36,7 +41,7 @@ def get_faq(faq_id: int, db: Session = Depends(get_db)):
     return faq
 
 
-@faq_router.post("")
+@faq_router.post("", summary="faq 생성")
 def create_faq(
     faq_data: FaqCreateSchema,
     token: Annotated[str, Depends(get_current_user)],
@@ -46,7 +51,11 @@ def create_faq(
     return {"success": True}
 
 
-@faq_router.patch("/{faq_id}")
+@faq_router.patch(
+    "/{faq_id}",
+    summary="faq 수정",
+    responses={404: {"description": error_responses([FaqNotFoundException])}},
+)
 def edit_faq(
     faq_id: int,
     faq_data: FaqEditSchema,
@@ -57,7 +66,11 @@ def edit_faq(
     return {"success": True}
 
 
-@faq_router.delete("/{faq_id}")
+@faq_router.delete(
+    "/{faq_id}",
+    summary="faq 삭제",
+    responses={404: {"description": error_responses([FaqNotFoundException])}},
+)
 def delete_faq(
     faq_id: int,
     token: Annotated[str, Depends(get_current_user)],

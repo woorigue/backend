@@ -1,43 +1,41 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi_filter import FilterDepends
 from sqlalchemy import and_, delete, exists, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.deps import get_db
 from app.core.token import get_current_user
-from app.helper.exception import ClubNotFoundException, JoinClubNotFoundException
+from app.helper.exception import (
+    ClubNotFoundException,
+    JoinClubLimitError,
+    JoinClubNotFoundException,
+)
 from app.model.club import Club, JoinClub
 from app.model.match import Match
 from app.model.position import JoinPosition
 from app.model.profile import Profile
+from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.schema.club.club import (
     ClubResponseSchema,
-    ClubSchema,
     FilterClubSchema,
-    UpdateClubSchema,
     GetClubMemberSchema,
+    UpdateClubSchema,
 )
 from app.rest_api.schema.profile import GetProfileSchema
-from fastapi import UploadFile, File, Form
-from app.rest_api.controller.file import file_controller as file_con
 
 club_router = APIRouter(tags=["club"], prefix="/club")
 
 
-from fastapi import APIRouter, Depends, UploadFile, File, Form
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-from typing import Annotated
-from datetime import date
+from fastapi import APIRouter
 
 
 @club_router.post("")
 async def create_club(
     token: Annotated[str, Depends(get_current_user)],
-    emblem_img: UploadFile = File(...),
-    img: UploadFile = File(...),
+    emblem_img: UploadFile | None = File(None),
+    img: UploadFile | None = File(None),
     level: int = Form(...),
     register_date: str = Form(...),
     name: str = Form(...),
@@ -47,10 +45,19 @@ async def create_club(
     age_group: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    emblem_contents = await emblem_img.read()
-    img_contents = await img.read()
-    emblem_url = file_con.upload_club_img(emblem_contents, emblem_img.filename)
-    img_url = file_con.upload_club_img(img_contents, img.filename)
+    join_club_count = db.query(JoinClub).where(JoinClub.user_seq == token.seq).count()
+    if join_club_count > 2:
+        raise JoinClubLimitError
+
+    emblem_url = ""
+    if emblem_img is not None:
+        emblem_contents = await emblem_img.read()
+        emblem_url = file_con.upload_club_img(emblem_contents, emblem_img.filename)
+
+    img_url = ""
+    if img is not None:
+        img_contents = await img.read()
+        img_url = file_con.upload_club_img(img_contents, img.filename)
 
     club = Club(
         name=name,

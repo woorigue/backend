@@ -1,7 +1,7 @@
-from fastapi import status
+from fastapi import HTTPException, status
 
 
-class RestException(Exception):
+class RestException(HTTPException):
     status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
     error_code: int = 999999
     error_detail: str = ""
@@ -26,7 +26,7 @@ class ProfileRequired(RestException):
 class EmailConflictException(RestException):
     status_code = status.HTTP_409_CONFLICT
     error_code = 100001
-    error_detail = "프로필 설정이 필요합니다"
+    error_detail = "이메일 중복 오류 발생"
 
 
 class EmailExpiredException(RestException):
@@ -119,12 +119,6 @@ class PollNotFoundException(RestException):
     error_detail = "투표가 존재하지 않습니다"
 
 
-class ProfileRequired(RestException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    error_code = 100015
-    error_detail = "프로필 설정이 필요합니다."
-
-
 class SnsRequired(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100016
@@ -141,3 +135,9 @@ class RegisterMatchError(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100018
     error_detail = "매칭을 생성하는데 실패하였습니다"
+
+
+class JoinClubLimitError(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = 100019
+    error_detail = "클럽에 참여할 수 있는 팀은 최대 2팀 입니다."

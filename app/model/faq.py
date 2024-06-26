@@ -1,14 +1,12 @@
-from sqlalchemy import Column, String, Integer, DateTime
-
-from app.db.session import Base
-from sqlalchemy.orm import Session
-
 from datetime import datetime
 
-from app.rest_api.schema.notification.faq import FaqCreateSchema, FaqEditSchema
-from app.helper.exception import FaqNotFoundException
-
 import bleach
+from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy.orm import Session
+
+from app.db.session import Base
+from app.helper.exception import FaqNotFoundException
+from app.rest_api.schema.notification.faq import FaqCreateSchema, FaqEditSchema
 
 
 class Faq(Base):
@@ -33,7 +31,6 @@ class Faq(Base):
     @staticmethod
     def edit(faq_id: int, faq_data: FaqEditSchema, db: Session) -> None:
         faq = db.query(Faq).filter(Faq.seq == faq_id).first()
-        print(faq, faq_data)
         if not faq:
             raise FaqNotFoundException
 

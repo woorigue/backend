@@ -27,3 +27,8 @@ class UserSchema(BaseModel):
     is_active: bool = Field(title="계정 활성 여부")
     profile: list[GetProfileSchema]
     clubs: list[ClubResponseSchema]
+
+
+class UserLoginResponse(BaseModel):
+    access_token: str = Field(title="access_token")
+    refresh_token: str = Field(title="refresh_token")

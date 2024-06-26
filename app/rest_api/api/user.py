@@ -9,14 +9,6 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 from starlette.config import Config
 
-from app.constants.errors import (
-    EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE,
-    EMAIL_CONFLICT_SYSTEM_CODE,
-    EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE,
-    PASSWORD_INVALID_SYSTEM_CODE,
-    USER_NOT_FOUND_SYSTEM_CODE,
-    USER_PROFILE_REQUIRED_SYSTEM_CODE,
-)
 from app.core.deps import get_db
 from app.core.token import (
     create_access_token,
@@ -25,14 +17,19 @@ from app.core.token import (
     validate_refresh_token,
     verify_password,
 )
+from app.core.utils import error_responses
 from app.helper.exception import (
+    EmailAuthNumberInvalidException,
+    EmailConflictException,
+    EmailExpiredException,
+    PasswordInvalidException,
     ProfileRequired,
     SnsRequired,
     UserNotFoundException,
     UserPasswordNotMatchException,
     UserRetrieveFailException,
 )
-from app.model.club import Club, JoinClub
+from app.model.club import Club
 from app.model.clubPosting import ClubPosting
 from app.model.guest import Guest
 from app.model.match import Match
@@ -57,6 +54,7 @@ from app.rest_api.schema.user import (
     EmailLoginSchema,
     EmailRegisterSchema,
     ResetPasswordSchema,
+    UserLoginResponse,
     UserSchema,
 )
 
@@ -65,12 +63,9 @@ user_router = APIRouter(tags=["user"], prefix="/user")
 
 @user_router.post(
     "/email/request/verify/code",
-    description=f"""
-    **[API Description]** <br><br>
-    Request verify code for register user and duplicated check of email <br><br>
-    **[Exception List]** <br><br>
-    {EMAIL_CONFLICT_SYSTEM_CODE}: 이메일 중복 오류(409)
-    """,
+    summary="이메일 중복 여부 확인",
+    responses={409: {"description": error_responses([EmailConflictException])}},
+    response_model=CreateResponse,
 )
 def email_request_verify_code(
     user_data: EmailVerifySchema, db: Session = Depends(get_db)
@@ -81,13 +76,15 @@ def email_request_verify_code(
 
 @user_router.post(
     "/email/verify/auth/code",
-    description=f"""
-    **[API Description]** <br><br>
-    Verify code(expiration time: 3min) <br><br>
-    **[Exception List]** <br><br>
-    {EMAIL_AUTH_NUMBER_INVALID_SYSTEM_CODE}: 인증번호 오류(400) <br><br>
-    {EMAIL_VERIFY_CODE_EXPIRED_SYSTEM_CODE}: 이메일 인증 만료(400)
-    """,
+    summary="이메일 인증번호 인증",
+    responses={
+        400: {
+            "description": error_responses(
+                [EmailAuthNumberInvalidException, EmailExpiredException]
+            )
+        }
+    },
+    response_model=CreateResponse,
 )
 def email_verify_auth_code(
     user_data: EmailAuthCodeSchema, db: Session = Depends(get_db)
@@ -98,13 +95,11 @@ def email_verify_auth_code(
 
 @user_router.post(
     "/email/register",
-    description=f"""
-    **[API Description]** <br><br>
-    Verify code(expiration time: 3min) <br><br>
-    **[Exception List]** <br><br>
-    {PASSWORD_INVALID_SYSTEM_CODE}: 비밀번호 오류(400) <br><br>
-    {EMAIL_CONFLICT_SYSTEM_CODE}: 이메일 중복 오류(409)
-    """,
+    summary="이메일 회원가입(등록)",
+    responses={
+        400: {"description": error_responses([PasswordInvalidException])},
+        409: {"description": error_responses([EmailConflictException])},
+    },
     response_model=CreateResponse,
 )
 def email_register_user(user_data: EmailRegisterSchema, db: Session = Depends(get_db)):
@@ -114,13 +109,12 @@ def email_register_user(user_data: EmailRegisterSchema, db: Session = Depends(ge
 
 @user_router.post(
     "/email/login",
-    description=f"""
-    **[API Description]** <br><br>
-    Email login <br><br>
-    **[Exception List]** <br><br>
-    {PASSWORD_INVALID_SYSTEM_CODE}: 비밀번호 오류(400) <br><br>
-    {USER_NOT_FOUND_SYSTEM_CODE}: 사용자 정보 검색 오류(404) <br><br>
-    """,
+    summary="로그인(이메일)",
+    responses={
+        404: {"description": error_responses([UserNotFoundException])},
+        422: {"description": error_responses([UserPasswordNotMatchException])},
+    },
+    response_model=UserLoginResponse,
 )
 def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == user_data.email))
@@ -141,12 +135,9 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
 
 @user_router.post(
     "/email/request/password/reset",
-    description=f"""
-    **[API Description]** <br><br>
-    Request auth code with email<br><br>
-    **[Exception List]** <br><br>
-    {USER_NOT_FOUND_SYSTEM_CODE}: 사용자 정보 검색 오류(404) <br><br>
-    """,
+    summary="패스워드 초기화 인증번호 요청",
+    responses={404: {"description": error_responses([UserNotFoundException])}},
+    response_model=CreateResponse,
 )
 def email_request_password_reset(
     user_data: EmailPasswordResetSchema, db: Session = Depends(get_db)
@@ -157,25 +148,26 @@ def email_request_password_reset(
 
 @user_router.post(
     "/password/reset",
-    description=f"""
-    **[API Description]** <br><br>
-    Request auth code with email<br><br>
-    **[Exception List]** <br><br>
-    {USER_NOT_FOUND_SYSTEM_CODE}: 사용자 정보 검색 오류(404) <br><br>
-    """,
+    summary="패스워드 초기화",
+    responses={404: {"description": error_responses([UserNotFoundException])}},
+    response_model=CreateResponse,
 )
 def user_reset_password(user_data: ResetPasswordSchema, db: Session = Depends(get_db)):
     con.reset_password(db, user_data)
     return {"success": True}
 
 
-@user_router.post("/token/refresh")
+@user_router.post(
+    "/token/refresh",
+    summary="토큰 재발급",
+    responses={404: {"description": error_responses([UserNotFoundException])}},
+    response_model=UserLoginResponse,
+)
 def get_access_token_using_refresh_token(
-    user_data: RefreshTokenSchema,
+    data: RefreshTokenSchema,
     db: Session = Depends(get_db),
 ):
-    username = validate_refresh_token(user_data, db)
-
+    username = validate_refresh_token(data, db)
     access_token = create_access_token(data={"sub": username})
     refresh_token = create_refresh_token(data={"sub": username})
 
@@ -184,13 +176,9 @@ def get_access_token_using_refresh_token(
 
 @user_router.get(
     "/me",
-    description=f"""
-    **[API Description]** <br><br>
-    Get my profile API <br><br>
-    **[Exception List]** <br><br>
-    {USER_PROFILE_REQUIRED_SYSTEM_CODE}: 사용자 프로필(400) <br><br>
-    """,
+    summary="사용자 정보 조회",
     response_model=UserSchema,
+    responses={400: {"description": error_responses([ProfileRequired])}},
 )
 def get_user_info_with_profile(token: Annotated[str, Depends(get_current_user)]):
     if not token.profile:
@@ -199,30 +187,19 @@ def get_user_info_with_profile(token: Annotated[str, Depends(get_current_user)])
     return token
 
 
-@user_router.get(
-    "/user/{user_seq}",
-    response_model=UserSchema,
+@user_router.patch(
+    "/me",
+    summary="사용자 정보 업데이트",
+    response_model=CreateResponse,
 )
-def get_user_detail(
-    user_seq: int,
-    # token: Annotated[str, Depends(get_current_user)],
-    db: Session = Depends(get_db),
-):
-
-    user = db.query(User).filter(User.seq == user_seq).first()
-    if not user:
-        raise UserRetrieveFailException
-
-    return user
-
-
-@user_router.patch("/me")
 def update_user_profile(
     user_data: UpdateProfileSchema,
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
     profile = token.profile
+    position = user_data.positions
+
     token.is_active = user_data.is_active
 
     if not profile:
@@ -245,12 +222,26 @@ def update_user_profile(
         for key, value in user_data.dict(exclude_none=True).items():
             setattr(profile, key, value)
 
+    if position is not None:
+        sql = delete(JoinPosition).where(JoinPosition.profile_seq == profile.seq)
+        db.execute(sql)
+
+        obj = [
+            JoinPosition(profile_seq=profile.seq, position_seq=item)
+            for item in position
+        ]
+        db.bulk_save_objects(obj)
+
     db.commit()
     db.flush()
     return {"success": True}
 
 
-@user_router.patch("/active_status")
+@user_router.patch(
+    "/active_status",
+    summary="사용자 활성 상태 업데이트",
+    response_model=CreateResponse,
+)
 def update_user_active_status(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
@@ -260,7 +251,11 @@ def update_user_active_status(
     return {"success": True}
 
 
-@user_router.delete("/me")
+@user_router.delete(
+    "/me",
+    summary="사용자 삭제",
+    response_model=CreateResponse,
+)
 def delete_user(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
@@ -274,7 +269,11 @@ def delete_user(
         return {"success": True}
 
 
-@user_router.post("/me/profile/img")
+@user_router.post(
+    "/me/profile/img",
+    summary="사용자 프로필 업로드",
+    response_model=CreateResponse,
+)
 async def create_user_profile_img(
     profile_img: UploadFile,
     token: Annotated[str, Depends(get_current_user)],
@@ -285,7 +284,11 @@ async def create_user_profile_img(
     return {"success": True}
 
 
-@user_router.delete("/me/profile/img")
+@user_router.delete(
+    "/me/profile/img",
+    summary="사용자 프로필 삭제",
+    response_model=CreateResponse,
+)
 def delete_user_profile_img(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
@@ -297,7 +300,10 @@ def delete_user_profile_img(
     return {"success": True}
 
 
-@user_router.get("/posting")
+@user_router.get(
+    "/posting",
+    summary="사용자 포스팅 조회",
+)
 def get_user_posting(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
@@ -322,7 +328,10 @@ def get_user_posting(
     ]
 
 
-@user_router.get("/match_history")
+@user_router.get(
+    "/match_history",
+    summary="사용자 매치 히스토리 조회",
+)
 def get_match_history(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
@@ -343,7 +352,10 @@ def get_match_history(
     return match_history
 
 
-@user_router.get("/match_schedule")
+@user_router.get(
+    "/match_schedule",
+    summary="사용자 예정된 매치 일정 조회",
+)
 def get_match_schedule(
     token: Annotated[str, Depends(get_current_user)],
     include_match_history: bool,
@@ -572,3 +584,20 @@ def get_sns_refresh_token(
         return SnsRequired
 
     return sns
+
+
+@user_router.get(
+    "/{user_seq}",
+    summary="사용자 정보 조회",
+    responses={404: {"description": error_responses([UserRetrieveFailException])}},
+    response_model=UserSchema,
+)
+def get_user_detail(
+    user_seq: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    user = db.scalar(select(User).where(User.seq == user_seq))
+    if not user:
+        raise UserRetrieveFailException
+    return user

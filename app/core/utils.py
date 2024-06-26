@@ -25,3 +25,10 @@ def get_position_type():
     if os.getenv("TEST_ENV"):
         return JSONEncodedList
     return ARRAY(Integer)
+
+
+def error_responses(exception_list) -> str:
+    description = ""
+    for item in set(exception_list):
+        description += f"{item.error_code}: {item.error_detail}<br>"
+    return description
