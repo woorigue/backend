@@ -1,7 +1,8 @@
+from typing import Literal
 import datetime
 
 from fastapi_filter.contrib.sqlalchemy import Filter
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, conint
 
 from app.model.guest import Guest
 
@@ -9,21 +10,22 @@ from app.model.guest import Guest
 class GuestSchema(BaseModel):
     club_seq: int = Field(title="클럽 시퀸스")
     match_seq: int = Field(title="매치 시퀸스")
-    position: list[int] = Field(title="포지션")
-    skill: str = Field(title="레벨")
-    guest_number: int = Field(title="모집인원")
+    level: conint(ge=1, le=5) = Field(title="레벨")
+    gender: Literal["M", "F", "U"] = Field(title="성별")
+    position: list[conint(ge=1, le=15)] = Field(title="포지션")
     match_fee: int = Field(title="매치비용")
-    status: str = Field(title="용병상태")
+    guest_number: int = Field(title="모집인원")
     notice: str = Field(title="공지사항")
 
 
 class UpdateGuestSchema(BaseModel):
     club_seq: int = Field(None, title="클럽 시퀸스")
     match_seq: int = Field(None, title="매치 시퀸스")
-    position: list[int] = Field(None, title="포지션")
-    skill: str = Field(None, title="레벨")
-    guest_number: int = Field(None, title="모집인원")
+    level: conint(ge=1, le=5) = Field(None, title="레벨")
+    gender: Literal["M", "F", "U"] = Field(None, title="성별")
+    position: list[conint(ge=1, le=15)] = Field(None, title="포지션")
     match_fee: int = Field(None, title="매치비용")
+    guest_number: int = Field(None, title="모집인원")
     status: str = Field(None, title="용병상태")
     notice: str = Field(None, title="공지사항")
 
@@ -33,8 +35,9 @@ class FilterGuestSchema(Filter):
     user_seq__in: list[int] | None = Field(None, title="유저 시퀸스 리스트")
     club_seq__in: list[int] | None = Field(None, title="매치 시퀸스 리스트")
     match_seq__in: list[int] | None = Field(None, title="매치 시퀸스 리스트")
-    # position: Optional[List[int]] = Field(None, title="포지션")
-    skill__in: list[str] | None = Field(None, title="실력 리스트")
+    level__in: list[int] | None = Field(None, title="실력 리스트")
+    gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")
+    position__in: list[conint(ge=1, le=5)] = Field(None, title="포지션")
     status: str | None = Field(None, title="용병 상태")
 
     class Constants(Filter.Constants):
@@ -53,9 +56,10 @@ class GuestResponseSchema(BaseModel):
     user_seq: int = Field(title="유저 시퀸스")
     club_seq: int = Field(title="클럽 시퀸스")
     match_seq: int = Field(title="매치 시퀸스")
+    level: int = Field(title="레벨")
+    gender: str = Field(title="성별")
     position: list[int] = Field(title="포지션")
-    skill: str = Field(title="레벨")
-    guest_number: int = Field(title="모집인원")
     match_fee: int = Field(title="매치비용")
-    status: str = Field(title="용병상태")
+    guest_number: int = Field(title="모집인원")
     notice: str = Field(title="공지사항")
+    status: str = Field(title="용병상태")

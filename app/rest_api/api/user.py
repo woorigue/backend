@@ -200,7 +200,7 @@ def get_user_info_with_profile(token: Annotated[str, Depends(get_current_user)])
 
 
 @user_router.get(
-    "/{user_seq}",
+    "/user/{user_seq}",
     response_model=UserSchema,
 )
 def get_user_detail(
@@ -223,8 +223,6 @@ def update_user_profile(
     db: Session = Depends(get_db),
 ):
     profile = token.profile
-    position = user_data.positions
-
     token.is_active = user_data.is_active
 
     if not profile:
@@ -246,16 +244,6 @@ def update_user_profile(
 
         for key, value in user_data.dict(exclude_none=True).items():
             setattr(profile, key, value)
-
-    if position is not None:
-        sql = delete(JoinPosition).where(JoinPosition.profile_seq == profile.seq)
-        db.execute(sql)
-
-        obj = [
-            JoinPosition(profile_seq=profile.seq, position_seq=item)
-            for item in position
-        ]
-        db.bulk_save_objects(obj)
 
     db.commit()
     db.flush()

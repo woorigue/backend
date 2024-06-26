@@ -88,7 +88,12 @@ def get_match(
 ):
     match = (
         db.query(Match)
-        .options(joinedload(Match.home_club), joinedload(Match.away_club))
+        .options(
+            joinedload(Match.home_club),
+            joinedload(Match.away_club),
+            joinedload(Match.home_club_guest),
+            joinedload(Match.away_club_guest),
+        )
         .filter(Match.seq == match_seq)
         .first()
     )

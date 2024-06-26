@@ -13,16 +13,29 @@ class Guest(Base):
     user_seq = Column(Integer, nullable=False, comment="작성자 유저 시퀀스")
     club_seq = Column(Integer, nullable=False, comment="클럽 시퀀스")
     match_seq = Column(Integer, nullable=False, comment="매치 시퀀스")
+    level = Column(Integer, nullable=False, comment="레벨")
+    gender = Column(String(12), nullable=False, comment="성별")
     position = Column(get_position_type(), comment="포지션")
-    skill = Column(String(24), nullable=False, comment="레벨")
-    guest_number = Column(Integer, nullable=False, comment="모집인원")
     match_fee = Column(Integer, comment="매치비용")
-    status = Column(String(24), nullable=False, comment="용병상태")
+    guest_number = Column(Integer, nullable=False, comment="모집인원")
     notice = Column(String(255), nullable=False, comment="공지사항")
+    status = Column(String(24), nullable=False, comment="용병상태")
 
     join_guest = relationship(
         "JoinGuest",
         back_populates="guest",
+        cascade="all, delete-orphan",
+    )
+    home_matches = relationship(
+        "Match",
+        foreign_keys="[Match.home_club_guest_seq]",
+        back_populates="home_club_guest",
+        cascade="all, delete-orphan",
+    )
+    away_matches = relationship(
+        "Match",
+        foreign_keys="[Match.away_club_guest_seq]",
+        back_populates="away_club_guest",
         cascade="all, delete-orphan",
     )
 

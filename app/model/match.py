@@ -31,7 +31,18 @@ class Match(Base):
     match_fee = Column(Integer, nullable=True, comment="매치비용")
     notice = Column(String(255), nullable=True, comment="공지사항")
     status = Column(String(24), nullable=False, comment="매치상태")
-    guest_seq = Column(Integer, nullable=True, comment="용병 게시글 시퀸스")
+    home_club_guest_seq = Column(
+        Integer,
+        ForeignKey("guest.seq", ondelete="CASCADE"),
+        nullable=True,
+        comment="홈 클럽 용병 게시글 시퀸스",
+    )
+    away_club_guest_seq = Column(
+        Integer,
+        ForeignKey("guest.seq", ondelete="CASCADE"),
+        nullable=True,
+        comment="원정 클럽 용병 게시글 시퀸스",
+    )
     home_club_poll_seq = Column(
         Integer,
         nullable=False,
@@ -42,7 +53,6 @@ class Match(Base):
         comment="원정 클럽 투표 시퀸스",
     )
 
-    poll = relationship("Poll", back_populates="match")
     join_match = relationship(
         "JoinMatch",
         back_populates="match",
@@ -55,6 +65,15 @@ class Match(Base):
     away_club = relationship(
         "Club", foreign_keys=[away_club_seq], back_populates="away_matches"
     )
+
+    home_club_guest = relationship(
+        "Guest", foreign_keys=[home_club_guest_seq], back_populates="home_matches"
+    )
+    away_club_guest = relationship(
+        "Guest", foreign_keys=[away_club_guest_seq], back_populates="away_matches"
+    )
+
+    poll = relationship("Poll", back_populates="match")
 
 
 class JoinMatch(Base):

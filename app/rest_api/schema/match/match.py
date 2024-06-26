@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, conint
 
 from app.model.match import Match
 from app.rest_api.schema.club.club import ClubResponseSchema
+from app.rest_api.schema.guest.guest import GuestResponseSchema
 
 
 class MatchSchema(BaseModel):
@@ -33,7 +34,8 @@ class UpdateMatchSchema(BaseModel):
     gender: Literal["M", "F", "U"] = Field(None, title="성별")
     match_fee: int = Field(None, title="매치비용")
     notice: str = Field(None, title="공지사항")
-    guest_seq: int = Field(None, title="용병 게시글 시퀸스")
+    home_club_guest_seq: int = Field(None, title="홈 클럽 용병 게시글 시퀸스")
+    away_club_guest_seq: int = Field(None, title="원정 클럽 용병 게시글 시퀸스")
 
 
 class FilterMatchSchema(Filter):
@@ -53,7 +55,12 @@ class FilterMatchSchema(Filter):
     match_fee__gte: int | None = Field(None, title="최소 회비")
     match_fee__lte: int | None = Field(None, title="최대 회비")
     status: str | None = Field(None, title="매치상태")
-    guest_seq__in: list[int] | None = Field(None, title="용별 게시글 시퀸스")
+    home_club_guest_seq__in: list[int] | None = Field(
+        None, title="홈 클럽 용별 게시글 시퀸스"
+    )
+    away_club_guest_seq__in: list[int] | None = Field(
+        None, title="원정 클럽용별 게시글 시퀸스"
+    )
 
     class Constants(Filter.Constants):
         model = Match
@@ -69,8 +76,8 @@ class MatchResponseSchema(BaseModel):
     seq: int = Field(title="시퀸스")
     date: datetime = Field(title="게시일")
     user_seq: int = Field(title="유저 시퀸스")
-    home_club: ClubResponseSchema
-    away_club: ClubResponseSchema | None
+    home_club: ClubResponseSchema = Field(title="클럽 정보")
+    away_club: ClubResponseSchema | None = Field(title="클럽 정보")
     match_type: str = Field(title="매치유형")
     location: str = Field(title="매치장소")
     match_date: date = Field(title="매치일")
@@ -82,6 +89,7 @@ class MatchResponseSchema(BaseModel):
     match_fee: int = Field(title="매치비용")
     notice: str = Field(title="공지사항")
     status: str = Field(title="매치상태")
-    guest_seq: int | None = Field(title="용병 게시글 시퀸스")
+    home_club_guest: GuestResponseSchema | None = Field(title="용병 게시글 시퀸스")
+    away_club_guest: GuestResponseSchema | None = Field(title="용병 게시글 시퀸스")
     home_club_poll_seq: int = Field(title="홈 클럽 투표 시퀸스")
     away_club_poll_seq: int | None = Field(title="원정 클럽 투표 시퀸스")

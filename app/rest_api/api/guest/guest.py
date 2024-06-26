@@ -12,8 +12,10 @@ from app.core.token import (
 from app.helper.exception import (
     GuestNotFoundException,
     JoinGuestNotFoundException,
+    MatchNotFoundException,
 )
 from app.model.guest import Guest, JoinGuest
+from app.model.match import Match
 from app.model.poll import JoinPoll, Poll
 from app.rest_api.schema.guest.guest import (
     FilterGuestSchema,
@@ -21,6 +23,7 @@ from app.rest_api.schema.guest.guest import (
     GuestSchema,
     UpdateGuestSchema,
 )
+
 
 guest_router = APIRouter(tags=["guest"], prefix="/guest")
 
@@ -36,14 +39,27 @@ def create_guest(
         user_seq=token.seq,
         club_seq=guest_data.club_seq,
         match_seq=guest_data.match_seq,
+        level=guest_data.level,
+        gender=guest_data.gender,
         position=guest_data.position,
-        skill=guest_data.skill,
-        guest_number=guest_data.guest_number,
         match_fee=guest_data.match_fee,
-        status=guest_data.status,
+        guest_number=guest_data.guest_number,
         notice=guest_data.notice,
+        status="pending",
     )
     db.add(guest)
+    db.commit()
+    db.refresh(guest)
+
+    match = db.query(Match).filter(Match.seq == guest.match_seq).first()
+    if match is None:
+        raise MatchNotFoundException
+
+    if match.home_club_seq == guest.club_seq:
+        match.home_club_guest_seq = guest.seq
+    elif match.away_club_seq == guest.club_seq:
+        match.away_club_guest_seq = guest.seq
+
     db.commit()
 
     return {"success": True}
