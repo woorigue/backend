@@ -36,18 +36,21 @@ async def create_club(
     token: Annotated[str, Depends(get_current_user)],
     emblem_img: UploadFile | None = File(None),
     img: UploadFile | None = File(None),
-    level: int = Form(...),
     register_date: str = Form(...),
+    level: int = Form(...),
+    intro: str = Form(...),
     name: str = Form(...),
     location: str = Form(...),
+    team_size: int = Form(...),
+    gender: str = Form(...),
     uniform_color: str = Form(...),
     membership_fee: int = Form(...),
     age_group: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    join_club_count = db.query(JoinClub).where(JoinClub.user_seq == token.seq).count()
-    if join_club_count > 2:
-        raise JoinClubLimitError
+    # join_club_count = db.query(JoinClub).where(JoinClub.user_seq == token.seq).count()
+    # if join_club_count > 2:
+    #     raise JoinClubLimitError
 
     emblem_url = ""
     if emblem_img is not None:
@@ -62,10 +65,13 @@ async def create_club(
     club = Club(
         name=name,
         register_date=register_date,
+        intro=intro,
         location=location,
         age_group=age_group,
         membership_fee=membership_fee,
         level=level,
+        team_size=team_size,
+        gender=gender,
         emblem_img=emblem_url,
         img=img_url,
         uniform_color=uniform_color,

@@ -13,7 +13,7 @@ class RetrievePollSchema(BaseModel):
     seq: int
     match_seq: int
     user_seq: int
-    expired_at: date | None
+    expired_at: datetime | None
     vote_closed: bool | None
     created_at: datetime
     updated_at: datetime
