@@ -21,15 +21,11 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     op.add_column(
         "match",
-        sa.Column(
-            "home_club_guest_seq", sa.Integer, comment="홈 클럽 용병 게시글 시퀸스"
-        ),
+        sa.Column("home_club_guest_seq", sa.Integer, comment="홈 클럽 용병 게시글 시퀸스"),
     )
     op.add_column(
         "match",
-        sa.Column(
-            "away_club_guest_seq", sa.Integer, comment="원정 클럽 용병 게시글 시퀸스"
-        ),
+        sa.Column("away_club_guest_seq", sa.Integer, comment="원정 클럽 용병 게시글 시퀸스"),
     )
     op.drop_column("match", "guest_seq")
 

@@ -55,12 +55,8 @@ class FilterMatchSchema(Filter):
     match_fee__gte: int | None = Field(None, title="최소 회비")
     match_fee__lte: int | None = Field(None, title="최대 회비")
     status: str | None = Field(None, title="매치상태")
-    home_club_guest_seq__in: list[int] | None = Field(
-        None, title="홈 클럽 용별 게시글 시퀸스"
-    )
-    away_club_guest_seq__in: list[int] | None = Field(
-        None, title="원정 클럽용별 게시글 시퀸스"
-    )
+    home_club_guest_seq__in: list[int] | None = Field(None, title="홈 클럽 용별 게시글 시퀸스")
+    away_club_guest_seq__in: list[int] | None = Field(None, title="원정 클럽용별 게시글 시퀸스")
 
     class Constants(Filter.Constants):
         model = Match
