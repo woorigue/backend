@@ -26,11 +26,18 @@ from app.rest_api.schema.match.match import (
 from app.rest_api.schema.poll import (
     CreatePollSchema,
 )
+from app.core.utils import error_responses
+from app.rest_api.schema.base import CreateResponse
 
 match_router = APIRouter(tags=["match"], prefix="/match")
 
 
-@match_router.post("")
+@match_router.post(
+    "",
+    summary="매치 생성",
+    responses={400: {"description": error_responses([RegisterMatchError])}},
+    response_model=CreateResponse,
+)
 def create_match(
     token: Annotated[str, Depends(get_current_user)],
     match_data: MatchSchema,
@@ -80,7 +87,12 @@ def create_match(
     return {"success": True}
 
 
-@match_router.get("/{match_seq}", response_model=MatchResponseSchema)
+@match_router.get(
+    "/{match_seq}",
+    summary="매치 세부 조회",
+    responses={404: {"description": error_responses([MatchNotFoundException])}},
+    response_model=MatchResponseSchema,
+)
 def get_match(
     token: Annotated[str, Depends(get_current_user)],
     match_seq: int,
@@ -104,7 +116,12 @@ def get_match(
     return match
 
 
-@match_router.patch("/{match_seq}")
+@match_router.patch(
+    "/{match_seq}",
+    summary="매치 수정",
+    responses={404: {"description": error_responses([MatchNotFoundException])}},
+    response_model=CreateResponse,
+)
 def update_match(
     token: Annotated[str, Depends(get_current_user)],
     match_seq: int,
@@ -124,7 +141,12 @@ def update_match(
     return {"success": True}
 
 
-@match_router.delete("/{match_seq}")
+@match_router.delete(
+    "/{match_seq}",
+    summary="매치 삭제",
+    responses={404: {"description": error_responses([MatchNotFoundException])}},
+    response_model=CreateResponse,
+)
 def delete_match(
     token: Annotated[str, Depends(get_current_user)],
     match_seq: int,
@@ -138,10 +160,10 @@ def delete_match(
     db.delete(match)
     db.commit()
 
-    return {"message": "매치게시글이 성공적으로 삭제되었습니다."}
+    return {"success": True}
 
 
-@match_router.get("", response_model=list[MatchResponseSchema])
+@match_router.get("", response_model=list[MatchResponseSchema], summary="매치 조회")
 def filter_match(
     token: Annotated[str, Depends(get_current_user)],
     match_filter: FilterMatchSchema = FilterDepends(FilterMatchSchema),
@@ -154,14 +176,15 @@ def filter_match(
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
     matches = query.all()
-    print(matches)
-    for item in matches:
-        print(item.__dict__)
-
     return matches
 
 
-@match_router.post("/{match_seq}/join")
+@match_router.post(
+    "/{match_seq}/join",
+    summary="매치 참여",
+    responses={404: {"description": error_responses([MatchNotFoundException])}},
+    response_model=CreateResponse,
+)
 def join_match(
     match_seq: int,
     away_club_seq: int,
@@ -189,7 +212,18 @@ def join_match(
     return {"success": True}
 
 
-@match_router.patch("/{match_seq}/accept")
+@match_router.patch(
+    "/{match_seq}/accept",
+    summary="매치 수락",
+    responses={
+        404: {
+            "description": error_responses(
+                [MatchNotFoundException, JoinMatchNotFoundException]
+            )
+        }
+    },
+    response_model=CreateResponse,
+)
 def accept_match(
     match_seq: int,
     away_club_seq: int,
