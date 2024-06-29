@@ -27,7 +27,7 @@ def get_position_type():
     return ARRAY(Integer)
 
 
-def error_responses(exception_list) -> str:
+def error_responses(exception_list: list) -> str:
     description = ""
     for item in set(exception_list):
         description += f"{item.error_code}: {item.error_detail}<br>"

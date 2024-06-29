@@ -24,11 +24,17 @@ from app.rest_api.schema.guest.guest import (
     UpdateGuestSchema,
 )
 
+from app.core.utils import error_responses
+
 
 guest_router = APIRouter(tags=["guest"], prefix="/guest")
 
 
-@guest_router.post("")
+@guest_router.post(
+    "",
+    summary="게스트 생성",
+    responses={404: {"description": error_responses([MatchNotFoundException])}},
+)
 def create_guest(
     guest_data: GuestSchema,
     token: Annotated[str, Depends(get_current_user)],
