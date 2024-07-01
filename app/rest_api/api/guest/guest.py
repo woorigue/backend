@@ -9,6 +9,7 @@ from app.core.deps import get_db
 from app.core.token import (
     get_current_user,
 )
+from app.core.utils import error_responses
 from app.helper.exception import (
     GuestNotFoundException,
     JoinGuestNotFoundException,
@@ -17,6 +18,7 @@ from app.helper.exception import (
 from app.model.guest import Guest, JoinGuest
 from app.model.match import Match
 from app.model.poll import JoinPoll, Poll
+from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.guest.guest import (
     FilterGuestSchema,
     GuestResponseSchema,
@@ -24,15 +26,12 @@ from app.rest_api.schema.guest.guest import (
     UpdateGuestSchema,
 )
 
-from app.core.utils import error_responses
-
-
 guest_router = APIRouter(tags=["guest"], prefix="/guest")
 
 
 @guest_router.post(
     "",
-    summary="게스트 생성",
+    summary="용병 모집글 생성",
     responses={404: {"description": error_responses([MatchNotFoundException])}},
 )
 def create_guest(
@@ -71,7 +70,12 @@ def create_guest(
     return {"success": True}
 
 
-@guest_router.get("/{guest_seq}", response_model=GuestResponseSchema)
+@guest_router.get(
+    "/{guest_seq}",
+    summary="용병 상세 조회",
+    responses={404: {"description": error_responses([GuestNotFoundException])}},
+    response_model=GuestResponseSchema,
+)
 def get_guest(
     token: Annotated[str, Depends(get_current_user)],
     guest_seq: int,
@@ -83,7 +87,11 @@ def get_guest(
     return guest
 
 
-@guest_router.patch("/{guest_seq}")
+@guest_router.patch(
+    "/{guest_seq}",
+    summary="용병 공고글 수정",
+    responses={404: {"description": error_responses([GuestNotFoundException])}},
+)
 def update_guest(
     token: Annotated[str, Depends(get_current_user)],
     guest_seq: int,
@@ -103,7 +111,12 @@ def update_guest(
     return {"success": True}
 
 
-@guest_router.delete("/{guest_seq}")
+@guest_router.delete(
+    "/{guest_seq}",
+    summary="용병 모집글 삭제",
+    responses={404: {"description": error_responses([GuestNotFoundException])}},
+    response_model=CreateResponse,
+)
 def delete_guest(
     token: Annotated[str, Depends(get_current_user)],
     guest_seq: int,
@@ -117,11 +130,12 @@ def delete_guest(
     db.delete(guest)
     db.commit()
 
-    return {"message": "용병게시글이 성공적으로 삭제되었습니다."}
+    return {"success": True}
 
 
 @guest_router.get(
     "",
+    summary="용병 모집글 조회",
     response_model=list[GuestResponseSchema],
 )
 def filter_guests(
@@ -140,7 +154,12 @@ def filter_guests(
     return guests
 
 
-@guest_router.post("/{guest_seq}/join")
+@guest_router.post(
+    "/{guest_seq}/join",
+    summary="용병 참석 요청",
+    responses={404: {"description": error_responses([GuestNotFoundException])}},
+    response_model=CreateResponse,
+)
 def join_guest(
     guest_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -162,7 +181,17 @@ def join_guest(
     return {"success": True}
 
 
-@guest_router.patch("/{guest_seq}/accept")
+@guest_router.patch(
+    "/{guest_seq}/accept",
+    summary="용병 수락",
+    responses={
+        404: {
+            "description": error_responses(
+                [GuestNotFoundException, JoinGuestNotFoundException]
+            )
+        }
+    },
+)
 def accept_guest(
     guest_seq: int,
     user_seq: int,

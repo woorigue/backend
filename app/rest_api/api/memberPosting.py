@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.deps import get_db
 from app.core.token import get_current_user
 from app.model.memberPosting import JoinMemberPosting, MemberPosting
+from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.memberPosting import (
     FilterMemberPostingSchema,
     MemberPostingSchema,
@@ -17,7 +18,9 @@ from app.rest_api.schema.memberPosting import (
 memberPosting_router = APIRouter(tags=["memberPosting"], prefix="/memberPosting")
 
 
-@memberPosting_router.post("")
+@memberPosting_router.post(
+    "", summary="입단신청 공고글 생성", response_model=CreateResponse
+)
 def create_memberPosting(
     memberPosting_data: MemberPostingSchema,
     token: Annotated[str, Depends(get_current_user)],
@@ -46,7 +49,7 @@ def create_memberPosting(
     return {"success": True}
 
 
-@memberPosting_router.get("/{member_posting_seq}")
+@memberPosting_router.get("/{member_posting_seq}", summary="입단신청 공고 상세 정보")
 def get_memberPosting(
     token: Annotated[str, Depends(get_current_user)],
     member_posting_seq: int,
@@ -58,14 +61,14 @@ def get_memberPosting(
         .options(joinedload(MemberPosting.user_profile))
         .first()
     )
-
-    # if member_posting is None:
-    #     raise MemberPostingNotFoundException
-
     return member_posting
 
 
-@memberPosting_router.patch("/{member_posting_seq}")
+@memberPosting_router.patch(
+    "/{member_posting_seq}",
+    summary="입단신청 공고 내용 수정",
+    response_model=CreateResponse,
+)
 def update_memberPosting(
     token: Annotated[str, Depends(get_current_user)],
     member_posting_seq: int,
@@ -76,9 +79,6 @@ def update_memberPosting(
         db.query(MemberPosting).filter(MemberPosting.seq == member_posting_seq).first()
     )
 
-    # if not member_posting:
-    #     raise MemberPostingNotFoundException
-
     for key, value in update_club_posting_data.dict(exclude_none=True).items():
         setattr(member_posting, key, value)
 
@@ -87,7 +87,7 @@ def update_memberPosting(
     return {"success": True}
 
 
-@memberPosting_router.get("")
+@memberPosting_router.get("", summary="입단신청 공고글 조회")
 def filter_memberPosting(
     token: Annotated[str, Depends(get_current_user)],
     member_posting_filter: FilterMemberPostingSchema = FilterDepends(
@@ -108,7 +108,7 @@ def filter_memberPosting(
     return member_posting
 
 
-@memberPosting_router.delete("/{member_posting_seq}")
+@memberPosting_router.delete("/{member_posting_seq}", summary="입단신청 공고글 삭제")
 def delete_memberPosting(
     token: Annotated[str, Depends(get_current_user)],
     member_posting_seq: int,
@@ -117,17 +117,14 @@ def delete_memberPosting(
     member_posting = (
         db.query(MemberPosting).filter(MemberPosting.seq == member_posting_seq).first()
     )
-
-    # if not memberPosting:
-    #     raise memberPostingNotFoundException
-
     db.delete(member_posting)
     db.commit()
+    return {"success": True}
 
-    return {"message": "매치게시글이 성공적으로 삭제되었습니다."}
 
-
-@memberPosting_router.post("/{member_posting_seq}/join")
+@memberPosting_router.post(
+    "/{member_posting_seq}/join", summary="입단신청 조인", response_model=CreateResponse
+)
 def join_memberPosting(
     member_posting_seq: int,
     club_seq: int,
@@ -137,9 +134,6 @@ def join_memberPosting(
     member_posting = (
         db.query(MemberPosting).filter(MemberPosting.seq == member_posting_seq).first()
     )
-
-    # if not member_posting:
-    #     raise MemberPostingNotFoundException
 
     join_member_posting = JoinMemberPosting(
         member_posting_seq=member_posting.seq,
@@ -153,7 +147,11 @@ def join_memberPosting(
     return {"success": True}
 
 
-@memberPosting_router.patch("/{member_posting_seq}/accept")
+@memberPosting_router.patch(
+    "/{member_posting_seq}/accept",
+    summary="입단신청 수락",
+    response_model=CreateResponse,
+)
 def accept_memberPosting(
     member_posting_seq: int,
     club_seq: int,
@@ -172,14 +170,6 @@ def accept_memberPosting(
         )
         .first()
     )
-
-    # if not member_posting:
-    #     raise MemberPostingNotFoundException
-
-    # if not join_member_posting:
-    #     raise JoinMemberPostingNotFoundException
-
-    # TODO: validate club owner / matcher poster
 
     join_member_posting.accepted = True
     db.commit()

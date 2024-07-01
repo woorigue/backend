@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_db
 from app.core.token import get_current_user
 from app.model.clubPosting import ClubPosting, JoinClubPosting
+from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.club.clubPosting import (
     ClubPostingSchema,
     FilterClubPostingSchema,
@@ -17,7 +18,9 @@ from app.rest_api.schema.club.clubPosting import (
 clubPosting_router = APIRouter(tags=["clubPosting"], prefix="/clubPosting")
 
 
-@clubPosting_router.post("")
+@clubPosting_router.post(
+    "", summary="클럽 모집 공고글 생성", response_model=CreateResponse
+)
 def create_clubPosting(
     clubPosting_data: ClubPostingSchema,
     token: Annotated[str, Depends(get_current_user)],
@@ -52,7 +55,11 @@ def create_clubPosting(
     return {"success": True}
 
 
-@clubPosting_router.get("/{club_posting_seq}")
+@clubPosting_router.get(
+    "/{club_posting_seq}",
+    summary="클럽 모집 공고글 상세 조회",
+    response_model=CreateResponse,
+)
 def get_clubPosting(
     token: Annotated[str, Depends(get_current_user)],
     club_posting_seq: int,
@@ -62,13 +69,12 @@ def get_clubPosting(
         db.query(ClubPosting).filter(ClubPosting.seq == club_posting_seq).first()
     )
 
-    # if club_posting is None:
-    #     raise ClubPostingNotFoundException
-
     return club_posting
 
 
-@clubPosting_router.patch("/{club_posting_seq}")
+@clubPosting_router.patch(
+    "/{club_posting_seq}", summary="클럽 모집글 수정", response_model=CreateResponse
+)
 def update_clubPosting(
     token: Annotated[str, Depends(get_current_user)],
     club_posting_seq: int,
@@ -79,9 +85,6 @@ def update_clubPosting(
         db.query(ClubPosting).filter_by(ClubPosting.seq == club_posting_seq).first()
     )
 
-    # if not club:
-    #     raise ClubNotFoundException
-
     for key, value in update_club_posting_data.dict(exclude_none=True).items():
         setattr(club_posting, key, value)
 
@@ -90,7 +93,7 @@ def update_clubPosting(
     return {"success": True}
 
 
-@clubPosting_router.get("")
+@clubPosting_router.get("", summary="클럽 모집글 조회")
 def filter_clubPosting(
     token: Annotated[str, Depends(get_current_user)],
     club_posting_filter: FilterClubPostingSchema = FilterDepends(
@@ -109,7 +112,11 @@ def filter_clubPosting(
     return club_posting
 
 
-@clubPosting_router.delete("/{club_posting_seq}")
+@clubPosting_router.delete(
+    "/{club_posting_seq}",
+    summary="클럽 모집 공고글 삭제",
+    response_model=CreateResponse,
+)
 def delete_clubPosting(
     token: Annotated[str, Depends(get_current_user)],
     club_posting_seq: int,
@@ -119,16 +126,17 @@ def delete_clubPosting(
         db.query(ClubPosting).filter(ClubPosting.seq == club_posting_seq).first()
     )
 
-    # if not clubPosting:
-    #     raise clubPostingNotFoundException
-
     db.delete(clubPosting)
     db.commit()
 
-    return {"message": "매치게시글이 성공적으로 삭제되었습니다."}
+    return {"success": True}
 
 
-@clubPosting_router.post("/{club_posting_seq}/join")
+@clubPosting_router.post(
+    "/{club_posting_seq}/join",
+    summary="클럽 공고글 모집 신청",
+    response_model=CreateResponse,
+)
 def join_clubPosting(
     club_posting_seq: int,
     club_seq: int,
@@ -138,9 +146,6 @@ def join_clubPosting(
     club_posting = (
         db.query(ClubPosting).filter(ClubPosting.seq == club_posting_seq).first()
     )
-
-    # if not club_posting:
-    #     raise ClubPostingNotFoundException
 
     join_club_posting = JoinClubPosting(
         club_posting_seq=club_posting.seq,
@@ -154,7 +159,11 @@ def join_clubPosting(
     return {"success": True}
 
 
-@clubPosting_router.patch("/{club_posting_seq}/accept")
+@clubPosting_router.patch(
+    "/{club_posting_seq}/accept",
+    summary="클럽 공고글 수락",
+    response_model=CreateResponse,
+)
 def join_clubPosting(
     club_posting_seq: int,
     club_seq: int,
@@ -173,16 +182,6 @@ def join_clubPosting(
         )
         .first()
     )
-
-    # if not club_posting:
-    #     raise GuestNotFoundException
-
-    # if not join_club_posting:
-    #     raise JoinGuestNotFoundException
-
-    # TODO: validate club owner / matcher poster
-
     join_club_posting.accepted = True
     db.commit()
-
     return {"success": True}

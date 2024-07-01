@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.deps import get_db
 from app.core.token import get_current_user
+from app.core.utils import error_responses
 from app.helper.exception import (
     ClubNotFoundException,
     JoinClubLimitError,
@@ -17,6 +18,7 @@ from app.model.match import Match
 from app.model.position import JoinPosition
 from app.model.profile import Profile
 from app.rest_api.controller.file import file_controller as file_con
+from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.club.club import (
     ClubResponseSchema,
     FilterClubSchema,
@@ -28,10 +30,12 @@ from app.rest_api.schema.profile import GetProfileSchema
 club_router = APIRouter(tags=["club"], prefix="/club")
 
 
-from fastapi import APIRouter
-
-
-@club_router.post("")
+@club_router.post(
+    "",
+    summary="클럽 생성",
+    responses={400: {"description": error_responses([JoinClubLimitError])}},
+    response_model=CreateResponse,
+)
 async def create_club(
     token: Annotated[str, Depends(get_current_user)],
     emblem_img: UploadFile | None = File(None),
@@ -88,7 +92,12 @@ async def create_club(
     return {"success": True}
 
 
-@club_router.get("/{club_seq}", response_model=ClubResponseSchema)
+@club_router.get(
+    "/{club_seq}",
+    summary="클럽 상세 조회",
+    response_model=ClubResponseSchema,
+    responses={404: {"description": error_responses([ClubNotFoundException])}},
+)
 def get_club(
     token: Annotated[str, Depends(get_current_user)],
     club_seq: int,
@@ -102,7 +111,12 @@ def get_club(
     return club
 
 
-@club_router.patch("/{club_seq}")
+@club_router.patch(
+    "/{club_seq}",
+    summary="클럽 정보 수정",
+    response_model=CreateResponse,
+    responses={404: {"description": error_responses([ClubNotFoundException])}},
+)
 def update_club(
     token: Annotated[str, Depends(get_current_user)],
     club_seq: int,
@@ -122,7 +136,7 @@ def update_club(
     return {"success": True}
 
 
-@club_router.get("", response_model=list[ClubResponseSchema])
+@club_router.get("", response_model=list[ClubResponseSchema], summary="클럽 조회")
 def filter_clubs(
     token: Annotated[str, Depends(get_current_user)],
     club_filter: FilterClubSchema = FilterDepends(FilterClubSchema),
@@ -139,7 +153,9 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post("/{club_seq}/join")
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -160,7 +176,18 @@ def join_club(
     return {"success": True}
 
 
-@club_router.patch("/{club_seq}/accept")
+@club_router.patch(
+    "/{club_seq}/accept",
+    summary="클럽 가입 수락",
+    responses={
+        404: {
+            "description": error_responses(
+                [ClubNotFoundException, JoinClubNotFoundException]
+            )
+        }
+    },
+    response_model=CreateResponse,
+)
 def accept_club(
     club_seq: int,
     user_seq: int,
@@ -190,7 +217,9 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit")
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -206,7 +235,12 @@ def quit_club(
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}")
+@club_router.delete(
+    "/{club_seq}",
+    summary="클럽 삭제",
+    responses={404: {"description": error_responses([ClubNotFoundException])}},
+    response_model=CreateResponse,
+)
 def delete_club(
     token: Annotated[str, Depends(get_current_user)],
     club_seq: int,
@@ -219,12 +253,12 @@ def delete_club(
 
     db.delete(club)
     db.commit()
-
-    return {"message": "클럽이 성공적으로 삭제되었습니다."}
+    return {"success": True}
 
 
 @club_router.get(
     "/{club_seq}/members",
+    summary="클럽 명단 조회",
     response_model=list[GetClubMemberSchema],
 )
 def get_members(
@@ -250,7 +284,7 @@ def get_members(
     return member
 
 
-@club_router.get("/{club_seq}/match_schedule")
+@club_router.get("/{club_seq}/match_schedule", summary="클럽 매칭 스케줄 조회")
 def get_match_schedule(
     token: Annotated[str, Depends(get_current_user)],
     club_seq: int,
