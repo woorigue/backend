@@ -9,6 +9,7 @@ class Guest(Base):
     __tablename__ = "guest"
 
     seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
+    title = Column(String(128), comment="제목")
     date = Column(DateTime, nullable=False, comment="게시일")
     user_seq = Column(Integer, nullable=False, comment="작성자 유저 시퀀스")
     club_seq = Column(Integer, nullable=False, comment="클럽 시퀀스")

@@ -10,7 +10,6 @@ class MemberPosting(Base):
     seq = Column(Integer, primary_key=True, comment="시퀀스")
     date = Column(DateTime, nullable=False, comment="게시일")
     user_seq = Column(Integer, ForeignKey("profile.user_seq"), comment="유저 시퀸스")
-    club_seq = Column(Integer, comment="클럽 시퀸스")
     title = Column(String(128), comment="제목")
     notice = Column(String(255), comment="소개글")
     status = Column(String(24), comment="상태")

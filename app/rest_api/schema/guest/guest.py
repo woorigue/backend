@@ -1,5 +1,5 @@
-from typing import Literal
 import datetime
+from typing import Literal
 
 from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, ConfigDict, Field, conint
@@ -8,6 +8,7 @@ from app.model.guest import Guest
 
 
 class GuestSchema(BaseModel):
+    title: str = Field(title="제목")
     club_seq: int = Field(title="클럽 시퀸스")
     match_seq: int = Field(title="매치 시퀸스")
     level: conint(ge=1, le=5) = Field(title="레벨")
@@ -19,6 +20,7 @@ class GuestSchema(BaseModel):
 
 
 class UpdateGuestSchema(BaseModel):
+    title: str = Field(title="제목")
     club_seq: int = Field(None, title="클럽 시퀸스")
     match_seq: int = Field(None, title="매치 시퀸스")
     level: conint(ge=1, le=5) = Field(None, title="레벨")
@@ -52,6 +54,7 @@ class GuestResponseSchema(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     seq: int = Field(title="유저 시퀸스")
+    title: str = Field(title="제목")
     date: datetime = Field(title="유저 시퀸스")
     user_seq: int = Field(title="유저 시퀸스")
     club_seq: int = Field(title="클럽 시퀸스")

@@ -12,6 +12,7 @@ from app.core.token import (
 from app.core.utils import error_responses
 from app.helper.exception import (
     GuestNotFoundException,
+    GuestPermissionDeniedException,
     JoinGuestNotFoundException,
     MatchNotFoundException,
 )
@@ -40,6 +41,7 @@ def create_guest(
     db: Session = Depends(get_db),
 ):
     guest = Guest(
+        title=guest_data.title,
         date=datetime.now(),
         user_seq=token.seq,
         club_seq=guest_data.club_seq,
@@ -90,7 +92,10 @@ def get_guest(
 @guest_router.patch(
     "/{guest_seq}",
     summary="용병 공고글 수정",
-    responses={404: {"description": error_responses([GuestNotFoundException])}},
+    responses={
+        400: {"description": error_responses([GuestPermissionDeniedException])},
+        404: {"description": error_responses([GuestNotFoundException])},
+    },
 )
 def update_guest(
     token: Annotated[str, Depends(get_current_user)],
@@ -99,9 +104,10 @@ def update_guest(
     db: Session = Depends(get_db),
 ):
     guest = db.query(Guest).filter(Guest.seq == guest_seq).first()
-
     if not guest:
         raise GuestNotFoundException
+    if guest.user_seq != token.seq:
+        raise GuestPermissionDeniedException
 
     for key, value in guest_data.dict(exclude_none=True).items():
         setattr(guest, key, value)
@@ -114,7 +120,10 @@ def update_guest(
 @guest_router.delete(
     "/{guest_seq}",
     summary="용병 모집글 삭제",
-    responses={404: {"description": error_responses([GuestNotFoundException])}},
+    responses={
+        400: {"description": error_responses([GuestPermissionDeniedException])},
+        404: {"description": error_responses([GuestNotFoundException])},
+    },
     response_model=CreateResponse,
 )
 def delete_guest(
@@ -126,6 +135,9 @@ def delete_guest(
 
     if not guest:
         raise GuestNotFoundException
+
+    if guest.user_seq != token.seq:
+        raise GuestPermissionDeniedException
 
     db.delete(guest)
     db.commit()
@@ -185,11 +197,14 @@ def join_guest(
     "/{guest_seq}/accept",
     summary="용병 수락",
     responses={
+        400: {
+            "description": error_responses([GuestPermissionDeniedException]),
+        },
         404: {
             "description": error_responses(
                 [GuestNotFoundException, JoinGuestNotFoundException]
             )
-        }
+        },
     },
 )
 def accept_guest(
@@ -203,6 +218,9 @@ def accept_guest(
     if not guest:
         raise GuestNotFoundException
 
+    if guest.user_seq != token.seq:
+        raise GuestPermissionDeniedException
+
     join_guest = (
         db.query(JoinGuest)
         .filter(
@@ -214,8 +232,6 @@ def accept_guest(
 
     if not join_guest:
         raise JoinGuestNotFoundException
-
-    # TODO: validate club owner / matcher poster
 
     join_guest.accepted = True
 

@@ -35,7 +35,7 @@ def create_clubPosting(
         location=clubPosting_data.location,
         age_group=clubPosting_data.age_group,
         membership_fee=clubPosting_data.membership_fee,
-        skill=clubPosting_data.skill,
+        level=clubPosting_data.level,
         gender=clubPosting_data.gender,
         status=clubPosting_data.status,
         user_seq=token.seq,
@@ -108,7 +108,6 @@ def filter_clubPosting(
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
     club_posting = query.all()
-
     return club_posting
 
 

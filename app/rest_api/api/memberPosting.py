@@ -29,7 +29,6 @@ def create_memberPosting(
     memberPosting_data = MemberPosting(
         date=datetime.now(),
         user_seq=token.seq,
-        club_seq=memberPosting_data.club_seq,
         title=memberPosting_data.title,
         notice=memberPosting_data.notice,
         status=memberPosting_data.status,

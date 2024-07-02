@@ -1,4 +1,4 @@
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -6,7 +6,6 @@ from app.db.session import Base
 
 class ClubPosting(Base):
     __tablename__ = "clubPosting"
-
     seq = Column(Integer, primary_key=True, comment="시퀀스")
     date = Column(DateTime, nullable=False, comment="게시일")
     club_seq = Column(Integer, comment="클럽 시퀸스")
@@ -16,7 +15,7 @@ class ClubPosting(Base):
     location = Column(String(24), comment="활동 장소")
     age_group = Column(String(24), comment="연령대")
     membership_fee = Column(Integer, comment="회비")
-    skill = Column(String(24), comment="실력")
+    level = Column(String(24), comment="실력")
     gender = Column(String(12), comment="성별")
     status = Column(String(24), comment="상태")
     user_seq = Column(Integer, comment="유저 시퀸스")
