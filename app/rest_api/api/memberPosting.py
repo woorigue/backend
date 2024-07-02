@@ -38,7 +38,6 @@ def create_memberPosting(
 
     join_memberPosting_data = JoinMemberPosting(
         member_posting_seq=memberPosting_data.seq,
-        club_seq=memberPosting_data.club_seq,
         user_seq=token.seq,
         accepted=False,
     )

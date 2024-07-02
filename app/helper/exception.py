@@ -147,3 +147,9 @@ class GuestPermissionDeniedException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100020
     error_detail = "해당 게시글을 수정할 수 있는 권한이 없습니다."
+
+
+class ClubPostingCreatePermissionDenied(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = 100021
+    error_detail = "해당 클럽의 모집공고를 작성할 수 있는 권한이 없습니다."

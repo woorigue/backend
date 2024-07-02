@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
 from app.core.token import get_current_user
+from app.core.utils import error_responses
+from app.helper.exception import ClubPostingCreatePermissionDenied
 from app.model.clubPosting import ClubPosting, JoinClubPosting
 from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.club.clubPosting import (
@@ -19,13 +21,30 @@ clubPosting_router = APIRouter(tags=["clubPosting"], prefix="/clubPosting")
 
 
 @clubPosting_router.post(
-    "", summary="클럽 모집 공고글 생성", response_model=CreateResponse
+    "",
+    summary="클럽 모집 공고글 생성",
+    response_model=CreateResponse,
+    responses={
+        400: {"description": error_responses([ClubPostingCreatePermissionDenied])}
+    },
 )
 def create_clubPosting(
     clubPosting_data: ClubPostingSchema,
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
+    from app.model.club import JoinClub
+
+    join_club = (
+        db.query(JoinClub.clubs_seq)
+        .filter(JoinClub.user_seq == token.seq, JoinClub.role == "owner")
+        .all()
+    )
+    club_seq_list = [item[0] for item in join_club]
+
+    if clubPosting_data.club_seq not in club_seq_list:
+        raise ClubPostingCreatePermissionDenied
+
     clubPosting_data = ClubPosting(
         date=datetime.now(),
         club_seq=clubPosting_data.club_seq,
