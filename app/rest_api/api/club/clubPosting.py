@@ -100,7 +100,7 @@ def update_clubPosting(
     db: Session = Depends(get_db),
 ):
     club_posting = (
-        db.query(ClubPosting).filter_by(ClubPosting.seq == club_posting_seq).first()
+        db.query(ClubPosting).filter(ClubPosting.seq == club_posting_seq).first()
     )
 
     for key, value in update_club_posting_data.dict(exclude_none=True).items():
