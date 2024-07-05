@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
+from app.core.choices import PostingStatusEnum
 from app.db.session import Base
 
 
@@ -17,7 +18,7 @@ class ClubPosting(Base):
     membership_fee = Column(Integer, comment="회비")
     level = Column(String(24), comment="실력")
     gender = Column(String(12), comment="성별")
-    status = Column(String(24), comment="상태")
+    status = Column(String(24), default=PostingStatusEnum.PUBLISHED, comment="상태")
     user_seq = Column(Integer, comment="유저 시퀸스")
 
     join_club_posting = relationship(

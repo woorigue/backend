@@ -56,7 +56,6 @@ def create_clubPosting(
         membership_fee=clubPosting_data.membership_fee,
         level=clubPosting_data.level,
         gender=clubPosting_data.gender,
-        status=clubPosting_data.status,
         user_seq=token.seq,
     )
     db.add(clubPosting_data)

@@ -31,7 +31,6 @@ def create_memberPosting(
         user_seq=token.seq,
         title=memberPosting_data.title,
         notice=memberPosting_data.notice,
-        status=memberPosting_data.status,
     )
     db.add(memberPosting_data)
     db.commit()
