@@ -38,7 +38,6 @@ class FilterGuestSchema(Filter):
     level__in: list[int] | None = Field(None, title="실력 리스트")
     gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")
     position__in: list[conint(ge=1, le=5)] = Field(None, title="포지션")
-    closed: bool | None = Field(None, title="공고 마감 여부")
 
     class Constants(Filter.Constants):
         model = Guest
