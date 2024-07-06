@@ -1,7 +1,6 @@
 from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, Field
 
-from app.core.choices import PostingStatusEnum
 from app.model.clubPosting import ClubPosting
 
 
@@ -26,7 +25,7 @@ class UpdateClubPostingSchema(BaseModel):
     membership_fee: int = Field(None, title="회비")
     level: str = Field(None, title="실력")
     gender: str = Field(None, title="성별")
-    status: PostingStatusEnum = Field("", title="상태")
+    closed: bool = Field(None, title="공고 마감 여부")
 
 
 class JoinClubPostingSchema(BaseModel):
@@ -45,7 +44,6 @@ class FilterClubPostingSchema(Filter):
     recruitment_number__lte: int | None = Field(None, title="최소 모집 회원 수")
     recruitment_number__gte: int | None = Field(None, title="최대 모집 회원 수")
     gender__in: list[str] | None = Field(None, title="성별 리스트")
-    status__isnull: bool | None = Field(None, title="상태")
     user_seq__in: list[int] | None = Field(None, title="유저 시퀸스 리스트")
 
     class Constants(Filter.Constants):

@@ -28,7 +28,7 @@ class UpdateGuestSchema(BaseModel):
     position: list[conint(ge=1, le=15)] = Field(None, title="포지션")
     match_fee: int = Field(None, title="매치비용")
     guest_number: int = Field(None, title="모집인원")
-    status: str = Field(None, title="용병상태")
+    closed: str = Field(None, title="공고 마감 여부")
     notice: str = Field(None, title="공지사항")
 
 
@@ -40,7 +40,7 @@ class FilterGuestSchema(Filter):
     level__in: list[int] | None = Field(None, title="실력 리스트")
     gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")
     position__in: list[conint(ge=1, le=5)] = Field(None, title="포지션")
-    status: str | None = Field(None, title="용병 상태")
+    closed: bool | None = Field(None, title="공고 마감 여부")
 
     class Constants(Filter.Constants):
         model = Guest
@@ -65,4 +65,4 @@ class GuestResponseSchema(BaseModel):
     match_fee: int = Field(title="매치비용")
     guest_number: int = Field(title="모집인원")
     notice: str = Field(title="공지사항")
-    status: str = Field(title="용병상태")
+    closed: bool = Field(title="공고 마감 여부")

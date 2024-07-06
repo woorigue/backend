@@ -34,6 +34,7 @@ class UpdateMatchSchema(BaseModel):
     gender: Literal["M", "F", "U"] = Field(None, title="성별")
     match_fee: int = Field(None, title="매치비용")
     notice: str = Field(None, title="공지사항")
+    matched: bool = Field(None, title="매치 성사 여부")
     home_club_guest_seq: int = Field(None, title="홈 클럽 용병 게시글 시퀸스")
     away_club_guest_seq: int = Field(None, title="원정 클럽 용병 게시글 시퀸스")
 
@@ -54,7 +55,7 @@ class FilterMatchSchema(Filter):
     gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")
     match_fee__gte: int | None = Field(None, title="최소 회비")
     match_fee__lte: int | None = Field(None, title="최대 회비")
-    status: str | None = Field(None, title="매치상태")
+    matched: bool = Field(title="매치 성사 여부")
     home_club_guest_seq__in: list[int] | None = Field(None, title="홈 클럽 용별 게시글 시퀸스")
     away_club_guest_seq__in: list[int] | None = Field(None, title="원정 클럽용별 게시글 시퀸스")
 
@@ -84,7 +85,7 @@ class MatchResponseSchema(BaseModel):
     gender: str = Field(title="성별")
     match_fee: int = Field(title="매치비용")
     notice: str = Field(title="공지사항")
-    status: str = Field(title="매치상태")
+    matched: bool = Field(title="매치 성사 여부")
     home_club_guest: GuestResponseSchema | None = Field(title="용병 게시글 시퀸스")
     away_club_guest: GuestResponseSchema | None = Field(title="용병 게시글 시퀸스")
     home_club_poll_seq: int = Field(title="홈 클럽 투표 시퀸스")

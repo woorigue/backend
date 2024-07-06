@@ -2,7 +2,6 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
-from app.model.club import Club
 
 
 class Match(Base):
@@ -30,7 +29,7 @@ class Match(Base):
     gender = Column(String(12), nullable=False, comment="성별")
     match_fee = Column(Integer, nullable=True, comment="매치비용")
     notice = Column(String(255), nullable=True, comment="공지사항")
-    status = Column(String(24), nullable=False, comment="매치상태")
+    matched = Column(Boolean, default=False, comment="매치 성사 여부")
     home_club_guest_seq = Column(
         Integer,
         ForeignKey("guest.seq", ondelete="CASCADE"),

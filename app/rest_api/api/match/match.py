@@ -9,6 +9,7 @@ from app.core.deps import get_db
 from app.core.token import (
     get_current_user,
 )
+from app.core.utils import error_responses
 from app.helper.exception import (
     JoinMatchNotFoundException,
     MatchNotFoundException,
@@ -17,17 +18,16 @@ from app.helper.exception import (
 from app.model.match import JoinMatch, Match
 from app.rest_api.controller.match.match import MatchController
 from app.rest_api.controller.poll import PollController
+from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.match.match import (
     FilterMatchSchema,
+    MatchResponseSchema,
     MatchSchema,
     UpdateMatchSchema,
-    MatchResponseSchema,
 )
 from app.rest_api.schema.poll import (
     CreatePollSchema,
 )
-from app.core.utils import error_responses
-from app.rest_api.schema.base import CreateResponse
 
 match_router = APIRouter(tags=["match"], prefix="/match")
 
@@ -68,7 +68,6 @@ def create_match(
         gender=match_data.gender,
         match_fee=match_data.match_fee,
         notice=match_data.notice,
-        status=match_status,
     )
     db.add(match)
     db.commit()

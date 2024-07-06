@@ -1,7 +1,6 @@
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from app.core.choices import PostingStatusEnum
 from app.db.session import Base
 
 
@@ -13,11 +12,7 @@ class MemberPosting(Base):
     user_seq = Column(Integer, ForeignKey("profile.user_seq"), comment="유저 시퀸스")
     title = Column(String(128), comment="제목")
     notice = Column(String(255), comment="소개글")
-    status = Column(
-        String(24),
-        default=PostingStatusEnum.PUBLISHED,
-        comment="상태",
-    )
+    closed = Column(Boolean, default=False, comment="마감 여부")
 
     user_profile = relationship("Profile", backref="member_postings")
     join_member_posting = relationship(

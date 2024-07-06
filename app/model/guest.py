@@ -20,7 +20,7 @@ class Guest(Base):
     match_fee = Column(Integer, comment="매치비용")
     guest_number = Column(Integer, nullable=False, comment="모집인원")
     notice = Column(String(255), nullable=False, comment="공지사항")
-    status = Column(String(24), nullable=False, comment="용병상태")
+    closed = Column(Boolean, default=False, comment="공고 마감 여부")
 
     join_guest = relationship(
         "JoinGuest",
