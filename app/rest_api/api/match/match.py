@@ -170,7 +170,7 @@ def filter_match(
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    query = db.query(Match)
+    query = db.query(Match).filter(Match.matched == False)
     query = match_filter.filter(query)
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)

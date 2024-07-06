@@ -155,7 +155,7 @@ def filter_guests(
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    query = db.query(Guest)
+    query = db.query(Guest).filter(Guest.closed == False)
     query = guest_filter.filter(query)
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
