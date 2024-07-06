@@ -41,7 +41,6 @@ def create_guest(
     db: Session = Depends(get_db),
 ):
     guest = Guest(
-        title=guest_data.title,
         date=datetime.now(),
         user_seq=token.seq,
         club_seq=guest_data.club_seq,
@@ -52,7 +51,6 @@ def create_guest(
         match_fee=guest_data.match_fee,
         guest_number=guest_data.guest_number,
         notice=guest_data.notice,
-        status="pending",
     )
     db.add(guest)
     db.commit()

@@ -8,7 +8,6 @@ from app.model.guest import Guest
 
 
 class GuestSchema(BaseModel):
-    title: str = Field(title="제목")
     club_seq: int = Field(title="클럽 시퀸스")
     match_seq: int = Field(title="매치 시퀸스")
     level: conint(ge=1, le=5) = Field(title="레벨")
@@ -20,7 +19,6 @@ class GuestSchema(BaseModel):
 
 
 class UpdateGuestSchema(BaseModel):
-    title: str = Field(title="제목")
     club_seq: int = Field(None, title="클럽 시퀸스")
     match_seq: int = Field(None, title="매치 시퀸스")
     level: conint(ge=1, le=5) = Field(None, title="레벨")
@@ -28,7 +26,7 @@ class UpdateGuestSchema(BaseModel):
     position: list[conint(ge=1, le=15)] = Field(None, title="포지션")
     match_fee: int = Field(None, title="매치비용")
     guest_number: int = Field(None, title="모집인원")
-    closed: str = Field(None, title="공고 마감 여부")
+    closed: bool = Field(None, title="공고 마감 여부")
     notice: str = Field(None, title="공지사항")
 
 
@@ -54,7 +52,6 @@ class GuestResponseSchema(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     seq: int = Field(title="유저 시퀸스")
-    title: str = Field(title="제목")
     date: datetime = Field(title="유저 시퀸스")
     user_seq: int = Field(title="유저 시퀸스")
     club_seq: int = Field(title="클럽 시퀸스")

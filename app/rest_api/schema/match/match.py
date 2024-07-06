@@ -55,7 +55,7 @@ class FilterMatchSchema(Filter):
     gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")
     match_fee__gte: int | None = Field(None, title="최소 회비")
     match_fee__lte: int | None = Field(None, title="최대 회비")
-    matched: bool = Field(title="매치 성사 여부")
+    matched: bool | None = Field(title="매치 성사 여부")
     home_club_guest_seq__in: list[int] | None = Field(None, title="홈 클럽 용별 게시글 시퀸스")
     away_club_guest_seq__in: list[int] | None = Field(None, title="원정 클럽용별 게시글 시퀸스")
 
