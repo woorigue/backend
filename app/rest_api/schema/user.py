@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-from .club.club import ClubResponseSchema
+from .club.club import ClubUserDetailSchema
 from .profile import GetProfileSchema
 
 
@@ -26,7 +26,7 @@ class UserSchema(BaseModel):
     email: str = Field(title="이메일")
     is_active: bool = Field(title="계정 활성 여부")
     profile: list[GetProfileSchema]
-    clubs: list[ClubResponseSchema]
+    clubs: list[ClubUserDetailSchema]
 
 
 class UserLoginResponse(BaseModel):

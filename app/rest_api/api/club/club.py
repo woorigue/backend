@@ -13,14 +13,15 @@ from app.helper.exception import (
     JoinClubLimitError,
     JoinClubNotFoundException,
 )
-from app.rest_api.controller.club import ClubController
 from app.model.club import Club, JoinClub
 from app.model.match import Match
 from app.model.position import JoinPosition
 from app.model.profile import Profile
+from app.rest_api.controller.club import ClubController
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.club.club import (
+    ClubListSchema,
     ClubResponseSchema,
     FilterClubSchema,
     GetClubMemberSchema,
@@ -141,24 +142,29 @@ def update_club(
     return {"success": True}
 
 
-@club_router.get("", response_model=list[ClubResponseSchema], summary="클럽 조회")
+@club_router.get("", response_model=list[ClubListSchema], summary="클럽 조회")
 def filter_clubs(
-    token: Annotated[str, Depends(get_current_user)],
+    # token: Annotated[str, Depends(get_current_user)],
     club_filter: FilterClubSchema = FilterDepends(FilterClubSchema),
     page: int = Query(1, title="페이지", ge=1),
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
 ):
+    con = ClubController()
     query = db.query(Club)
     query = club_filter.filter(query)
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
     clubs = query.all()
+    for club in clubs:
+        club.team_size = con.get_joined_member(db, club.seq)
 
     return clubs
 
 
-@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -220,7 +226,9 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],

@@ -1,13 +1,13 @@
+from sqlalchemy.orm import Session
+
 from app.model.club import Club, JoinClub
 from app.model.user import User
-
-from sqlalchemy.orm import Session
 
 
 class ClubController:
     """클럽 컨트롤러"""
 
-    def __init__(self, user: User) -> None:
+    def __init__(self, user: User = None) -> None:
         self.user = user
 
     def is_owner(self, db: Session, club_seq: int) -> bool:

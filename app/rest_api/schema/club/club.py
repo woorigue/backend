@@ -71,6 +71,42 @@ class ClubResponseSchema(BaseModel):
     is_owner: bool = Field(title="클럽 회장 여부")
 
 
+class ClubUserDetailSchema(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    seq: int = Field(title="클럽 시퀸스")
+    name: str = Field(title="이름")
+    register_date: datetime = Field(title="창단일")
+    intro: str | None = Field(title="소개글")
+    location: str = Field(title="활동 장소")
+    age_group: str = Field(title="연령대")
+    membership_fee: int = Field(title="회비")
+    level: int = Field(title="레벨")
+    team_size: int | None = Field(title="클럽 인원")
+    gender: Literal["M", "F", "U"] | None = Field(title="성별")
+    emblem_img: str | None = Field(None, title="클럽 엠블럼 URL")
+    img: str | None = Field(None, title="클럽 이미지 URL")
+    uniform_color: str | None = Field(None, title="유니폼 색")
+
+
+class ClubListSchema(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    seq: int = Field(title="클럽 시퀸스")
+    name: str = Field(title="이름")
+    register_date: datetime = Field(title="창단일")
+    intro: str | None = Field(title="소개글")
+    location: str = Field(title="활동 장소")
+    age_group: str = Field(title="연령대")
+    membership_fee: int = Field(title="회비")
+    level: int = Field(title="레벨")
+    team_size: int | None = Field(title="클럽 인원")
+    gender: Literal["M", "F", "U"] | None = Field(title="성별")
+    emblem_img: str | None = Field(None, title="클럽 엠블럼 URL")
+    img: str | None = Field(None, title="클럽 이미지 URL")
+    uniform_color: str | None = Field(None, title="유니폼 색")
+
+
 class JoinClubSchema(BaseModel):
     club: ClubResponseSchema
 
