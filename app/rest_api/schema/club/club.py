@@ -68,6 +68,7 @@ class ClubResponseSchema(BaseModel):
     emblem_img: str | None = Field(None, title="클럽 엠블럼 URL")
     img: str | None = Field(None, title="클럽 이미지 URL")
     uniform_color: str | None = Field(None, title="유니폼 색")
+    is_owner: bool = Field(title="클럽 회장 여부")
 
 
 class JoinClubSchema(BaseModel):

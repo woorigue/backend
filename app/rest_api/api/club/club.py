@@ -13,6 +13,7 @@ from app.helper.exception import (
     JoinClubLimitError,
     JoinClubNotFoundException,
 )
+from app.rest_api.controller.club import ClubController
 from app.model.club import Club, JoinClub
 from app.model.match import Match
 from app.model.position import JoinPosition
@@ -45,7 +46,6 @@ async def create_club(
     intro: str = Form(...),
     name: str = Form(...),
     location: str = Form(...),
-    team_size: int = Form(...),
     gender: str = Form(...),
     uniform_color: str = Form(...),
     membership_fee: int = Form(...),
@@ -74,7 +74,6 @@ async def create_club(
         age_group=age_group,
         membership_fee=membership_fee,
         level=level,
-        team_size=team_size,
         gender=gender,
         emblem_img=emblem_url,
         img=img_url,
@@ -103,7 +102,13 @@ def get_club(
     club_seq: int,
     db: Session = Depends(get_db),
 ):
+    con = ClubController(token)
+    is_owner = con.is_owner(db, club_seq)
+    team_size = con.get_joined_member(db, club_seq)
+
     club = db.query(Club).filter(Club.seq == club_seq).first()
+    club.is_owner = is_owner
+    club.team_size = team_size
 
     if club is None:
         raise ClubNotFoundException
