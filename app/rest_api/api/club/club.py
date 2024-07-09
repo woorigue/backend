@@ -12,6 +12,7 @@ from app.helper.exception import (
     ClubNotFoundException,
     JoinClubLimitError,
     JoinClubNotFoundException,
+    ClubPermissionException,
 )
 from app.model.club import Club, JoinClub
 from app.model.match import Match
@@ -121,7 +122,10 @@ def get_club(
     "/{club_seq}",
     summary="클럽 정보 수정",
     response_model=CreateResponse,
-    responses={404: {"description": error_responses([ClubNotFoundException])}},
+    responses={
+        400: {"description": error_responses([ClubPermissionException])},
+        404: {"description": error_responses([ClubNotFoundException])},
+    },
 )
 def update_club(
     token: Annotated[str, Depends(get_current_user)],
@@ -130,9 +134,13 @@ def update_club(
     db: Session = Depends(get_db),
 ):
     club = db.query(Club).filter(Club.seq == club_seq).first()
-
     if club is None:
         raise ClubNotFoundException
+
+    con = ClubController(token)
+    is_owner = con.is_owner(db, club_seq)
+    if not is_owner:
+        raise ClubPermissionException
 
     for key, value in update_club_data.dict(exclude_none=True).items():
         setattr(club, key, value)
@@ -162,9 +170,7 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post(
-    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
-)
+@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -226,9 +232,7 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete(
-    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
-)
+@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -247,7 +251,10 @@ def quit_club(
 @club_router.delete(
     "/{club_seq}",
     summary="클럽 삭제",
-    responses={404: {"description": error_responses([ClubNotFoundException])}},
+    responses={
+        400: {"description": error_responses([ClubPermissionException])},
+        404: {"description": error_responses([ClubNotFoundException])},
+    },
     response_model=CreateResponse,
 )
 def delete_club(
@@ -256,9 +263,13 @@ def delete_club(
     db: Session = Depends(get_db),
 ):
     club = db.query(Club).filter(Club.seq == club_seq).first()
-
     if club is None:
         raise ClubNotFoundException
+
+    con = ClubController(token)
+    is_owner = con.is_owner(db, club_seq)
+    if not is_owner:
+        raise ClubPermissionException
 
     db.delete(club)
     db.commit()

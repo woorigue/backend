@@ -23,17 +23,16 @@ class ClubSchema(BaseModel):
 
 
 class UpdateClubSchema(BaseModel):
-    edit_date: date = Field(title="수정일")
+    name: str = Field(title="이름")
+    register_date: date = Field(title="창단일")
     intro: str = Field(None, title="소개글")
     location: str = Field(None, title="활동 장소")
     age_group: str = Field(None, title="연령대")
     membership_fee: int = Field(None, title="회비")
     level: conint(ge=1, le=5) = Field(None, title="실력")
-    team_size: int = Field(None, title="클럽 인원")
     gender: Literal["M", "F", "U"] = Field(None, title="성별")
     img: str = Field(None, title="클럽 이미지 URL")
     uniform_color: str = Field(None, title="유니폼 색")
-    deleted: bool = Field(False, title="팀 삭제")
 
 
 class FilterClubSchema(Filter):
