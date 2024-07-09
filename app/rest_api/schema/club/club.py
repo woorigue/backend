@@ -63,12 +63,14 @@ class ClubResponseSchema(BaseModel):
     age_group: str = Field(title="연령대")
     membership_fee: int = Field(title="회비")
     level: int = Field(title="레벨")
-    team_size: int | None = Field(title="클럽 인원")
+    # team_size: int | None = Field(title="클럽 인원")
     gender: Literal["M", "F", "U"] | None = Field(title="성별")
     emblem_img: str | None = Field(None, title="클럽 엠블럼 URL")
     img: str | None = Field(None, title="클럽 이미지 URL")
     uniform_color: str | None = Field(None, title="유니폼 색")
-    is_owner: bool = Field(title="클럽 회장 여부")
+    # is_owner: bool = Field(title="클럽 회장 여부")
+    owners: list[int] = Field(title="클럽 소유주들")
+    team_size: int = Field(title="가입된 멤버 수")
 
 
 class ClubUserDetailSchema(BaseModel):
