@@ -17,7 +17,6 @@ class ClubSchema(BaseModel):
     age_group: str = Field(title="연령대")
     membership_fee: int = Field(0, title="회비")
     level: conint(ge=1, le=5) = Field(title="레벨")
-    team_size: int = Field(title="클럽 인원")
     gender: Literal["M", "F", "U"] = Field(title="성별")
     uniform_color: str | None = Field(None, title="유니폼 색")
 
@@ -41,8 +40,6 @@ class FilterClubSchema(Filter):
     location__in: list[str] | None = Field(None, title="장소 리스트")
     age_group__in: list[str] | None = Field(None, title="연령대 리스트")
     level__in: list[int] | None = Field(None, title="실력 리스트")
-    team_size__lte: int | None = Field(None, title="최대 인원")
-    team_size__gte: int | None = Field(None, title="최소 인원")
     gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")
     membership_fee__lte: int | None = Field(None, title="최대 회비")
     membership_fee__gte: int | None = Field(None, title="최소 회비")
@@ -62,12 +59,12 @@ class ClubResponseSchema(BaseModel):
     age_group: str = Field(title="연령대")
     membership_fee: int = Field(title="회비")
     level: int = Field(title="레벨")
-    team_size: int | None = Field(title="클럽 인원")
     gender: Literal["M", "F", "U"] | None = Field(title="성별")
     emblem_img: str | None = Field(None, title="클럽 엠블럼 URL")
     img: str | None = Field(None, title="클럽 이미지 URL")
     uniform_color: str | None = Field(None, title="유니폼 색")
-    is_owner: bool = Field(title="클럽 회장 여부")
+    roles: dict = Field(title="클럽 소유주들")
+    team_size: int = Field(title="가입된 멤버 수")
 
 
 class ClubUserDetailSchema(BaseModel):

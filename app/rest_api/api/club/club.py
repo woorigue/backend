@@ -104,13 +104,8 @@ def get_club(
     club_seq: int,
     db: Session = Depends(get_db),
 ):
-    con = ClubController(token)
-    is_owner = con.is_owner(db, club_seq)
-    team_size = con.get_joined_member(db, club_seq)
 
     club = db.query(Club).filter(Club.seq == club_seq).first()
-    club.is_owner = is_owner
-    club.team_size = team_size
 
     if club is None:
         raise ClubNotFoundException
@@ -164,8 +159,6 @@ def filter_clubs(
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
     clubs = query.all()
-    for club in clubs:
-        club.team_size = con.get_joined_member(db, club.seq)
 
     return clubs
 

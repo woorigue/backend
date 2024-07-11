@@ -1,7 +1,9 @@
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 
-from app.db.session import Base
+from app.db.session import Base, session
+
+db = session()
 
 
 class Club(Base):
@@ -16,7 +18,6 @@ class Club(Base):
     age_group = Column(String(24), comment="연령대")
     membership_fee = Column(Integer, comment="회비")
     level = Column(Integer, comment="레벨")
-    team_size = Column(Integer, nullable=False, comment="클럽 인원")
     gender = Column(String(12), nullable=False, comment="성별")
     emblem_img = Column(String(256), comment="클럽 엠블럼 URL")
     img = Column(String(256), comment="클럽 이미지 URL")
@@ -38,6 +39,19 @@ class Club(Base):
         back_populates="away_club",
         cascade="all, delete-orphan",
     )
+
+    @property
+    def roles(self):
+        roles = (
+            db.query(JoinClub.user_seq, JoinClub.role)
+            .filter(JoinClub.clubs_seq == self.seq)
+            .all()
+        )
+        return {role: user_seq for user_seq, role in roles}
+
+    @property
+    def team_size(self):
+        return db.query(JoinClub).filter(JoinClub.clubs_seq == self.seq).count()
 
 
 class JoinClub(Base):

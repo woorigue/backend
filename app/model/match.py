@@ -72,6 +72,12 @@ class Match(Base):
         "Guest", foreign_keys=[away_club_guest_seq], back_populates="away_matches"
     )
 
+    guest = relationship(
+        "Guest",
+        primaryjoin="Match.seq == Guest.match_seq",
+        back_populates="match",
+    )
+
     poll = relationship("Poll", back_populates="match")
 
 
