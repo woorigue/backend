@@ -2,7 +2,9 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.core.utils import get_position_type
-from app.db.session import Base
+from app.db.session import Base, session
+
+db = session()
 
 
 class Guest(Base):
@@ -12,7 +14,12 @@ class Guest(Base):
     date = Column(DateTime, nullable=False, comment="게시일")
     user_seq = Column(Integer, nullable=False, comment="작성자 유저 시퀀스")
     club_seq = Column(Integer, nullable=False, comment="클럽 시퀀스")
-    match_seq = Column(Integer, nullable=False, comment="매치 시퀀스")
+    match_seq = Column(
+        Integer,
+        ForeignKey("match.seq", ondelete="CASCADE"),
+        nullable=False,
+        comment="매치 시퀸스",
+    )
     level = Column(Integer, nullable=False, comment="레벨")
     gender = Column(String(12), nullable=False, comment="성별")
     position = Column(get_position_type(), comment="포지션")
@@ -38,6 +45,15 @@ class Guest(Base):
         back_populates="away_club_guest",
         cascade="all, delete-orphan",
     )
+    match = relationship(
+        "Match",
+        foreign_keys=[match_seq],
+        back_populates="guest",
+    )
+
+    @property
+    def guest_accpeted_number(self):
+        return db.query(JoinGuest).filter(JoinGuest.accepted == True).count()
 
 
 class JoinGuest(Base):

@@ -1,10 +1,11 @@
-import datetime
+import datetime as dt
 from typing import Literal
 
 from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, ConfigDict, Field, conint
 
 from app.model.guest import Guest
+from app.rest_api.schema.club.club import ClubResponseSchema
 
 
 class GuestSchema(BaseModel):
@@ -47,18 +48,42 @@ class JoinGuestSchema(BaseModel):
     guest: GuestSchema
 
 
+class MatchSchema(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    seq: int = Field(title="시퀸스")
+    date: dt.datetime = Field(title="게시일")
+    user_seq: int = Field(title="유저 시퀸스")
+    home_club: ClubResponseSchema = Field(title="클럽 정보")
+    away_club: ClubResponseSchema | None = Field(title="클럽 정보")
+    match_type: str = Field(title="매치유형")
+    location: str = Field(title="매치장소")
+    match_date: dt.date = Field(title="매치일")
+    start_time: dt.time = Field(title="매치 시작 시간")
+    end_time: dt.time = Field(title="매치 종료 시간")
+    level: int = Field(title="레벨")
+    team_size: int = Field(title="매치인원")
+    gender: str = Field(title="성별")
+    match_fee: int = Field(title="매치비용")
+    notice: str = Field(title="공지사항")
+    matched: bool = Field(title="매치 성사 여부")
+    home_club_poll_seq: int = Field(title="홈 클럽 투표 시퀸스")
+    away_club_poll_seq: int | None = Field(title="원정 클럽 투표 시퀸스")
+
+
 class GuestResponseSchema(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     seq: int = Field(title="유저 시퀸스")
-    date: datetime = Field(title="유저 시퀸스")
+    date: dt.datetime = Field(title="유저 시퀸스")
     user_seq: int = Field(title="유저 시퀸스")
     club_seq: int = Field(title="클럽 시퀸스")
-    match_seq: int = Field(title="매치 시퀸스")
+    match: MatchSchema = Field(title="매치 시퀸스")
     level: int = Field(title="레벨")
     gender: str = Field(title="성별")
     position: list[int] = Field(title="포지션")
     match_fee: int = Field(title="매치비용")
-    guest_number: int = Field(title="모집인원")
+    guest_number: int = Field(title="모집 인원")
+    guest_accpeted_number: int | None = Field(title="수락 인원")
     notice: str = Field(title="공지사항")
     closed: bool = Field(title="공고 마감 여부")
