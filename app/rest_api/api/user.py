@@ -180,7 +180,9 @@ def get_access_token_using_refresh_token(
     response_model=UserSchema,
     responses={400: {"description": error_responses([ProfileRequired])}},
 )
-def get_user_info_with_profile(token: Annotated[str, Depends(get_current_user)]):
+def get_user_info_with_profile(
+    token: Annotated[str, Depends(get_current_user)],
+):
     if not token.profile:
         raise ProfileRequired
 

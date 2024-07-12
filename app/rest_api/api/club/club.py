@@ -10,9 +10,9 @@ from app.core.token import get_current_user
 from app.core.utils import error_responses
 from app.helper.exception import (
     ClubNotFoundException,
+    ClubPermissionException,
     JoinClubLimitError,
     JoinClubNotFoundException,
-    ClubPermissionException,
 )
 from app.model.club import Club, JoinClub
 from app.model.match import Match
@@ -26,7 +26,6 @@ from app.rest_api.schema.club.club import (
     ClubResponseSchema,
     FilterClubSchema,
     GetClubMemberSchema,
-    UpdateClubSchema,
 )
 from app.rest_api.schema.profile import GetProfileSchema
 
@@ -104,13 +103,17 @@ def get_club(
     club_seq: int,
     db: Session = Depends(get_db),
 ):
-
     club = db.query(Club).filter(Club.seq == club_seq).first()
 
     if club is None:
         raise ClubNotFoundException
 
     return club
+
+
+from typing import Annotated
+
+from fastapi import Depends
 
 
 @club_router.patch(
@@ -122,10 +125,20 @@ def get_club(
         404: {"description": error_responses([ClubNotFoundException])},
     },
 )
-def update_club(
+async def update_club(
     token: Annotated[str, Depends(get_current_user)],
     club_seq: int,
-    update_club_data: UpdateClubSchema,
+    emblem_img: UploadFile | None = File(None),
+    img: UploadFile | None = File(None),
+    level: int = Form(...),
+    register_date: str = Form(...),
+    intro: str = Form(...),
+    name: str = Form(...),
+    location: str = Form(...),
+    gender: str = Form(...),
+    uniform_color: str = Form(...),
+    membership_fee: int = Form(...),
+    age_group: str = Form(...),
     db: Session = Depends(get_db),
 ):
     club = db.query(Club).filter(Club.seq == club_seq).first()
@@ -137,8 +150,27 @@ def update_club(
     if not is_owner:
         raise ClubPermissionException
 
-    for key, value in update_club_data.dict(exclude_none=True).items():
-        setattr(club, key, value)
+    emblem_url = ""
+    if emblem_img is not None:
+        emblem_contents = await emblem_img.read()
+        emblem_url = file_con.upload_club_img(emblem_contents, emblem_img.filename)
+
+    img_url = ""
+    if img is not None:
+        img_contents = await img.read()
+        img_url = file_con.upload_club_img(img_contents, img.filename)
+
+    club.emblem_img = emblem_url
+    club.img = img_url
+    club.level = level
+    club.register_date = register_date
+    club.intro = intro
+    club.name = name
+    club.location = location
+    club.gender = gender
+    club.uniform_color = uniform_color
+    club.membership_fee = membership_fee
+    club.age_group = age_group
 
     db.commit()
 
@@ -163,7 +195,9 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -225,7 +259,9 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],

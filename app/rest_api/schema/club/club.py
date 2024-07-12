@@ -30,7 +30,6 @@ class UpdateClubSchema(BaseModel):
     membership_fee: int = Field(None, title="회비")
     level: conint(ge=1, le=5) = Field(None, title="실력")
     gender: Literal["M", "F", "U"] = Field(None, title="성별")
-    img: str = Field(None, title="클럽 이미지 URL")
     uniform_color: str = Field(None, title="유니폼 색")
 
 
