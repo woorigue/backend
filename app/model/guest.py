@@ -37,13 +37,11 @@ class Guest(Base):
         "Match",
         foreign_keys="[Match.home_club_guest_seq]",
         back_populates="home_club_guest",
-        cascade="all, delete-orphan",
     )
     away_matches = relationship(
         "Match",
         foreign_keys="[Match.away_club_guest_seq]",
         back_populates="away_club_guest",
-        cascade="all, delete-orphan",
     )
     match = relationship(
         "Match",

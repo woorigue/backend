@@ -49,6 +49,7 @@ class Match(Base):
     )
     away_club_poll_seq = Column(
         Integer,
+        nullable=True,
         comment="원정 클럽 투표 시퀸스",
     )
 
