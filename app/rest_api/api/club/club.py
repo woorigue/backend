@@ -126,7 +126,7 @@ from fastapi import Depends
     },
 )
 async def update_club(
-    # token: Annotated[str, Depends(get_current_user)],
+    token: Annotated[str, Depends(get_current_user)],
     club_seq: int,
     emblem_img: UploadFile | None = File(None),
     img: UploadFile | None = File(None),
@@ -144,11 +144,11 @@ async def update_club(
     club = db.query(Club).filter(Club.seq == club_seq).first()
     if club is None:
         raise ClubNotFoundException
-    #
-    # con = ClubController(token)
-    # is_owner = con.is_owner(db, club_seq)
-    # if not is_owner:
-    #     raise ClubPermissionException
+
+    con = ClubController(token)
+    is_owner = con.is_owner(db, club_seq)
+    if not is_owner:
+        raise ClubPermissionException
 
     if emblem_img is None:
         emblem_url = club.emblem_img
