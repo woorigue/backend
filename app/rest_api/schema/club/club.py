@@ -5,6 +5,7 @@ from typing import Literal
 from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, ConfigDict, Field, conint
 
+from app.core.enums import GenderEnum
 from app.model.club import Club
 from app.rest_api.schema.profile import GetProfileSchema
 
@@ -17,7 +18,7 @@ class ClubSchema(BaseModel):
     age_group: str = Field(title="연령대")
     membership_fee: int = Field(0, title="회비")
     level: conint(ge=1, le=5) = Field(title="레벨")
-    gender: Literal["M", "F", "U"] = Field(title="성별")
+    gender: GenderEnum = Field(title="성별")
     uniform_color: str | None = Field(None, title="유니폼 색")
 
 

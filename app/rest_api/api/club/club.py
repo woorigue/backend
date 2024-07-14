@@ -18,7 +18,7 @@ from app.model.club import Club, JoinClub
 from app.model.match import Match
 from app.model.position import JoinPosition
 from app.model.profile import Profile
-from app.rest_api.controller.club import ClubController
+from app.rest_api.controller.club.club import ClubController
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.club.club import (
@@ -47,7 +47,7 @@ async def create_club(
     intro: str = Form(...),
     name: str = Form(...),
     location: str = Form(...),
-    gender: str = Form(...),
+    gender: str = Form(title="성별", description="테스트"),
     uniform_color: str = Form(...),
     membership_fee: int = Form(...),
     age_group: str = Form(...),
@@ -197,7 +197,9 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -259,7 +261,9 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],

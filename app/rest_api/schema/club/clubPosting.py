@@ -1,6 +1,7 @@
 from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, Field
 
+from app.core.enums import GenderEnum
 from app.model.clubPosting import ClubPosting
 
 
@@ -13,7 +14,7 @@ class ClubPostingSchema(BaseModel):
     age_group: str = Field(title="연령대")
     membership_fee: int = Field(0, title="회비")
     level: str = Field(title="실력")
-    gender: str = Field(title="성별")
+    gender: GenderEnum = Field(title="성별")
 
 
 class UpdateClubPostingSchema(BaseModel):

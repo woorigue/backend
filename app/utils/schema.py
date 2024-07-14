@@ -1,4 +1,4 @@
-from typing import Union, get_args, get_origin, get_type_hints
+from typing import Union, get_args, get_origin
 
 from fastapi import Form
 from pydantic import BaseModel
@@ -16,7 +16,6 @@ class FormConvertSchema(BaseModel):
         # Optional 타입 처리
 
         for field_name, model_fields in cls.model_fields.items():
-            print(get_type_hints(model_fields))
             annotation = model_fields.annotation
             if get_origin(annotation) is Union and type(None) in get_args(annotation):
                 annotation = get_args(annotation)[0]
