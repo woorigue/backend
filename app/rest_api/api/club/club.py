@@ -1,4 +1,5 @@
 from typing import Annotated
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi_filter import FilterDepends
@@ -339,7 +340,11 @@ def get_match_schedule(
 ):
     match_scehdule = (
         db.query(Match)
-        .filter(or_(Match.home_club_seq == club_seq, Match.away_club_seq == club_seq))
+        .filter(
+            or_(Match.home_club_seq == club_seq, Match.away_club_seq == club_seq),
+            Match.match_date >= "2021-01-01",
+        )
+        .order_by(Match.match_date.desc())
         .all()
     )
 

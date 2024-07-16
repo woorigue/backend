@@ -22,6 +22,7 @@ class MatchController:
         # 내가 이미 생성해놓은 매치의 start_time & end_time range를 체크하는 로직
         match = self.db.scalar(
             select(Match).where(
+                Match.match_date == match_data.match_date,
                 Match.start_time >= match_data.start_time,
                 Match.end_time <= match_data.end_time,
             )
