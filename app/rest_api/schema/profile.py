@@ -28,6 +28,7 @@ class UpdateProfileSchema(BaseModel):
 
 
 class GetProfileSchema(BaseModel):
+    user_seq: int = Field(title="유저 시퀸스")
     nickname: StrictStr = Field(title="닉네임", default=None)
     gender: str | None = Field(title="성별", default=None)
     location: str | None = Field(title="활동 장소", default=None)

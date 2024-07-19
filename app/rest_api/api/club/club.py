@@ -198,7 +198,9 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -244,7 +246,7 @@ def accept_club(
     join_club = (
         db.query(JoinClub)
         .filter(
-            JoinClub.club_seq == club_seq,
+            JoinClub.clubs_seq == club_seq,
             JoinClub.user_seq == user_seq,
         )
         .one()
@@ -256,11 +258,14 @@ def accept_club(
     # TODO: validate club owner / matcher poster
 
     join_club.accepted = True
+    db.commit()
 
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -330,6 +335,35 @@ def get_members(
     ]
 
     return member
+
+
+@club_router.delete(
+    "/{club_seq}/delete_member",
+    summary="클럽 멤버 삭제",
+)
+def delete_member(
+    token: Annotated[str, Depends(get_current_user)],
+    club_seq: int,
+    user_seq: int,
+    db: Session = Depends(get_db),
+):
+    club = db.query(Club).filter(Club.seq == club_seq).first()
+    if club is None:
+        raise ClubNotFoundException
+
+    con = ClubController(token)
+    is_owner = con.is_owner(db, club_seq)
+    if not is_owner:
+        raise ClubPermissionException
+
+    join_club = delete(JoinClub).where(
+        and_(JoinClub.user_seq == user_seq, JoinClub.clubs_seq == club_seq)
+    )
+    db.execute(join_club)
+    db.commit()
+    db.flush()
+
+    return {"success": True}
 
 
 @club_router.get("/{club_seq}/match_schedule", summary="클럽 매칭 스케줄 조회")
