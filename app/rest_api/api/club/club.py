@@ -54,7 +54,8 @@ async def create_club(
     age_group: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    join_club_count = db.query(JoinClub).where(JoinClub.user_seq == token.seq).count()
+    con = ClubController(token)
+    join_club_count = con.get_joined_club_count(db)
     if join_club_count >= 2:
         raise JoinClubLimitError
 
@@ -206,6 +207,11 @@ def join_club(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
+    con = ClubController(token)
+    join_club_count = con.get_joined_club_count(db)
+    if join_club_count >= 2:
+        raise JoinClubLimitError
+
     join_status = db.query(
         exists().where(
             (JoinClub.user_seq == token.seq) & (JoinClub.clubs_seq == club_seq)
@@ -243,6 +249,11 @@ def accept_club(
     if not club:
         raise ClubNotFoundException
 
+    con = ClubController(token)
+    is_owner = con.is_owner(db, club_seq)
+    if not is_owner:
+        raise ClubPermissionException
+
     join_club = (
         db.query(JoinClub)
         .filter(
@@ -254,8 +265,6 @@ def accept_club(
 
     if not join_club:
         raise JoinClubNotFoundException
-
-    # TODO: validate club owner / matcher poster
 
     join_club.accepted = True
     db.commit()
