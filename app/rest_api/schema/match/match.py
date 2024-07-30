@@ -44,7 +44,8 @@ class FilterMatchSchema(Filter):
     home_club_seq__in: list[int] | None = Field(None, title="홈 클럽 시퀸스")
     away_club_seq__in: list[int] | None = Field(None, title="원정 클럽 시퀸스")
     match_type__in: list[str] | None = Field(None, title="매치 유형")
-    location__in: list[str] | None = Field(None, title="장소 리스트")
+    location__ilike: str | None = Field(None, title="장소 리스트")
+    match_date: dt.date | None = Field(None, title="매치 날짜")
     match_date__gte: dt.date | None = Field(None, title="최소 매치 날짜")
     match_date__lte: dt.date | None = Field(None, title="최대 매치 날짜")
     start_time__gte: dt.time | None = Field(None, title="최소 매치시간")
@@ -54,8 +55,12 @@ class FilterMatchSchema(Filter):
     gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")
     match_fee__gte: int | None = Field(None, title="최소 회비")
     match_fee__lte: int | None = Field(None, title="최대 회비")
-    home_club_guest_seq__in: list[int] | None = Field(None, title="홈 클럽 용별 게시글 시퀸스")
-    away_club_guest_seq__in: list[int] | None = Field(None, title="원정 클럽용별 게시글 시퀸스")
+    home_club_guest_seq__in: list[int] | None = Field(
+        None, title="홈 클럽 용별 게시글 시퀸스"
+    )
+    away_club_guest_seq__in: list[int] | None = Field(
+        None, title="원정 클럽용별 게시글 시퀸스"
+    )
 
     class Constants(Filter.Constants):
         model = Match

@@ -31,7 +31,13 @@ class User(Base):
 
     profile = relationship(Profile, back_populates="user", cascade="all, delete-orphan")
 
-    clubs = relationship("Club", secondary="join_club", back_populates="members")
+    clubs = relationship(
+        "Club",
+        secondary="join_club",
+        primaryjoin="and_(User.seq == JoinClub.user_seq, JoinClub.accepted == True)",
+        secondaryjoin="and_(Club.seq == JoinClub.clubs_seq, Club.deleted == False)",
+        back_populates="members",
+    )
 
     join_club_posting = relationship(
         JoinClubPosting, back_populates="user", cascade="all, delete-orphan"
