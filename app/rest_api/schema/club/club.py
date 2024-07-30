@@ -36,7 +36,7 @@ class UpdateClubSchema(BaseModel):
 class FilterClubSchema(Filter):
     seq__in: list[int] | None = Field(None, title="시퀸스 리스트")
     name__ilike: str | None = Field(None, title="이름")
-    location__in: list[str] | None = Field(None, title="장소 리스트")
+    location__ilike: str | None = Field(None, title="장소 리스트")
     age_group__in: list[str] | None = Field(None, title="연령대 리스트")
     level__in: list[int] | None = Field(None, title="실력 리스트")
     gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")

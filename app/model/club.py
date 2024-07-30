@@ -24,7 +24,13 @@ class Club(Base):
     uniform_color = Column(String(24), comment="유니폼 색")
     deleted = Column(Boolean, default=False, comment="삭제 여부")
 
-    members = relationship("User", secondary="join_club", back_populates="clubs")
+    members = relationship(
+        "User",
+        secondary="join_club",
+        primaryjoin="and_(Club.seq == JoinClub.clubs_seq, JoinClub.accepted == True)",
+        secondaryjoin="and_(User.seq == JoinClub.user_seq, User.is_active == True)",
+        back_populates="clubs",
+    )
 
     poll = relationship("Poll", back_populates="club")
     home_matches = relationship(

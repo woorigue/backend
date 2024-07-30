@@ -113,11 +113,6 @@ def get_club(
     return club
 
 
-from typing import Annotated
-
-from fastapi import Depends
-
-
 @club_router.patch(
     "/{club_seq}",
     summary="클럽 정보 수정",
@@ -183,14 +178,14 @@ async def update_club(
 
 @club_router.get("", response_model=list[ClubListSchema], summary="클럽 조회")
 def filter_clubs(
-    # token: Annotated[str, Depends(get_current_user)],
+    token: Annotated[str, Depends(get_current_user)],
     club_filter: FilterClubSchema = FilterDepends(FilterClubSchema),
     page: int = Query(1, title="페이지", ge=1),
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
 ):
     con = ClubController()
-    query = db.query(Club)
+    query = db.query(Club).filter(Club.deleted == False)
     query = club_filter.filter(query)
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
@@ -313,7 +308,7 @@ def delete_club(
     if not is_owner:
         raise ClubPermissionException
 
-    db.delete(club)
+    club.deleted = True
     db.commit()
     return {"success": True}
 
