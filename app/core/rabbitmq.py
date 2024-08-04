@@ -39,11 +39,12 @@ class RabbitBase:
 
 class RabbitHelper(RabbitBase):
     def publish(self, chat_room, message, user_id):
-        routing_key = f"users.{user_id}.#"
-        self.channel.queue_declare(queue=chat_room)
-        self.channel.queue_bind(
-            exchange=self.TOPIC_EXCHANGE, queue=chat_room, routing_key=routing_key
-        )
+        routing_key = f"user.1.chat.10"
+        # self.channel.queue_declare(queue="messages2", durable=True)
+        # self.channel.queue_bind(
+        #     exchange=self.TOPIC_EXCHANGE, queue="messages2", routing_key=routing_key
+        # )
+        routing_key = f"user.1.chat.10"
         self.channel.basic_publish(
             exchange=self.TOPIC_EXCHANGE, routing_key=routing_key, body=message
         )
