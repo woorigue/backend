@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "CloudFormation template to create RDS"
+
+Parameters:
+  SecretName:
+    Type: String
+    Description: Name of the secret in Secrets Manager
+    Default: 'backend-secrets'
+
+Resources:
+  PostgresSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "DB subnet group for postgres"
+      DBSubnetGroupName: "Postgres-Subnet"
+      SubnetIds:
+        - !ImportValue VPC-SubnetA-ID
+        - !ImportValue VPC-SubnetB-ID
+      Tags:
+        - Key: Name
+          Value: postgres
+
+  PostgresInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: postgres
+      EngineVersion: 16.3
+      DBInstanceIdentifier: backend
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      StorageType: gp2
+      MultiAZ: false
+      PubliclyAccessible: false
+      MasterUsername: !Sub '{{resolve:secretsmanager:${SecretName}:SecretString:username}}'
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${SecretName}:SecretString:password}}'
+      DBName: woorigue
+      VPCSecurityGroups:
+       - !ImportValue sg-postgres-id
+      DBSubnetGroupName: !Ref PostgresSubnetGroup
+      StorageEncrypted: true
+      DeletionProtection: false
+      BackupRetentionPeriod: 0
+      CopyTagsToSnapshot: false
+      EnablePerformanceInsights: false
+      AllowMajorVersionUpgrade: false
+      DeleteAutomatedBackups: true
+      EnableIAMDatabaseAuthentication: false
+      MonitoringInterval: 0
+      Port: 5432
+      UseDefaultProcessorFeatures: false
+      AutoMinorVersionUpgrade: false
+
+Outputs:
+  PostgresSubnetGroupName:
+    Description: The name of the created DB subnet group
+    Value: !Ref PostgresSubnetGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-PostgresSubnetGroup"
+
+  PostgresAddress:
+    Description: The address of postgres
+    Value: !GetAtt PostgresInstance.Endpoint.Address
+    Export:
+      Name: !Sub "${AWS::StackName}-postgres-address"
+
+  PostgresPort:
+    Description: The port of postgres
+    Value: !GetAtt PostgresInstance.Endpoint.Port
+    Export:
+      Name: !Sub "${AWS::StackName}-postgres-port"

@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "CloudFormation template to create Backend group with policies"
+
+Resources:
+  # User
+  BackendIAMGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: BackendIAMGroup
+
+  BackendIAMPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Backend user policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:*
+              - ec2:*
+              - rds:*
+            Resource: "*"
+      ManagedPolicyName: "backend-user-policy"
+      Groups:
+        - !Ref BackendIAMGroup
+
+  AttachUserToBackendGroup:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: !Ref BackendIAMGroup
+      Users:
+        - !ImportValue IAM-BackendUser
+
+  # S3
+  BucketFullAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Allow full access to Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource:
+              - "arn:aws:s3:::*"
+      ManagedPolicyName: "backend-s3-policy"
+
+
+Outputs:
+  BackendIAMGroup:
+    Description: "Backend Group"
+    Value: !Ref BackendIAMGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-BackendIAMGroup"
+
+  BucketIAMPolicy:
+    Description: "S3 policy"
+    Value: !Ref BucketFullAccessPolicy
+    Export:
+      Name: !Sub "${AWS::StackName}-S3"

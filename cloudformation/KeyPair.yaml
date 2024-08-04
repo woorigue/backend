@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "CloudFormation template to create keypair"
+
+Resources:
+  BackendKeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: backend
+
+Outputs:
+  BackendKeyPair:
+    Description: The KeyPair name of backend
+    Value: !Ref BackendKeyPair
+    Export:
+      Name: !Sub ${AWS::StackName}-backend

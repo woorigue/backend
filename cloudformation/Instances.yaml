@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "CloudFormation template to create instance(EC2)"
+
+Parameters:
+  InstanceTemplateUrl:
+    Type: String
+    Default: "https://woorigue.s3.ap-northeast-2.amazonaws.com/Instance.yaml"
+    Description: Template URL for instance template.
+
+Mappings:
+  ImageMap:
+    ImageId:
+      # Ubuntu Server 24.04 LTS (HVM)
+      Ubuntu: ami-062cf18d655c0b1e8 # community version
+
+Resources:
+  BackendProject:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        InstanceName: "backend"
+        ImageId: !FindInMap [ImageMap, ImageId, Ubuntu]
+        InstanceType: "t2.micro"
+        KeyPairName: !ImportValue KeyPair-backend
+        VpcId: !ImportValue VPC-ID
+        AvailabilityZone: !ImportValue VPC-SubnetA-Az
+        SubnetId: !ImportValue VPC-SubnetA-ID
+        SecurityGroupIds: !Join
+          - ","
+          - - !ImportValue sg-backend-id
+            - !ImportValue sg-ssh-id
+        AssociatePublicIpAddress: "true"
+        VolumeSize: 30
+        IamInstanceProfile: !ImportValue Role-backend-instance-profile
+      TemplateURL: !Ref InstanceTemplateUrl
+      TimeoutInMinutes: 10

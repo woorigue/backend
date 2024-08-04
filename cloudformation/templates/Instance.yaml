@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "Instance template of cloudformation stack"
+
+Parameters:
+  # Name and tags
+  InstanceName:
+    Type: String
+    Default: "undefined"
+    Description: "The name of instance"
+
+  # App and OS Images
+  ImageId:
+    Type: AWS::EC2::Image::Id
+    Default: "ami-062cf18d655c0b1e8"  # Ubuntu Server 24.04 LTS (HVM)
+    Description: "The ID of the AMI."
+
+  # Instance type
+  InstanceType:
+    Type: String
+    Default: "t2.micro"
+    Description: "The instance type"
+
+  # KeyPair
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: "The name of the EC2 Key Pair"
+
+  # Network
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: "The VPC id"
+
+  AvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Description: "The Availability Zone of instance"
+
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: "The subnet ID."
+
+  SecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: "The list of common security group"
+
+  # Network Interface
+  AssociatePublicIpAddress:
+    Type: String
+    Description: "Whether to assign a public IPv4 address."
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+
+  # Storage
+  VolumeSize:
+    Type: Number
+    Default: "30"
+    Description: "The size of the volume, in GiBs."
+
+  # Advance details
+  IamInstanceProfile:
+    Type: String
+    Default: ""
+    Description: "The name or ARN of an IAM instance profile."
+
+
+
+Resources:
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            Encrypted: true
+            VolumeSize: !Ref VolumeSize
+            VolumeType: gp3
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPairName
+      ImageId: !Ref ImageId
+      Monitoring: false
+      IamInstanceProfile: !Ref IamInstanceProfile
+      SubnetId: !Ref SubnetId
+      Tenancy: default
+      SecurityGroupIds: !Ref SecurityGroupIds
+      InstanceInitiatedShutdownBehavior: stop
+      Tags:
+        - Key: Name
+          Value: !Ref InstanceName
+
+Outputs:
+  InstanceId:
+    Description: The instance ID.
+    Value: !Ref Instance
+    Export:
+      Name: !Sub ${InstanceName}-ID

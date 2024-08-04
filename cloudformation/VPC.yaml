@@ -1,0 +1,173 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'AWS CloudFormation template to create a VPC'
+
+Parameters:
+  ServiceName:
+    Description: The service name.
+    Type: String
+    Default: Woorigue
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Ref ServiceName
+
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ServiceName}-Subnet
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${ServiceName}-IGW
+
+  VpcInternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+    DependsOn: [VPC, InternetGateway]
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${ServiceName}-PublicRouteTable
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+    DependsOn: [PublicRouteTable, InternetGateway]
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetA
+      RouteTableId: !Ref PublicRouteTable
+    DependsOn: [SubnetA, PublicRouteTable]
+
+  PublicSubnetNACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${ServiceName}-PublicSubnetNACL
+    DependsOn: [VPC]
+
+  PublicSubnetNACLInboundEntry100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: false
+      NetworkAclId: !Ref PublicSubnetNACL
+      Protocol: -1
+      RuleAction: allow
+      RuleNumber: 100
+    DependsOn: PublicSubnetNACL
+
+  PublicSubnetNACLOutboundEntry100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: true
+      NetworkAclId: !Ref PublicSubnetNACL
+      Protocol: -1
+      RuleAction: allow
+      RuleNumber: 100
+    DependsOn: PublicSubnetNACL
+
+  PublicSubnetNACLAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref SubnetA
+      NetworkAclId: !Ref PublicSubnetNACL
+
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ServiceName}-SubnetB
+
+  PublicSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      RouteTableId: !Ref PublicRouteTable
+    DependsOn: [PublicSubnetB, PublicRouteTable]
+
+  PublicSubnetBNACLAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      NetworkAclId: !Ref PublicSubnetNACL
+
+Outputs:
+  VpcId:
+    Description: The VPC ID.
+    Value: !Ref VPC
+    Export:
+      Name: !Sub ${AWS::StackName}-ID
+
+  SubnetAId:
+    Description: The subnet ID.
+    Value: !Ref SubnetA
+    Export:
+      Name: !Sub ${AWS::StackName}-SubnetA-ID
+
+  InternetGatewayId:
+    Description: The Internet Gateway ID.
+    Value: !Ref InternetGateway
+    Export:
+      Name: !Sub ${AWS::StackName}-IGW-ID
+
+  PublicRouteTableId:
+    Description: The Public Route Table ID
+    Value: !Ref PublicRouteTable
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicRouteTable-ID
+
+  SubnetAAz:
+    Description: The Availability Zone of SubnetA.
+    Value: !GetAtt SubnetA.AvailabilityZone
+    Export:
+      Name: !Sub ${AWS::StackName}-SubnetA-Az
+
+  SubnetBId:
+    Description: The subnet ID.
+    Value: !Ref PublicSubnetB
+    Export:
+      Name: !Sub ${AWS::StackName}-SubnetB-ID
+
+  SubnetBAz:
+    Description: The Availability Zone of SubnetB.
+    Value: !GetAtt PublicSubnetB.AvailabilityZone
+    Export:
+      Name: !Sub ${AWS::StackName}-SubnetB-Az

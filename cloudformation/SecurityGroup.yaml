@@ -2,13 +2,91 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: "CloudFormation template to create security group"
 
 Parameters:
-  ServiceName:
-    Description: The service name.
+  SeukHomeIp:
+    Description: "The ip address"
     Type: String
-    Default: Woorigue
+    Default: "110.12.59.66/32"
+  SeukHomeDesc:
+    Description: "SeukJeong home name"
+    Type: String
+    Default: "Seuk_Home"
+  MinHyukHomeIp:
+    Description: "The ip address"
+    Type: String
+    Default: "142.115.138.237/32"
+  MinHyukHomeDesc:
+    Description: "MinHyuk home name"
+    Type: String
+    Default: "MinHyuk_Home"
+
+
 
 Resources:
   PostgresSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: !ImportValue
+      GroupDescription: "Allow PostgreSQL access"
+      VpcId: !ImportValue VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: !Ref SeukHomeIp
+          Description: !Ref SeukHomeDesc
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: !Ref MinHyukHomeIp
+          Description: !Ref MinHyukHomeDesc
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-rds-sg
+
+  BackendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Backend project security group"
+      VpcId: !ImportValue VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0
+          Description: "Allow backend project port(fastapi)"
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-ec2-sg
+
+  SshSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "ssh security group"
+      VpcId: !ImportValue VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SeukHomeIp
+          Description: !Ref SeukHomeDesc
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-ssh-sg
+
+Outputs:
+  PostgresSecurityGroupId:
+    Description: "The ID of PostgresSecurityGroup"
+    Value: !GetAtt PostgresSecurityGroup.GroupId
+    Export:
+      Name: sg-postgres-id
+
+  BackendSecurityGroupId:
+    Description: "The ID of Backend security group"
+    Value: !GetAtt BackendSecurityGroup.GroupId
+    Export:
+      Name: sg-backend-id
+
+  SshSecurityGroupId:
+    Description: "The ID of ssh security group"
+    Value: !GetAtt SshSecurityGroup.GroupId
+    Export:
+      Name: sg-ssh-id

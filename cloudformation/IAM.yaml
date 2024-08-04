@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFormation template to create IAM user"
+
+Resources:
+  BackendIAMUser:
+      Type: AWS::IAM::User
+      Properties:
+        UserName: 'm23jung@gmail.com'
+        Path: "/"
+
+Outputs:
+  BackendIAMUser:
+    Description: "Backend User"
+    Value: !Ref BackendIAMUser
+    Export:
+      Name: !Sub "${AWS::StackName}-BackendUser"
+
