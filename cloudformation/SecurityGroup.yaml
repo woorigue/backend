@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "CloudFormation template to create security group"
+
+Parameters:
+  ServiceName:
+    Description: The service name.
+    Type: String
+    Default: Woorigue
+
+Resources:
+  PostgresSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !ImportValue

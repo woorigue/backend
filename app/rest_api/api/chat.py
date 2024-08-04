@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
 from app.core.token import get_current_user
-from app.core import rabbitmq_helper
+
+# from app.core import rabbitmq_helper
 from app.model.chat import ChattingRoom, ChattingContent, UserChatRoomAssociation
 from app.rest_api.schema.chat import CreateMatchChatRoomSchema, CreateMatchChatSchema
 
@@ -48,17 +49,17 @@ def create_match_chat_room(
 def create_match_chat(
     chat_room_id: int,
     user_data: CreateMatchChatSchema,  # TODO: serach for user to get club owner's user seq value
-    token: Annotated[str, Depends(get_current_user)],
+    # token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    chatting_contents = ChattingContent(
-        chatting_room_seq=chat_room_id, user_seq=token.seq, content=user_data.contents
-    )
-    db.add(chatting_contents)
-    db.commit()
-    db.flush()
+    # chatting_contents = ChattingContent(
+    #     chatting_room_seq=chat_room_id, user_seq=token.seq, content=user_data.contents
+    # )
+    # db.add(chatting_contents)
+    # db.commit()
+    # db.flush()
 
-    rabbitmq_helper.publish(str(chat_room_id), user_data.contents, token.seq)
+    # rabbitmq_helper.publish(str(chat_room_id), user_data.contents, 1)
 
     return {"success": True}
 
