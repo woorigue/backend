@@ -68,6 +68,8 @@ def create_match(
         gender=match_data.gender,
         match_fee=match_data.match_fee,
         notice=match_data.notice,
+        latitude=match_data.latitude,
+        longitude=match_data.longitude,
     )
     db.add(match)
     db.commit()
