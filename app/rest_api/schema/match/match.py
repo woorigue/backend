@@ -110,5 +110,5 @@ class MatchResponseSchema(BaseModel):
     away_club_guest: GuestSchema | None = Field(title="용병 게시글 시퀸스")
     home_club_poll_seq: int = Field(title="홈 클럽 투표 시퀸스")
     away_club_poll_seq: int | None = Field(title="원정 클럽 투표 시퀸스")
-    latitude: str = Field(None, title="위도")
-    longitude: str = Field(None, title="경도")
+    latitude: str | None = Field(None, title="위도")
+    longitude: str | None = Field(None, title="경도")
