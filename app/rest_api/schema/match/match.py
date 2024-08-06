@@ -20,6 +20,8 @@ class MatchSchema(BaseModel):
     gender: Literal["M", "F", "U"] = Field(title="성별")
     match_fee: int = Field(title="매치비용")
     notice: str = Field(title="공지사항")
+    latitude: str = Field(None, title="위도")
+    longitude: str = Field(None, title="경도")
 
 
 class UpdateMatchSchema(BaseModel):
@@ -36,6 +38,8 @@ class UpdateMatchSchema(BaseModel):
     matched: bool = Field(None, title="매치 성사 여부")
     home_club_guest_seq: int = Field(None, title="홈 클럽 용병 게시글 시퀸스")
     away_club_guest_seq: int = Field(None, title="원정 클럽 용병 게시글 시퀸스")
+    latitude: str = Field(None, title="위도")
+    longitude: str = Field(None, title="경도")
 
 
 class FilterMatchSchema(Filter):
@@ -55,12 +59,8 @@ class FilterMatchSchema(Filter):
     gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")
     match_fee__gte: int | None = Field(None, title="최소 회비")
     match_fee__lte: int | None = Field(None, title="최대 회비")
-    home_club_guest_seq__in: list[int] | None = Field(
-        None, title="홈 클럽 용별 게시글 시퀸스"
-    )
-    away_club_guest_seq__in: list[int] | None = Field(
-        None, title="원정 클럽용별 게시글 시퀸스"
-    )
+    home_club_guest_seq__in: list[int] | None = Field(None, title="홈 클럽 용별 게시글 시퀸스")
+    away_club_guest_seq__in: list[int] | None = Field(None, title="원정 클럽용별 게시글 시퀸스")
 
     class Constants(Filter.Constants):
         model = Match
@@ -110,3 +110,5 @@ class MatchResponseSchema(BaseModel):
     away_club_guest: GuestSchema | None = Field(title="용병 게시글 시퀸스")
     home_club_poll_seq: int = Field(title="홈 클럽 투표 시퀸스")
     away_club_poll_seq: int | None = Field(title="원정 클럽 투표 시퀸스")
+    latitude: str = Field(None, title="위도")
+    longitude: str = Field(None, title="경도")

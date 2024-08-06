@@ -156,7 +156,6 @@ def filter_guests(
     db: Session = Depends(get_db),
 ):
     today = datetime.today()
-    query = db.query.join(Match, Guest.match_seq == Match.seq)
     query = (
         db.query(Guest)
         .join(Match, Guest.match_seq == Match.seq)

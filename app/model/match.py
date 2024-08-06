@@ -29,6 +29,8 @@ class Match(Base):
     gender = Column(String(12), nullable=False, comment="성별")
     match_fee = Column(Integer, nullable=True, comment="매치비용")
     notice = Column(String(255), nullable=True, comment="공지사항")
+    latitude = Column(String(32), nullable=True, comment="위도")
+    longitude = Column(String(32), nullable=True, comment="경도")
     matched = Column(Boolean, default=False, comment="매치 성사 여부")
     home_club_guest_seq = Column(
         Integer,
