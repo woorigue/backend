@@ -12,18 +12,18 @@ class FileController:
     def upload_uesr_profile_img(self, file, user, file_name, db):
         url = f"profile/{user.email}/{file_name}"
         content = BytesIO(file)
-        self.s3_client.upload_fileobj(content, "our-league", url)
+        self.s3_client.upload_fileobj(content, "woorigue", url)
         profile = user.profile[0]
-        profile.img = "drl2968ia795g.cloudfront.net/" + url
+        profile.img = "d2al7pp3zcl1yf.cloudfront.net/" + url
         db.commit()
         db.flush()
 
     def upload_banner_img(self, file, file_name, db):
         url = f"banner/{file_name}"
         content = BytesIO(file)
-        self.s3_client.upload_fileobj(content, "our-league", url)
+        self.s3_client.upload_fileobj(content, "woorigue", url)
         banner = Banner(
-            url="drl2968ia795g.cloudfront.net/" + url, create_date=datetime.now()
+            url="d2al7pp3zcl1yf.cloudfront.net/" + url, create_date=datetime.now()
         )
         db.add(banner)
         db.commit()
@@ -32,20 +32,20 @@ class FileController:
     def edit_banner_img(self, file, file_name):
         url = f"banner/{file_name}"
         content = BytesIO(file)
-        self.s3_client.upload_fileobj(content, "our-league", url)
-        return "drl2968ia795g.cloudfront.net/" + url
+        self.s3_client.upload_fileobj(content, "woorigue", url)
+        return "d2al7pp3zcl1yf.cloudfront.net/" + url
 
     def upload_club_img(self, file, file_name):
         url = f"club/{file_name}"
         content = BytesIO(file)
-        self.s3_client.upload_fileobj(content, "our-league", url)
-        return "drl2968ia795g.cloudfront.net/" + url
+        self.s3_client.upload_fileobj(content, "woorigue", url)
+        return "d2al7pp3zcl1yf.cloudfront.net/" + url
 
     def upload_club_emblem_img(self, file, file_name):
         url = f"club/emblem/{file_name}"
         content = BytesIO(file)
-        self.s3_client.upload_fileobj(content, "our-league", url)
-        return "drl2968ia795g.cloudfront.net/" + url
+        self.s3_client.upload_fileobj(content, "woorigue", url)
+        return "d2al7pp3zcl1yf.cloudfront.net/" + url
 
 
 file_controller = FileController()
