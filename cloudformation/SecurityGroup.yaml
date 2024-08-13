@@ -18,8 +18,10 @@ Parameters:
     Description: "MinHyuk home name"
     Type: String
     Default: "MinHyuk_Home"
-
-
+  Ec2Ip:
+    Description: "The ec2 ip address"
+    Type: String
+    Default: "43.201.46.100/32"
 
 Resources:
   PostgresSecurityGroup:
@@ -38,6 +40,11 @@ Resources:
           ToPort: 5432
           CidrIp: !Ref MinHyukHomeIp
           Description: !Ref MinHyukHomeDesc
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: !Ref Ec2Ip
+          Description: "EC2 IP"
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-rds-sg
@@ -53,6 +60,21 @@ Resources:
           ToPort: 8000
           CidrIp: 0.0.0.0/0
           Description: "Allow backend project port(fastapi)"
+        - IpProtocol: tcp
+          FromPort: 5672
+          ToPort: 5672
+          CidrIp: 0.0.0.0/0
+          Description: "Allow RabbitMQ AMQP port"
+        - IpProtocol: tcp
+          FromPort: 15672
+          ToPort: 15672
+          CidrIp: 0.0.0.0/0
+          Description: "Allow RabbitMQ management console port"
+        - IpProtocol: tcp
+          FromPort: 15674
+          ToPort: 15674
+          CidrIp: 0.0.0.0/0
+          Description: "Allow RabbitMQ STOMP port"
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-ec2-sg
