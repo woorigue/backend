@@ -175,5 +175,6 @@ pyrightconfig.json
 
 # Vscode
 .vscode/
-
 # End of https://www.toptal.com/developers/gitignore/api/python
+
+cloudformation/Secret.yaml
