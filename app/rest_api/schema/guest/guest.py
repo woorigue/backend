@@ -5,6 +5,7 @@ from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, ConfigDict, Field, conint
 
 from app.model.guest import Guest
+from app.model.match import Match
 from app.rest_api.schema.club.club import ClubResponseSchema
 
 
@@ -39,6 +40,11 @@ class FilterGuestSchema(Filter):
     level__in: list[int] | None = Field(None, title="실력 리스트")
     gender__in: list[Literal["M", "F", "U"]] | None = Field(None, title="성별")
     position__in: list[conint(ge=1, le=5)] = Field(None, title="포지션")
+
+    location__ilike: str | None = Field(None, title="장소 리스트")
+    match_date: dt.date | None = Field(None, title="매치 날짜")
+    match_date__gte: dt.date | None = Field(None, title="최소 매치 날짜")
+    match_date__lte: dt.date | None = Field(None, title="최대 매치 날짜")
 
     class Constants(Filter.Constants):
         model = Guest

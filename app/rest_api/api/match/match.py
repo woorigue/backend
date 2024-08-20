@@ -11,11 +11,14 @@ from app.core.token import (
 )
 from app.core.utils import error_responses
 from app.helper.exception import (
+    ClubPermissionException,
     JoinMatchNotFoundException,
     MatchNotFoundException,
     RegisterMatchError,
+    JoinMatchException,
 )
 from app.model.match import JoinMatch, Match
+from app.rest_api.controller.club import ClubController
 from app.rest_api.controller.match.match import MatchController
 from app.rest_api.controller.poll import PollController
 from app.rest_api.schema.base import CreateResponse
@@ -202,8 +205,10 @@ def join_match(
         raise MatchNotFoundException
 
     if match.away_club_seq is not None:
-        # TODO: validate match is pending/accepted
         raise MatchNotFoundException
+
+    if match.home_club_seq == away_club_seq:
+        raise JoinMatchException
 
     join_match = JoinMatch(
         match_seq=match.seq,
@@ -250,9 +255,12 @@ def accept_match(
     if not join_match:
         raise JoinMatchNotFoundException
 
-    # TODO: validate club owner / matcher poster
+    club_con = ClubController(token)
+    is_owner = club_con.is_owner(db, match.home_club_seq)
+    if not is_owner:
+        raise ClubPermissionException
 
-    match.status = "found"
+    match.matched = True
     match.away_club_seq = away_club_seq
     join_match.accepted = True
 

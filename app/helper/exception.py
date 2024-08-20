@@ -159,3 +159,9 @@ class ClubPermissionException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100022
     error_detail = "클럽을 수정 및 삭제할 수 있는 권한이 없습니다."
+
+
+class JoinMatchException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    error_code = 100023
+    error_detail = "매치 신청이 불가합니다."
