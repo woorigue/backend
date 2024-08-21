@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 
 from app.model.guest import Guest
 from app.model.match import Match
@@ -21,7 +21,9 @@ class GuestController:
             "match_seq__in": lambda: Guest.match_seq.in_(filters.get("match_seq__in")),
             "level__in": lambda: Guest.level.in_(filters.get("level__in")),
             "gender__in": lambda: Guest.gender.in_(filters.get("gender__in")),
-            "position__in": lambda: Guest.position.in_(filters.get("position__in")),
+            "position__in": lambda: or_(
+                Guest.position.any(pos) for pos in filters.get("position__in")
+            ),
             "match_date": lambda: Match.match_date == filters.get("match_date"),
             "match_date__gte": lambda: Match.match_date
             >= filters.get("match_date__gte"),
