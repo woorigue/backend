@@ -1,5 +1,7 @@
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+
 
 from app.core.utils import get_position_type
 from app.db.session import Base, session
@@ -52,6 +54,14 @@ class Guest(Base):
     @property
     def guest_accpeted_number(self):
         return db.query(JoinGuest).filter(JoinGuest.accepted == True).count()
+
+    @hybrid_property
+    def location(self):
+        return self.match.location
+
+    @hybrid_property
+    def match_date(self):
+        return self.match.match_date
 
 
 class JoinGuest(Base):

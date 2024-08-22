@@ -19,6 +19,7 @@ from app.helper.exception import (
 from app.model.guest import Guest, JoinGuest
 from app.model.match import Match
 from app.model.poll import JoinPoll, Poll
+from app.rest_api.controller.guest.guest import GuestController
 from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.guest.guest import (
     FilterGuestSchema,
@@ -163,7 +164,10 @@ def filter_guests(
             Guest.closed == False, Match.matched == False, Match.match_date >= today
         )
     )
-    query = guest_filter.filter(query)
+    guest_con = GuestController()
+    filter_conditions = guest_con.build_filters(guest_filter.dict())
+    if filter_conditions is not None:
+        query = query.filter(filter_conditions)
     offset = (page - 1) * per_page
     query = query.limit(per_page).offset(offset)
     guests = query.all()
