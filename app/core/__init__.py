@@ -1,9 +1,4 @@
-# from .rabbitmq import RabbitHelper
-#
-#
-# rabbitmq_helper = RabbitHelper()
-import json
-from .secrets import get_secret
+from .rabbitmq import RabbitHelper
 
 
-secret_manager = json.loads(get_secret())
+rabbitmq_helper = RabbitHelper()

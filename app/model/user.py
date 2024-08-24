@@ -51,15 +51,18 @@ class User(Base):
         JoinMemberPosting, back_populates="user", cascade="all, delete-orphan"
     )
 
-    chatting_rooms = relationship(
-        "ChattingRoom", secondary=UserChatRoomAssociation, back_populates="users"
-    )
-
     poll = relationship("Poll", back_populates="user")
     join_poll = relationship("JoinPoll", back_populates="user")
 
     firebase = relationship(
         Firebase, back_populates="user", cascade="all, delete-orphan"
+    )
+
+    chatting_room_associations = relationship(
+        "UserChatRoomAssociation", back_populates="user"
+    )
+    chatting_rooms = relationship(
+        "ChattingRoom", secondary="user_chatroom_association", back_populates="users"
     )
 
     @staticmethod

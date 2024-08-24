@@ -31,6 +31,11 @@ from app.rest_api.schema.match.match import (
 from app.rest_api.schema.poll import (
     CreatePollSchema,
 )
+from app.core import rabbitmq_helper
+from datetime import datetime
+from app.model.chat import ChattingRoom, UserChatRoomAssociation, ChattingContent
+from app.rest_api.schema.match.match import JoinMatchResponseSchema
+
 
 match_router = APIRouter(tags=["match"], prefix="/match")
 
@@ -191,7 +196,7 @@ def filter_match(
     "/{match_seq}/join",
     summary="매치 참여",
     responses={404: {"description": error_responses([MatchNotFoundException])}},
-    response_model=CreateResponse,
+    response_model=JoinMatchResponseSchema,
 )
 def join_match(
     match_seq: int,
@@ -219,7 +224,42 @@ def join_match(
     db.add(join_match)
     db.commit()
 
-    return {"success": True}
+    # 채팅방 생성 로직
+    chatting_room = ChattingRoom(created_at=datetime.utcnow())
+    db.add(chatting_room)
+    db.commit()
+    db.flush()
+
+    # 채팅방 참여 로직
+    association_data = {
+        "userId": token.seq,
+        "chat_room_seq": chatting_room.seq,
+        "joinDate": datetime.utcnow(),  # 현재 시간을 joinDate로 설정
+    }
+    chat_association = UserChatRoomAssociation(**association_data)
+    db.add(chat_association)
+    db.commit()
+
+    association_data = {
+        "userId": match.user_seq,
+        "chat_room_seq": chatting_room.seq,
+        "joinDate": datetime.utcnow(),  # 현재 시간을 joinDate로 설정
+    }
+    chat_association = UserChatRoomAssociation(**association_data)
+    db.add(chat_association)
+    db.commit()
+
+    chatting_contents = ChattingContent(
+        chatting_room_seq=chatting_room.seq, user_seq=token.seq, content="매칭 우리 함께해요"
+    )
+    db.add(chatting_contents)
+    db.commit()
+    db.flush()
+
+    user_id = [match.user_seq]
+    rabbitmq_helper.publish(chatting_room.seq, chatting_contents.content, user_id)
+
+    return {"chat_room_seq": chatting_room.seq}
 
 
 @match_router.patch(

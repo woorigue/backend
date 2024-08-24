@@ -1,28 +1,20 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    ForeignKey,
-    DateTime,
-    Table,
-    Text,
-)
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Table, Text, Boolean
 from datetime import datetime
 
 from app.db.session import Base
 from sqlalchemy.orm import relationship
 
-UserChatRoomAssociation = Table(
-    "user_chatroom_association",
-    Base.metadata,
-    Column("userId", Integer, ForeignKey("users.seq"), primary_key=True),
-    Column(
-        "chat_room_seq",
-        Integer,
-        ForeignKey("chatting_room.seq"),
-        primary_key=True,
-    ),
-    Column("joinDate", DateTime, nullable=False, comment="참여 일자"),
-)
+
+class UserChatRoomAssociation(Base):
+    __tablename__ = "user_chatroom_association"
+
+    userId = Column(Integer, ForeignKey("users.seq"), primary_key=True)
+    chat_room_seq = Column(Integer, ForeignKey("chatting_room.seq"), primary_key=True)
+    joinDate = Column(DateTime, nullable=False, comment="참여 일자")
+    leave = Column(Boolean, default=False, comment="나가기 여부")
+
+    user = relationship("User", back_populates="chatting_room_associations")
+    chatting_room = relationship("ChattingRoom", back_populates="user_associations")
 
 
 class ChattingRoom(Base):
@@ -32,14 +24,13 @@ class ChattingRoom(Base):
     created_at = Column(
         DateTime, default=datetime.utcnow, nullable=True, comment="생성 시간"
     )
-    # 채팅방에 참여하는 사용자들
-    users = relationship(
-        "User",
-        secondary=UserChatRoomAssociation,
-        back_populates="chatting_rooms",
+
+    user_associations = relationship(
+        "UserChatRoomAssociation", back_populates="chatting_room"
     )
-    # # 채팅방의 메시지 내용
-    # messages = relationship("ChattingContent", back_populates="chatting_room")
+    users = relationship(
+        "User", secondary="user_chatroom_association", back_populates="chatting_rooms"
+    )
 
 
 class ChattingContent(Base):

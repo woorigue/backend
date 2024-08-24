@@ -112,3 +112,7 @@ class MatchResponseSchema(BaseModel):
     away_club_poll_seq: int | None = Field(title="원정 클럽 투표 시퀸스")
     latitude: str | None = Field(None, title="위도")
     longitude: str | None = Field(None, title="경도")
+
+
+class JoinMatchResponseSchema(BaseModel):
+    chat_room_seq: int = Field(title="채팅방 시퀀스")

@@ -1,7 +1,9 @@
-import os
+import os, json
 
 from pydantic_settings import BaseSettings
-from app.core import secret_manager
+from app.core.secrets import get_secret
+
+secret_manager = json.loads(get_secret())
 
 
 class Settings(BaseSettings):
@@ -15,7 +17,7 @@ class Settings(BaseSettings):
         "DATABASE_URL",
         f"postgresql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}",
     )
-    RABBITMQ_URL: str = "amqp://guest:guest@54.180.94.130/"
+    RABBITMQ_URL: str = "amqp://guest:guest@43.201.46.100/"
 
     # TODO: To use in cors function
     CORS_ORIGINS: list[str] = ["*"]
