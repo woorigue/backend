@@ -409,6 +409,10 @@ async def login(request: Request):
 @user_router.get("/auth/google")
 async def auth(request: Request, db: Session = Depends(get_db)):
     oauth = settings.GOOGLE_OAUTH
+    print("======")
+    print(request.session.values())
+    print("======")
+    print(request.__dict__)
     access_token = await oauth.authorize_access_token(request)
     user_data = await oauth.parse_id_token(
         access_token, access_token["userinfo"]["nonce"]
