@@ -9,6 +9,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 from starlette.config import Config
 
+from app.core.config import settings
 from app.core.deps import get_db
 from app.core.token import (
     create_access_token,
@@ -382,28 +383,6 @@ def get_match_schedule(
     return match_schedule
 
 
-GOOGLE_CLIENT_ID = (
-    "478123471673-pqfolsr1l8tt8f4bd8bo2m956o06n25r.apps.googleusercontent.com"
-)
-GOOGLE_CLIENT_SECRET = "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"
-
-config_data = {
-    "GOOGLE_CLIENT_ID": GOOGLE_CLIENT_ID,
-    "GOOGLE_CLIENT_SECRET": GOOGLE_CLIENT_SECRET,
-}
-starlette_config = Config(environ=config_data)
-oauth = OAuth(starlette_config)
-oauth.register(
-    name="google",
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={
-        "scope": "openid email profile",
-        "access_type": "offline",
-        "prompt": "consent",
-    },
-)
-
-
 @user_router.get("/sns/login", response_class=HTMLResponse)
 def test(request: Request):
     html_content = """
@@ -421,6 +400,7 @@ def test(request: Request):
 @user_router.get("/google/login")
 async def login(request: Request):
     redirect_uri = request.url_for("auth")
+    oauth = settings.GOOGLE_OAUTH
     return await oauth.google.authorize_redirect(
         request, redirect_uri, access_type="offline"
     )
@@ -428,6 +408,7 @@ async def login(request: Request):
 
 @user_router.get("/auth/google")
 async def auth(request: Request, db: Session = Depends(get_db)):
+    oauth = settings.GOOGLE_OAUTH
     access_token = await oauth.google.authorize_access_token(request)
     user_data = await oauth.google.parse_id_token(
         access_token, access_token["userinfo"]["nonce"]

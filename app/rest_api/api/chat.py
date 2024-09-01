@@ -1,20 +1,17 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select, func, and_, or_
-from sqlalchemy.orm import Session, joinedload, selectinload, subqueryload, aliased
 from fastapi.encoders import jsonable_encoder
-from app.model.profile import Profile
-
-
-from app.core.deps import get_db
-from app.core.token import get_current_user
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session, aliased
 
 from app.core import rabbitmq_helper
+from app.core.deps import get_db
+from app.core.token import get_current_user
 from app.model.chat import ChattingContent, ChattingRoom, UserChatRoomAssociation
-from app.rest_api.schema.chat import CreateMatchChatSchema
+from app.model.profile import Profile
 from app.model.user import User
-
+from app.rest_api.schema.chat import CreateMatchChatSchema
 
 chat_router = APIRouter(tags=["chat"], prefix="/chat")
 
@@ -33,7 +30,7 @@ def create_match_chat(
     db.commit()
     db.flush()
 
-    rabbitmq_helper.publish(str(chat_room_id), user_data.contents, 1)
+    rabbitmq_helper.publish(str(chat_room_id), user_data.contents, [])
 
     return {"success": True}
 

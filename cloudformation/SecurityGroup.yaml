@@ -22,6 +22,24 @@ Parameters:
     Description: "The ec2 ip address"
     Type: String
     Default: "43.201.46.100/32"
+  CafeIp:
+    Description: "The cafe ip address"
+    Type: String
+    Default: "124.57.47.203/32"
+  CafeIpDesc:
+    Description: ""
+    Type: String
+    Default: "Cafe_IP"
+  SecondCafeIp:
+    Description: "The cafe ip address of coffee dongsan"
+    Type: String
+    Default: "220.72.246.29/32"
+  GoyangHomeIp:
+    Description: "The ip address"
+    Type: String
+    Default: "58.29.191.77/32"
+
+
 
 Resources:
   PostgresSecurityGroup:
@@ -45,6 +63,16 @@ Resources:
           ToPort: 5432
           CidrIp: !Ref Ec2Ip
           Description: "EC2 IP"
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: !Ref SecondCafeIp
+          Description: "Cafe IP"
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: !Ref GoyangHomeIp
+          Description: "Goyang home IP"
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-rds-sg
@@ -55,6 +83,16 @@ Resources:
       GroupDescription: "Backend project security group"
       VpcId: !ImportValue VPC-ID
       SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: "Allow backend project port for elb"
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: "Allow backend project port for elb"
         - IpProtocol: tcp
           FromPort: 8000
           ToPort: 8000
@@ -90,6 +128,11 @@ Resources:
           ToPort: 22
           CidrIp: !Ref SeukHomeIp
           Description: !Ref SeukHomeDesc
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref CafeIp
+          Description: !Ref CafeIpDesc
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-ssh-sg
