@@ -400,6 +400,7 @@ def test(request: Request):
 @user_router.get("/google/login")
 async def login(request: Request):
     redirect_uri = request.url_for("auth")
+    print(redirect_uri)
     oauth = settings.GOOGLE_OAUTH
     return await oauth.authorize_redirect(request, redirect_uri, access_type="offline")
 
