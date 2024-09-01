@@ -401,16 +401,14 @@ def test(request: Request):
 async def login(request: Request):
     redirect_uri = request.url_for("auth")
     oauth = settings.GOOGLE_OAUTH
-    return await oauth.google.authorize_redirect(
-        request, redirect_uri, access_type="offline"
-    )
+    return await oauth.authorize_redirect(request, redirect_uri, access_type="offline")
 
 
 @user_router.get("/auth/google")
 async def auth(request: Request, db: Session = Depends(get_db)):
     oauth = settings.GOOGLE_OAUTH
-    access_token = await oauth.google.authorize_access_token(request)
-    user_data = await oauth.google.parse_id_token(
+    access_token = await oauth.authorize_access_token(request)
+    user_data = await oauth.parse_id_token(
         access_token, access_token["userinfo"]["nonce"]
     )
     request.session["user"] = dict(user_data)

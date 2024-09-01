@@ -133,6 +133,11 @@ Resources:
           ToPort: 22
           CidrIp: !Ref CafeIp
           Description: !Ref CafeIpDesc
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref GoyangHomeIp
+          Description: "Goyang Home ip"
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-ssh-sg
