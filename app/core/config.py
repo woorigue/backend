@@ -12,6 +12,9 @@ secret_manager = json.loads(get_secret())
 
 
 class Settings(BaseSettings):
+    # Common
+    SERVER_ENV: str = os.getenv("SERVER_ENV", "LOCAL")
+
     USERNAME: str = secret_manager.get("USERNAME")
     PASSWORD: str = secret_manager.get("PASSWORD")
     DATABASE: str = secret_manager.get("DATABASE")
