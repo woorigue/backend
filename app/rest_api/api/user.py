@@ -403,6 +403,9 @@ async def login(request: Request):
     if settings.SERVER_ENV != "LOCAL":
         redirect_uri = str(redirect_uri).replace("http", "https")
     oauth = settings.GOOGLE_OAUTH
+    print("======")
+    print(request.session.values())
+    print("======")
     return await oauth.authorize_redirect(request, redirect_uri, access_type="offline")
 
 
@@ -412,7 +415,6 @@ async def auth(request: Request, db: Session = Depends(get_db)):
     print("======")
     print(request.session.values())
     print("======")
-    print(request.__dict__)
     access_token = await oauth.authorize_access_token(request)
     user_data = await oauth.parse_id_token(
         access_token, access_token["userinfo"]["nonce"]
