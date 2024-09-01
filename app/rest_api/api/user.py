@@ -403,18 +403,16 @@ async def login(request: Request):
     if settings.SERVER_ENV != "LOCAL":
         redirect_uri = str(redirect_uri).replace("http", "https")
     oauth = settings.GOOGLE_OAUTH
-    print("======")
-    print(request.session.values())
-    print("======")
-    return await oauth.authorize_redirect(request, redirect_uri, access_type="offline")
+    print(request.session)
+    res = await oauth.authorize_redirect(request, redirect_uri, access_type="offline")
+    print(request.session)
+    return res
 
 
 @user_router.get("/auth/google")
 async def auth(request: Request, db: Session = Depends(get_db)):
     oauth = settings.GOOGLE_OAUTH
-    print("======")
-    print(request.session.values())
-    print("======")
+    print(request.session)
     access_token = await oauth.authorize_access_token(request)
     user_data = await oauth.parse_id_token(
         access_token, access_token["userinfo"]["nonce"]
