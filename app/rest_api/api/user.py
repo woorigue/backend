@@ -383,9 +383,9 @@ def get_match_schedule(
 
 
 GOOGLE_CLIENT_ID = (
-    "146852932624-pem0s58lvodu3v25gnbgaqcov2ba9o7t.apps.googleusercontent.com"
+    "478123471673-pqfolsr1l8tt8f4bd8bo2m956o06n25r.apps.googleusercontent.com"
 )
-GOOGLE_CLIENT_SECRET = "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"
+GOOGLE_CLIENT_SECRET = "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"
 
 config_data = {
     "GOOGLE_CLIENT_ID": GOOGLE_CLIENT_ID,

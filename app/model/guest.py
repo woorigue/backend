@@ -53,15 +53,11 @@ class Guest(Base):
 
     @property
     def guest_accpeted_number(self):
-        return db.query(JoinGuest).filter(JoinGuest.accepted == True).count()
-
-    @hybrid_property
-    def location(self):
-        return self.match.location
-
-    @hybrid_property
-    def match_date(self):
-        return self.match.match_date
+        return (
+            db.query(JoinGuest)
+            .filter(JoinGuest.accepted == True, JoinGuest.guest_seq == self.seq)
+            .count()
+        )
 
 
 class JoinGuest(Base):
