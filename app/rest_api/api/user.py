@@ -3,7 +3,7 @@ from typing import Annotated
 
 import httpx
 from authlib.integrations.starlette_client import OAuth
-from fastapi import APIRouter, Depends, Request, UploadFile
+from fastapi import APIRouter, Depends, Request, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
@@ -588,3 +588,89 @@ def get_user_detail(
     if not user:
         raise UserRetrieveFailException
     return user
+
+
+import time
+from jose import jwt, JWTError
+
+config_apple = {
+    "APPLE_CLIENT_ID": "woorigue.service.id",
+    "APPLE_TEAM_ID": "HZK8255YN9",
+    "APPLE_KEY_ID": "89C76VW6W3",
+    "APPLE_PRIVATE_KEY": """MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg2CjaoZGYynHY4OeI5ocRxfUn4HJzL5ksumRP481xhuygCgYIKoZIzj0DAQehRANCAATVyw3mH+ZKLJ76/MNR6sUXisFQvd+14xQrATvE3qHgM6bT9JsGCqG6CIDorB7uqXYt7vRAwRfTDBZO3sTezgVu""",
+}
+
+apple_starlette_config = Config(environ=user_router)
+oauth = OAuth(apple_starlette_config)
+
+
+def generate_apple_client_secret():
+    headers = {"alg": "ES256", "kid": user_router["APPLE_KEY_ID"]}
+    claims = {
+        "iss": config_apple["APPLE_TEAM_ID"],
+        "iat": int(time.time()),
+        "exp": int(time.time()) + 86400 * 180,
+        "aud": "https://appleid.apple.com",
+        "sub": config_apple["APPLE_CLIENT_ID"],
+    }
+    return jwt.encode(
+        claims, config_apple["APPLE_PRIVATE_KEY"], algorithm="ES256", headers=headers
+    )
+
+
+oauth.register(
+    name="apple",
+    client_id=config_apple["APPLE_CLIENT_ID"],
+    client_secret=generate_apple_client_secret,
+    authorize_url="https://appleid.apple.com/auth/authorize",
+    authorize_params=None,
+    access_token_url="https://appleid.apple.com/auth/token",
+    access_token_params=None,
+    refresh_token_url=None,
+    redirect_uri="https://api-woorigue.com/auth/apple",
+    client_kwargs={"scope": "openid email name"},
+)
+
+
+@user_router.get("/apple/login")
+async def apple_login(request: Request):
+    redirect_uri = request.url_for("apple_auth")
+    return await oauth.apple.authorize_redirect(request, redirect_uri)
+
+
+@user_router.route("/auth/apple")
+async def apple_auth(request: Request, db: Session = Depends(get_db)):
+    try:
+        access_token = await oauth.apple.authorize_access_token(request)
+        id_token = access_token["id_token"]
+        decoded_token = jwt.decode(
+            id_token,
+            config_apple["APPLE_PRIVATE_KEY"],
+            algorithms=["ES256"],
+            audience=config_apple["APPLE_CLIENT_ID"],
+        )
+    except (JWTError, KeyError):
+        raise HTTPException(status_code=400, detail="Invalid ID token")
+
+    email = decoded_token.get("email")
+
+    user = db.scalar(select(User).where(User.email == email))
+    if user is None:
+        user_login_data = EmailRegisterSchema(
+            email=email, password=decoded_token["sub"]
+        )
+        user = con.email_register_user(db, user_login_data)
+        sns = Sns(
+            sub=decoded_token["sub"],
+            refresh_token=access_token["refresh_token"],
+            user_seq=user.seq,
+            type="apple",
+        )
+        db.add(sns)
+        db.commit()
+
+    # Create access and refresh tokens
+    access_token = create_access_token(data={"sub": str(email)})
+    refresh_token = create_refresh_token(data={"sub": str(email)})
+
+    return {"access_token": access_token, "refresh_token": refresh_token}
