@@ -391,6 +391,8 @@ def test(request: Request):
         <a href="/user/google/login">google login</a>
         <br>
         <a href="/user/kakao/login">kako login</a>
+        <br>
+        <a href="/user/apple/login">apple login</a>
     </body>
     </html>
     """
@@ -600,7 +602,7 @@ config_apple = {
     "APPLE_PRIVATE_KEY": """MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg2CjaoZGYynHY4OeI5ocRxfUn4HJzL5ksumRP481xhuygCgYIKoZIzj0DAQehRANCAATVyw3mH+ZKLJ76/MNR6sUXisFQvd+14xQrATvE3qHgM6bT9JsGCqG6CIDorB7uqXYt7vRAwRfTDBZO3sTezgVu""",
 }
 
-apple_starlette_config = Config(environ=user_router)
+apple_starlette_config = Config(environ=config_apple)
 oauth = OAuth(apple_starlette_config)
 
 
