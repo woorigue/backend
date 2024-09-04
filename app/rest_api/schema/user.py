@@ -32,3 +32,7 @@ class UserSchema(BaseModel):
 class UserLoginResponse(BaseModel):
     access_token: str = Field(title="access_token")
     refresh_token: str = Field(title="refresh_token")
+
+
+class GoogleLoginSchema(BaseModel):
+    access_token: str = Field(title="access_token")

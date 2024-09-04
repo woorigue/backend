@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Annotated
+import requests
 
 import httpx
 from authlib.integrations.starlette_client import OAuth
@@ -57,6 +58,7 @@ from app.rest_api.schema.user import (
     ResetPasswordSchema,
     UserLoginResponse,
     UserSchema,
+    GoogleLoginSchema,
 )
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -590,6 +592,40 @@ def get_user_detail(
     if not user:
         raise UserRetrieveFailException
     return user
+
+
+@user_router.post(
+    "/google/login",
+    summary="구글 로그인",
+)
+def get_user_detail(data: GoogleLoginSchema, db: Session = Depends(get_db)):
+    access_token = data.access_token
+    user_info = requests.get(
+        "https://www.googleapis.com/oauth2/v1/userinfo",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    email = user_info.json().get("email")
+
+    user = db.scalar(select(User).where(User.email == email))
+    if user is None:
+        import string
+
+        letters_set = string.ascii_letters
+        user_login_data = EmailRegisterSchema(email=email, password=letters_set)
+        user = con.email_register_user(db, user_login_data)
+        sns = Sns(
+            sub="SUB",
+            refresh_token="refresh",
+            user_seq=user.seq,
+            type="google",
+        )
+        db.add(sns)
+        db.commit()
+
+    access_token = create_access_token(data={"sub": str(email)})
+    refresh_token = create_refresh_token(data={"sub": str(email)})
+
+    return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 import time
