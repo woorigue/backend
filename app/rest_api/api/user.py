@@ -625,7 +625,7 @@ oauth.register(
     client_id=config_apple["APPLE_CLIENT_ID"],
     client_secret=generate_apple_client_secret,
     authorize_url="https://appleid.apple.com/auth/authorize",
-    authorize_params=None,
+    authorize_params={"response_mode": "form_post"},
     access_token_url="https://appleid.apple.com/auth/token",
     access_token_params=None,
     refresh_token_url=None,
@@ -640,11 +640,13 @@ async def apple_login(request: Request):
     return await oauth.apple.authorize_redirect(request, redirect_uri)
 
 
-@user_router.route("/auth/apple")
+@user_router.post("/auth/apple")
 async def apple_auth(request: Request, db: Session = Depends(get_db)):
+    form_data = await request.form()
+    id_token = form_data.get("id_token")
     try:
-        access_token = await oauth.apple.authorize_access_token(request)
-        id_token = access_token["id_token"]
+        # access_token = await oauth.apple.authorize_access_token(request)
+        # id_token = access_token["id_token"]
         decoded_token = jwt.decode(
             id_token,
             config_apple["APPLE_PRIVATE_KEY"],
@@ -664,7 +666,7 @@ async def apple_auth(request: Request, db: Session = Depends(get_db)):
         user = con.email_register_user(db, user_login_data)
         sns = Sns(
             sub=decoded_token["sub"],
-            refresh_token=access_token["refresh_token"],
+            refresh_token=form_data.get("refresh_token"),
             user_seq=user.seq,
             type="apple",
         )
