@@ -36,3 +36,7 @@ class UserLoginResponse(BaseModel):
 
 class GoogleLoginSchema(BaseModel):
     access_token: str = Field(title="access_token")
+
+
+class AppleLoginSchema(BaseModel):
+    id_token: str = Field(title="token_id")

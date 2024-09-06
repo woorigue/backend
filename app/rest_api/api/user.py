@@ -59,6 +59,7 @@ from app.rest_api.schema.user import (
     UserLoginResponse,
     UserSchema,
     GoogleLoginSchema,
+    AppleLoginSchema,
 )
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -628,88 +629,73 @@ def get_user_detail(data: GoogleLoginSchema, db: Session = Depends(get_db)):
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-import time
+import requests
 from jose import jwt, JWTError
+import string
 
-config_apple = {
-    "APPLE_CLIENT_ID": "woorigue.service.id",
-    "APPLE_TEAM_ID": "HZK8255YN9",
-    "APPLE_KEY_ID": "89C76VW6W3",
-    "APPLE_PRIVATE_KEY": """MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg2CjaoZGYynHY4OeI5ocRxfUn4HJzL5ksumRP481xhuygCgYIKoZIzj0DAQehRANCAATVyw3mH+ZKLJ76/MNR6sUXisFQvd+14xQrATvE3qHgM6bT9JsGCqG6CIDorB7uqXYt7vRAwRfTDBZO3sTezgVu""",
-}
-
-apple_starlette_config = Config(environ=config_apple)
-oauth = OAuth(apple_starlette_config)
+APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
+APPLE_ISSUER = "https://appleid.apple.com"
+APPLE_CLIENT_ID = "com.api-woorigue.woori"
 
 
-def generate_apple_client_secret():
-    headers = {"alg": "ES256", "kid": user_router["APPLE_KEY_ID"]}
-    claims = {
-        "iss": config_apple["APPLE_TEAM_ID"],
-        "iat": int(time.time()),
-        "exp": int(time.time()) + 86400 * 180,
-        "aud": "https://appleid.apple.com",
-        "sub": config_apple["APPLE_CLIENT_ID"],
-    }
-    return jwt.encode(
-        claims, config_apple["APPLE_PRIVATE_KEY"], algorithm="ES256", headers=headers
-    )
+def get_apple_public_key():
+    response = requests.get(APPLE_KEYS_URL)
+    if response.status_code != 200:
+        raise Exception("Failed to fetch Apple's public keys")
+
+    jwks = response.json()
+    return jwks["keys"]
 
 
-oauth.register(
-    name="apple",
-    client_id=config_apple["APPLE_CLIENT_ID"],
-    client_secret=generate_apple_client_secret,
-    authorize_url="https://appleid.apple.com/auth/authorize",
-    authorize_params={"response_mode": "form_post"},
-    access_token_url="https://appleid.apple.com/auth/token",
-    access_token_params=None,
-    refresh_token_url=None,
-    redirect_uri="https://api-woorigue.com/auth/apple",
-    client_kwargs={"scope": "openid email name"},
+def find_apple_public_key(jwks, kid):
+    for key in jwks:
+        if key["kid"] == kid:
+            return key
+    raise Exception("Public key not found")
+
+
+@user_router.post(
+    "/auth/apple",
+    summary="애플 로그인",
 )
+def get_user_detail(data: AppleLoginSchema, db: Session = Depends(get_db)):
+    id_token = data.id_token
 
+    header = jwt.get_unverified_header(id_token)
+    kid = header["kid"]
+    jwks = get_apple_public_key()
+    key = find_apple_public_key(jwks, kid)
 
-@user_router.get("/apple/login")
-async def apple_login(request: Request):
-    redirect_uri = request.url_for("apple_auth")
-    return await oauth.apple.authorize_redirect(request, redirect_uri)
-
-
-@user_router.post("/auth/apple")
-async def apple_auth(request: Request, db: Session = Depends(get_db)):
-    form_data = await request.form()
-    id_token = form_data.get("id_token")
     try:
-        # access_token = await oauth.apple.authorize_access_token(request)
-        # id_token = access_token["id_token"]
         decoded_token = jwt.decode(
             id_token,
-            config_apple["APPLE_PRIVATE_KEY"],
-            algorithms=["ES256"],
-            audience=config_apple["APPLE_CLIENT_ID"],
+            key,
+            algorithms=["RS256"],
+            audience=APPLE_CLIENT_ID,
+            issuer=APPLE_ISSUER,
         )
-    except (JWTError, KeyError):
-        raise HTTPException(status_code=400, detail="Invalid ID token")
+    except JWTError as e:
+        raise Exception(f"Token verification failed: {str(e)}")
 
     email = decoded_token.get("email")
+    sub = decoded_token.get("sub")
 
     user = db.scalar(select(User).where(User.email == email))
+
     if user is None:
-        user_login_data = EmailRegisterSchema(
-            email=email, password=decoded_token["sub"]
-        )
+
+        letters_set = string.ascii_letters
+        user_login_data = EmailRegisterSchema(email=email, password=letters_set)
         user = con.email_register_user(db, user_login_data)
         sns = Sns(
-            sub=decoded_token["sub"],
-            refresh_token=form_data.get("refresh_token"),
+            sub=sub,
+            refresh_token="refresh",
             user_seq=user.seq,
             type="apple",
         )
         db.add(sns)
         db.commit()
 
-    # Create access and refresh tokens
     access_token = create_access_token(data={"sub": str(email)})
     refresh_token = create_refresh_token(data={"sub": str(email)})
 
