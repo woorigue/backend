@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 import requests
+import secrets
 
 import httpx
 from authlib.integrations.starlette_client import OAuth
@@ -60,6 +61,7 @@ from app.rest_api.schema.user import (
     UserSchema,
     GoogleLoginSchema,
     AppleLoginSchema,
+    UserSnsLoginSchema,
 )
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -402,6 +404,31 @@ def test(request: Request):
     return HTMLResponse(content=html_content)
 
 
+@user_router.post("/sns/login")
+def user_sns_login(data: UserSnsLoginSchema, db: Session = Depends(get_db)):
+    sns = db.query(Sns).filter(Sns.user == data.user, Sns.type == data.type).first()
+
+    if sns is None:
+        user_login_data = EmailRegisterSchema(
+            email=data.email, password=secrets.token_urlsafe(13)
+        )
+        user = con.email_register_user(db, user_login_data)
+        sns = Sns(
+            sub="",
+            refresh_token="",
+            user_seq=user.seq,
+            type=data.type,
+            user=data.user,
+        )
+        db.add(sns)
+        db.commit()
+
+    access_token = create_access_token(data={"sub": str(sns.join_user.email)})
+    refresh_token = create_refresh_token(data={"sub": str(sns.join_user.email)})
+
+    return {"access_token": access_token, "refresh_token": refresh_token}
+
+
 @user_router.get("/google/login")
 async def login(request: Request):
     redirect_uri = request.url_for("auth")
@@ -683,7 +710,6 @@ def get_user_detail(data: AppleLoginSchema, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == email))
 
     if user is None:
-
         letters_set = string.ascii_letters
         user_login_data = EmailRegisterSchema(email=email, password=letters_set)
         user = con.email_register_user(db, user_login_data)

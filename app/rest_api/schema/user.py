@@ -40,3 +40,9 @@ class GoogleLoginSchema(BaseModel):
 
 class AppleLoginSchema(BaseModel):
     id_token: str = Field(title="token_id")
+
+
+class UserSnsLoginSchema(BaseModel):
+    type: str = Field(title="type")
+    user: str = Field(title="user")
+    email: str = Field(title="email")

@@ -25,7 +25,7 @@ class User(Base):
     __tablename__ = "users"
 
     seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
-    email = Column(String(128), unique=True, comment="이메일")
+    email = Column(String(128), comment="이메일")
     password = Column(String(256), comment="비밀번호")
     is_active = Column(Boolean, default=True, comment="활성화 여부")
 
@@ -64,13 +64,11 @@ class User(Base):
     chatting_rooms = relationship(
         "ChattingRoom", secondary="user_chatroom_association", back_populates="users"
     )
+    sns = relationship("Sns", back_populates="join_user", cascade="all, delete-orphan")
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:
         user = db.scalar(select(User).where(User.email == email))  # ORM
-
-        if user:
-            raise EmailConflictException
 
         if len(password) < 6:
             raise PasswordInvalidException
