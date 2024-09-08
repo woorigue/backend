@@ -326,8 +326,10 @@ def get_user_posting(
 
     for table, table_name in tables:
         postings = db.query(table).filter(table.user_seq == token.seq).all()
-        my_postings.extend([(posting, table_name) for posting in postings])
-
+        for posting in postings:
+            if isinstance(posting, Guest):
+                setattr(posting, "match", posting.match)
+            my_postings.extend([(posting, table_name)])
     my_postings.sort(key=lambda x: x[0].date, reverse=True)
 
     return [
