@@ -31,9 +31,11 @@ from app.helper.exception import (
     UserNotFoundException,
     UserPasswordNotMatchException,
     UserRetrieveFailException,
+    DeviceTokenRetrieveFailException,
 )
 from app.model.club import Club
 from app.model.clubPosting import ClubPosting
+from app.model.device import Device
 from app.model.guest import Guest
 from app.model.match import Match
 from app.model.memberPosting import MemberPosting
@@ -60,8 +62,8 @@ from app.rest_api.schema.user import (
     UserLoginResponse,
     UserSchema,
     GoogleLoginSchema,
-    AppleLoginSchema,
     UserSnsLoginSchema,
+    UserDeviceTokenSchema,
 )
 
 user_router = APIRouter(tags=["user"], prefix="/user")
@@ -608,7 +610,7 @@ def get_sns_refresh_token(
 
 
 @user_router.get(
-    "/{user_seq}",
+    "/{user_seq}/",
     summary="사용자 정보 조회",
     responses={404: {"description": error_responses([UserRetrieveFailException])}},
     response_model=UserSchema,
@@ -658,73 +660,35 @@ def get_user_detail(data: GoogleLoginSchema, db: Session = Depends(get_db)):
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-import requests
-from jose import jwt, JWTError
-import string
+@user_router.get("/device")
+def get_device(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    device = db.scalar(select(Device.token).where(Device.user_seq == token.seq))
+    if not device:
+        raise DeviceTokenRetrieveFailException
 
-APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
-APPLE_ISSUER = "https://appleid.apple.com"
-APPLE_CLIENT_ID = "com.api-woorigue.woori"
-
-
-def get_apple_public_key():
-    response = requests.get(APPLE_KEYS_URL)
-    if response.status_code != 200:
-        raise Exception("Failed to fetch Apple's public keys")
-
-    jwks = response.json()
-    return jwks["keys"]
+    return device
 
 
-def find_apple_public_key(jwks, kid):
-    for key in jwks:
-        if key["kid"] == kid:
-            return key
-    raise Exception("Public key not found")
-
-
-@user_router.post(
-    "/auth/apple",
-    summary="애플 로그인",
-)
-def get_user_detail(data: AppleLoginSchema, db: Session = Depends(get_db)):
-    id_token = data.id_token
-
-    header = jwt.get_unverified_header(id_token)
-    kid = header["kid"]
-    jwks = get_apple_public_key()
-    key = find_apple_public_key(jwks, kid)
-
-    try:
-        decoded_token = jwt.decode(
-            id_token,
-            key,
-            algorithms=["RS256"],
-            audience=APPLE_CLIENT_ID,
-            issuer=APPLE_ISSUER,
+@user_router.post("/device")
+def add_device(
+    data: UserDeviceTokenSchema,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    device = db.scalar(select(Device).where(Device.user_seq == token.seq))
+    if not device:
+        device = Device(
+            user_seq=token.seq,
+            token=data.token,
         )
-    except JWTError as e:
-        raise Exception(f"Token verification failed: {str(e)}")
+        db.add(device)
 
-    email = decoded_token.get("email")
-    sub = decoded_token.get("sub")
+    else:
+        device.token = data.token
 
-    user = db.scalar(select(User).where(User.email == email))
+    db.commit()
 
-    if user is None:
-        letters_set = string.ascii_letters
-        user_login_data = EmailRegisterSchema(email=email, password=letters_set)
-        user = con.email_register_user(db, user_login_data)
-        sns = Sns(
-            sub=sub,
-            refresh_token="refresh",
-            user_seq=user.seq,
-            type="apple",
-        )
-        db.add(sns)
-        db.commit()
-
-    access_token = create_access_token(data={"sub": str(email)})
-    refresh_token = create_refresh_token(data={"sub": str(email)})
-
-    return {"access_token": access_token, "refresh_token": refresh_token}
+    return {"success": True}

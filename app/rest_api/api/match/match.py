@@ -12,10 +12,11 @@ from app.core.token import (
 from app.core.utils import error_responses
 from app.helper.exception import (
     ClubPermissionException,
-    JoinMatchNotFoundException,
     MatchNotFoundException,
     RegisterMatchError,
     JoinMatchException,
+    JoinMatchNotFoundException,
+    JoinMatchAcceptException,
 )
 from app.model.match import JoinMatch, Match
 from app.rest_api.controller.club import ClubController
@@ -250,7 +251,9 @@ def join_match(
     db.commit()
 
     chatting_contents = ChattingContent(
-        chatting_room_seq=chatting_room.seq, user_seq=token.seq, content="매칭 우리 함께해요"
+        chatting_room_seq=chatting_room.seq,
+        user_seq=token.seq,
+        content="매칭 우리 함께해요",
     )
     db.add(chatting_contents)
     db.commit()
@@ -268,7 +271,11 @@ def join_match(
     responses={
         404: {
             "description": error_responses(
-                [MatchNotFoundException, JoinMatchNotFoundException]
+                [
+                    MatchNotFoundException,
+                    JoinMatchNotFoundException,
+                    JoinMatchAcceptException,
+                ]
             )
         }
     },
@@ -302,6 +309,10 @@ def accept_match(
 
     match.matched = True
     match.away_club_seq = away_club_seq
+
+    if join_match.accepted:
+        raise JoinMatchAcceptException
+
     join_match.accepted = True
 
     poll_data = CreatePollSchema(

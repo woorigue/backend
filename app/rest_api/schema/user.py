@@ -46,3 +46,7 @@ class UserSnsLoginSchema(BaseModel):
     type: str = Field(title="type")
     user: str = Field(title="user")
     email: str = Field(title="email")
+
+
+class UserDeviceTokenSchema(BaseModel):
+    token: str = Field(title="token")

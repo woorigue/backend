@@ -65,6 +65,7 @@ class User(Base):
         "ChattingRoom", secondary="user_chatroom_association", back_populates="users"
     )
     sns = relationship("Sns", back_populates="join_user", cascade="all, delete-orphan")
+    device = relationship("Device", back_populates="user", cascade="all, delete-orphan")
 
     @staticmethod
     def create(db: Session, email: str, password: str) -> None:

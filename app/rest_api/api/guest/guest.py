@@ -14,6 +14,7 @@ from app.helper.exception import (
     GuestNotFoundException,
     GuestPermissionDeniedException,
     JoinGuestNotFoundException,
+    JoinGuestAcceptException,
     MatchNotFoundException,
 )
 from app.model.guest import Guest, JoinGuest
@@ -211,7 +212,11 @@ def join_guest(
         },
         404: {
             "description": error_responses(
-                [GuestNotFoundException, JoinGuestNotFoundException]
+                [
+                    GuestNotFoundException,
+                    JoinGuestNotFoundException,
+                    JoinGuestAcceptException,
+                ]
             )
         },
     },
@@ -241,6 +246,9 @@ def accept_guest(
 
     if not join_guest:
         raise JoinGuestNotFoundException
+
+    if join_guest.accepted:
+        raise JoinGuestAcceptException
 
     join_guest.accepted = True
 

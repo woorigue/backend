@@ -165,3 +165,21 @@ class JoinMatchException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     error_code = 100023
     error_detail = "매치 신청이 불가합니다."
+
+
+class DeviceTokenRetrieveFailException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    error_code = 100024
+    error_detail = "사용자 토큰 정보를 조회하는데 실패했습니다."
+
+
+class JoinGuestAcceptException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    error_code = 100025
+    error_detail = "용병 신청이 이미 수락되었습니다."
+
+
+class JoinMatchAcceptException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    error_code = 100026
+    error_detail = "매치 신청이 이미 수락되었습니다."
