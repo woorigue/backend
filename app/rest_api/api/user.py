@@ -135,8 +135,8 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
     if not result:
         raise UserPasswordNotMatchException
 
-    access_token = create_access_token(data={"sub": str(user_data.email)})
-    refresh_token = create_refresh_token(data={"sub": str(user_data.email)})
+    access_token = create_access_token(data={"sub": str(user.seq)})
+    refresh_token = create_refresh_token(data={"sub": str(user.seq)})
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
@@ -175,9 +175,9 @@ def get_access_token_using_refresh_token(
     data: RefreshTokenSchema,
     db: Session = Depends(get_db),
 ):
-    username = validate_refresh_token(data, db)
-    access_token = create_access_token(data={"sub": username})
-    refresh_token = create_refresh_token(data={"sub": username})
+    user_seq = validate_refresh_token(data, db)
+    access_token = create_access_token(data={"sub": str(user_seq)})
+    refresh_token = create_refresh_token(data={"sub": str(user_seq)})
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
@@ -427,8 +427,8 @@ def user_sns_login(data: UserSnsLoginSchema, db: Session = Depends(get_db)):
         db.add(sns)
         db.commit()
 
-    access_token = create_access_token(data={"sub": str(sns.join_user.email)})
-    refresh_token = create_refresh_token(data={"sub": str(sns.join_user.email)})
+    access_token = create_access_token(data={"sub": str(user.seq)})
+    refresh_token = create_refresh_token(data={"sub": str(user.seq)})
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
@@ -472,8 +472,8 @@ async def auth(request: Request, db: Session = Depends(get_db)):
         db.add(sns)
         db.commit()
 
-    access_token = create_access_token(data={"sub": str(email)})
-    refresh_token = create_refresh_token(data={"sub": str(email)})
+    access_token = create_access_token(data={"sub": str(user.seq)})
+    refresh_token = create_refresh_token(data={"sub": str(user.seq)})
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
@@ -550,8 +550,8 @@ async def kakao_auth(request: Request, db: Session = Depends(get_db)):
                 db.add(sns)
                 db.commit()
 
-            access_token = create_access_token(data={"sub": str(email)})
-            refresh_token = create_refresh_token(data={"sub": str(email)})
+            access_token = create_access_token(data={"sub": str(user.seq)})
+            refresh_token = create_refresh_token(data={"sub": str(user.seq)})
 
             return {"access_token": access_token, "refresh_token": refresh_token}
 
@@ -654,8 +654,8 @@ def get_user_detail(data: GoogleLoginSchema, db: Session = Depends(get_db)):
         db.add(sns)
         db.commit()
 
-    access_token = create_access_token(data={"sub": str(email)})
-    refresh_token = create_refresh_token(data={"sub": str(email)})
+    access_token = create_access_token(data={"sub": str(user.seq)})
+    refresh_token = create_refresh_token(data={"sub": str(user.seq)})
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
