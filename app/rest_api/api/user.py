@@ -19,6 +19,8 @@ from app.core.token import (
     get_current_user,
     validate_refresh_token,
     verify_password,
+    create_rls_refresh_token,
+    create_rls_access_token,
 )
 from app.core.utils import error_responses
 from app.helper.exception import (
@@ -692,3 +694,13 @@ def add_device(
     db.commit()
 
     return {"success": True}
+
+
+@user_router.post("/rls/token")
+def add_device(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    refresh_token = create_rls_refresh_token(data={"sub": str(token.seq)})
+    access_token = create_rls_access_token(data={"sub": str(token.seq)})
+    return {"access_token": access_token, "refresh_token": refresh_token}

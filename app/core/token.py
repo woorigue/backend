@@ -16,6 +16,11 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 1
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
+RLS_SECRET_KEY = "NvbeIjVAT/MW8ihG5pWzb03pzI3PlSCRFJE8B0IzyUAlIzxXiJinD8ywbjQEfOilhkD+fARoW/SlWiU5LrFncw=="
+RLS_ALGORITHM = "HS256"
+RLS_ACCESS_TOKEN_EXPIRE_DAYS = 365
+RLS_REFRESH_TOKEN_EXPIRE_DAYS = 365
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer_header = APIKeyHeader(name="Authorization")
 
@@ -96,3 +101,35 @@ def validate_refresh_token(
         )
     except JWTError:
         raise credentials_exception
+
+
+def create_rls_access_token(data: dict):
+    access_token_expires = timedelta(days=RLS_ACCESS_TOKEN_EXPIRE_DAYS)
+
+    to_encode = data.copy()
+    expire = datetime.now() + access_token_expires
+    to_encode.update(
+        {
+            "exp": expire,
+            "aud": "authenticated",
+            "role": "authenticated",
+        }
+    )
+    encoded_jwt = jwt.encode(to_encode, RLS_SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def create_rls_refresh_token(data: dict):
+    refresh_token_expires = timedelta(days=RLS_REFRESH_TOKEN_EXPIRE_DAYS)
+
+    to_encode = data.copy()
+    expire = datetime.now() + refresh_token_expires
+    to_encode.update(
+        {
+            "exp": expire,
+            "aud": "authenticated",
+            "role": "authenticated",
+        }
+    )
+    encoded_jwt = jwt.encode(to_encode, RLS_SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
