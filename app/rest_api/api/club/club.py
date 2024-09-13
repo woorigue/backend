@@ -375,6 +375,7 @@ def get_match_schedule(
     today = datetime.today().strftime("%Y-%m-%d")
     match_scehdule = (
         db.query(Match)
+        .order_by(Match.seq.desc())
         .filter(
             or_(Match.home_club_seq == club_seq, Match.away_club_seq == club_seq),
             Match.match_date >= today,

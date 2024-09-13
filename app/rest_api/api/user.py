@@ -383,10 +383,16 @@ def get_match_schedule(
     )
 
     if include_match_history:
-        match_schedule = db.query(Match).filter(Match.seq.in_(subquery)).all()
+        match_schedule = (
+            db.query(Match)
+            .order_by(Match.seq.desc())
+            .filter(Match.seq.in_(subquery))
+            .all()
+        )
     else:
         match_schedule = (
             db.query(Match)
+            .order_by(Match.seq.desc())
             .filter(Match.seq.in_(subquery), Match.date >= datetime.today())
             .all()
         )
