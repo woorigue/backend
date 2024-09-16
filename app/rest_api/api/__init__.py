@@ -14,7 +14,16 @@ from app.rest_api.api.province import province_router
 from app.rest_api.api.user import user_router
 from app.rest_api.api.firebase.firebase import firebase_router
 
+health_check_router = APIRouter(prefix="")
+
+
+@health_check_router.get("/")
+def health_check():
+    return 200
+
+
 rest_router = APIRouter()
+rest_router.include_router(health_check_router)
 rest_router.include_router(user_router)
 rest_router.include_router(province_router)
 rest_router.include_router(position_router)
