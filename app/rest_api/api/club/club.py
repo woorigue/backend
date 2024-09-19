@@ -194,7 +194,9 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -265,7 +267,9 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -375,12 +379,11 @@ def get_match_schedule(
     today = datetime.today().strftime("%Y-%m-%d")
     match_scehdule = (
         db.query(Match)
-        .order_by(Match.seq.desc())
         .filter(
             or_(Match.home_club_seq == club_seq, Match.away_club_seq == club_seq),
             Match.match_date >= today,
         )
-        .order_by(Match.match_date.desc())
+        .order_by(Match.match_date.asc())
         .all()
     )
     return match_scehdule

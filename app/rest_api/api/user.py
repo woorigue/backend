@@ -385,15 +385,15 @@ def get_match_schedule(
     if include_match_history:
         match_schedule = (
             db.query(Match)
-            .order_by(Match.seq.desc())
             .filter(Match.seq.in_(subquery))
+            .order_by(Match.match_date.desc())
             .all()
         )
     else:
         match_schedule = (
             db.query(Match)
-            .order_by(Match.seq.desc())
-            .filter(Match.seq.in_(subquery), Match.date >= datetime.today())
+            .filter(Match.seq.in_(subquery), Match.match_date >= datetime.today())
+            .order_by(Match.match_date.asc())
             .all()
         )
 
