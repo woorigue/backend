@@ -4,6 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session, joinedload
+from app.model.device import Device
+from firebase_admin import messaging
 
 from app.core.deps import get_db
 from app.core.token import (
@@ -261,6 +263,17 @@ def join_match(
 
     user_id = [match.user_seq]
     rabbitmq_helper.publish(chatting_room.seq, chatting_contents.content, user_id)
+
+    device_info = db.query(Device).filter(Device.user_seq == match.user_seq).first()
+
+    if device_info:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title="매치신청", body="매치 신청 notification 테스트"
+            ),
+            token=device_info.token,
+        )
+        messaging.send(message)
 
     return {"chat_room_seq": chatting_room.seq}
 

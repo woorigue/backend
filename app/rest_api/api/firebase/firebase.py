@@ -4,8 +4,6 @@ from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
-# from app.helper.exception import FirebaseRefreshTokenNotFoundException
-
 from app.core.deps import get_db
 from app.core.token import (
     get_current_user,
@@ -14,14 +12,15 @@ from app.model.firebase import Firebase
 
 import firebase_admin
 from firebase_admin import credentials, messaging
+from pathlib import Path
 
 firebase_router = APIRouter(tags=["firebase"], prefix="/firebase")
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+service_account_path = PROJECT_ROOT / "service_account.json"
 
-# cred = credentials.Certificate(
-#     "C:/development/backend/app/rest_api/api/firebase/service_account.json"
-# )
-# firebase_admin.initialize_app(cred)
+cred = credentials.Certificate(service_account_path)
+firebase_admin.initialize_app(cred)
 
 
 @firebase_router.post("")
@@ -90,6 +89,6 @@ def sendPush(title, msg, registration_token, data=None):
 
     # Send a message to the device corresponding to the provided
     # registration token.
-    response = messaging.send_multicast(message)
+    response = messaging.send(message)
     # Response is a message ID string.
     print("Successfully sent message:", response)
