@@ -1,0 +1,15 @@
+from sqlalchemy import JSON, Column, ForeignKey, Integer, String
+
+from app.db.session import Base
+
+
+class Notification(Base):
+    __tablename__ = "notification"
+
+    seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
+    type = Column(String(128), comment="알림 타입")
+    from_user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
+    to_user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
+    title = Column(String(128), comment="제목")
+    message = Column(String(128), comment="메시지")
+    data = Column(JSON, nullable=True, comment="데이터")
