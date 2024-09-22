@@ -270,12 +270,11 @@ def join_match(
     if device_info:
         message = messaging.Message(
             notification=messaging.Notification(
-                title="매치신청", body="매치 신청 notification 테스트"
+                title="매치 신청 알림", body="매치 신청이 도착했습니다."
             ),
             token=device_info.token,
         )
         messaging.send(message)
-
     return {"chat_room_seq": chatting_room.seq}
 
 

@@ -28,6 +28,8 @@ from app.rest_api.schema.guest.guest import (
     GuestSchema,
     UpdateGuestSchema,
 )
+from app.model.device import Device
+from firebase_admin import messaging
 
 guest_router = APIRouter(tags=["guest"], prefix="/guest")
 
@@ -199,6 +201,19 @@ def join_guest(
     )
     db.add(join_guest)
     db.commit()
+
+    device_info = (
+        db.query(Device).filter(Device.user_seq == join_guest.user_seq).first()
+    )
+
+    if device_info:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title="용병 신청 알림", body="새로운 용병 신청이 들어왔습니다."
+            ),
+            token=device_info.token,
+        )
+        messaging.send(message)
 
     return {"success": True}
 
