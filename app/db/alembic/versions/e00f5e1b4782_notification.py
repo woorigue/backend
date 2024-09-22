@@ -21,15 +21,14 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     op.create_table(
         "notification",
-        sa.Column(
-            "seq", sa.Integer, autoincrement=True, nullable=False, comment="시퀀스"
-        ),
+        sa.Column("seq", sa.Integer, autoincrement=True, nullable=False, comment="시퀀스"),
         sa.Column("type", sa.String(128), nullable=True, comment="알림 타입"),
         sa.Column("from_user_seq", sa.Integer, nullable=True),
         sa.Column("to_user_seq", sa.Integer, nullable=True),
         sa.Column("title", sa.String(128), nullable=True, comment="제목"),
         sa.Column("message", sa.String(128), nullable=True, comment="메시지"),
         sa.Column("data", sa.JSON, nullable=True, comment="데이터"),
+        sa.Column("is_read", sa.Boolean, default=False, comment="읽음 처리"),
         sa.ForeignKeyConstraint(["from_user_seq"], ["users.seq"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["to_user_seq"], ["users.seq"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("seq"),

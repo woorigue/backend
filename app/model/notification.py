@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Column, ForeignKey, Integer, String
+from sqlalchemy import JSON, Column, ForeignKey, Integer, String, Boolean
 
 from app.db.session import Base
 
@@ -13,3 +13,4 @@ class Notification(Base):
     title = Column(String(128), comment="제목")
     message = Column(String(128), comment="메시지")
     data = Column(JSON, nullable=True, comment="데이터")
+    is_read = Column(Boolean, default=False, comment="읽음 처리")
