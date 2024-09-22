@@ -1,4 +1,4 @@
-from .rabbitmq import RabbitHelper
-
-
-rabbitmq_helper = RabbitHelper()
+# from .rabbitmq import RabbitHelper
+#
+#
+# rabbitmq_helper = RabbitHelper()

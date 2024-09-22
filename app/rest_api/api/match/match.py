@@ -34,7 +34,8 @@ from app.rest_api.schema.match.match import (
 from app.rest_api.schema.poll import (
     CreatePollSchema,
 )
-from app.core import rabbitmq_helper
+
+# from app.core import rabbitmq_helper
 from datetime import datetime
 from app.model.chat import ChattingRoom, UserChatRoomAssociation, ChattingContent
 from app.rest_api.schema.match.match import JoinMatchResponseSchema
@@ -262,7 +263,7 @@ def join_match(
     db.flush()
 
     user_id = [match.user_seq]
-    rabbitmq_helper.publish(chatting_room.seq, chatting_contents.content, user_id)
+    # rabbitmq_helper.publish(chatting_room.seq, chatting_contents.content, user_id)
 
     device_info = db.query(Device).filter(Device.user_seq == match.user_seq).first()
 

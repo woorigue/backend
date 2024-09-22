@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, aliased
 
-from app.core import rabbitmq_helper
+# from app.core import rabbitmq_helper
 from app.core.deps import get_db
 from app.core.token import get_current_user
 from app.model.chat import ChattingContent, ChattingRoom, UserChatRoomAssociation
@@ -30,7 +30,7 @@ def create_match_chat(
     db.commit()
     db.flush()
 
-    rabbitmq_helper.publish(str(chat_room_id), user_data.contents, [])
+    # rabbitmq_helper.publish(str(chat_room_id), user_data.contents, [])
 
     return {"success": True}
 
