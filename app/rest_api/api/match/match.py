@@ -39,6 +39,11 @@ from app.rest_api.schema.poll import (
 from datetime import datetime
 from app.model.chat import ChattingRoom, UserChatRoomAssociation, ChattingContent
 from app.rest_api.schema.match.match import JoinMatchResponseSchema
+from app.rest_api.schema.notification.notification import (
+    CreateNotificationSchema,
+    NotificationType,
+)
+from app.model.notification import Notification
 
 
 match_router = APIRouter(tags=["match"], prefix="/match")
@@ -268,13 +273,25 @@ def join_match(
     device_info = db.query(Device).filter(Device.user_seq == match.user_seq).first()
 
     if device_info:
+        notification_schema = CreateNotificationSchema(
+            type=NotificationType.MATCH_REQUEST.value,
+            title="매치 신청 알림",
+            message="매치 신청이 도착했습니다.",
+            from_user_seq=token.seq,
+            to_user_seq=device_info.user_seq,
+        )
         message = messaging.Message(
             notification=messaging.Notification(
-                title="매치 신청 알림", body="매치 신청이 도착했습니다."
+                title=notification_schema.title, body=notification_schema.message
             ),
             token=device_info.token,
         )
         messaging.send(message)
+
+        notification = Notification(**notification_schema.model_dump())
+        db.add(notification)
+        db.commit()
+
     return {"chat_room_seq": chatting_room.seq}
 
 

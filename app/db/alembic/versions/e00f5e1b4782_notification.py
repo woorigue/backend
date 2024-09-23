@@ -29,6 +29,16 @@ def upgrade() -> None:
         sa.Column("message", sa.String(128), nullable=True, comment="메시지"),
         sa.Column("data", sa.JSON, nullable=True, comment="데이터"),
         sa.Column("is_read", sa.Boolean, default=False, comment="읽음 처리"),
+        sa.Column(
+            "created_at", sa.DateTime, server_default=sa.func.now(), comment="생성 시간"
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime,
+            server_default=sa.func.now(),
+            onupdate=sa.func.now(),
+            comment="업데이트 시간",
+        ),
         sa.ForeignKeyConstraint(["from_user_seq"], ["users.seq"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["to_user_seq"], ["users.seq"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("seq"),

@@ -9,6 +9,7 @@ from app.core.deps import get_db
 from app.core.token import (
     get_current_user,
 )
+
 from app.core.utils import error_responses
 from app.helper.exception import (
     GuestNotFoundException,
@@ -28,6 +29,11 @@ from app.rest_api.schema.guest.guest import (
     GuestSchema,
     UpdateGuestSchema,
 )
+from app.rest_api.schema.notification.notification import (
+    CreateNotificationSchema,
+    NotificationType,
+)
+from app.model.notification import Notification
 from app.model.device import Device
 from firebase_admin import messaging
 
@@ -207,13 +213,23 @@ def join_guest(
     )
 
     if device_info:
+        notification_schema = CreateNotificationSchema(
+            type=NotificationType.GUEST_REQUEST,
+            title="용병 신청 알림",
+            message="새로운 용병 신청이 들어왔습니다.",
+            from_user_seq=token.seq,
+            to_user_seq=device_info.user_seq,
+        )
         message = messaging.Message(
             notification=messaging.Notification(
-                title="용병 신청 알림", body="새로운 용병 신청이 들어왔습니다."
+                title=notification_schema.title, body=notification_schema.message
             ),
             token=device_info.token,
         )
         messaging.send(message)
+        notification = Notification(**notification_schema.model_dump())
+        db.add(notification)
+        db.commit()
 
     return {"success": True}
 

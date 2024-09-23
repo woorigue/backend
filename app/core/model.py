@@ -1,9 +1,11 @@
-from sqlalchemy import Column, DateTime, Integer
+from sqlalchemy import Column, DateTime
 from datetime import datetime
+from app.db.session import Base
 
 
-class BaseModel:
-    seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
+class TimestampedModel(Base):
+    __abstract__ = True  # 추상화
+
     created_at = Column(DateTime, default=datetime.utcnow(), comment="생성 시간")
     updated_at = Column(
         DateTime,

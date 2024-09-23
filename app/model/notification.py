@@ -1,9 +1,9 @@
 from sqlalchemy import JSON, Column, ForeignKey, Integer, String, Boolean
 
-from app.db.session import Base
+from app.core.model import TimestampedModel
 
 
-class Notification(Base):
+class Notification(TimestampedModel):
     __tablename__ = "notification"
 
     seq = Column(Integer, primary_key=True, autoincrement=True, comment="시퀀스")
