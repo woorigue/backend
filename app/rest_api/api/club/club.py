@@ -125,8 +125,8 @@ def get_club(
 async def update_club(
     token: Annotated[str, Depends(get_current_user)],
     club_seq: int,
-    emblem_img: Union[UploadFile, str, None] = None,
-    img: Union[UploadFile, str, None] = None,
+    emblem_img: UploadFile | None = File(None),
+    img: UploadFile | None = File(None),
     level: int = Form(...),
     register_date: str = Form(...),
     intro: str = Form(...),
@@ -147,21 +147,17 @@ async def update_club(
     if not is_owner:
         raise ClubPermissionException
 
-    if isinstance(emblem_img, UploadFile):
+    if emblem_img is None:
+        emblem_url = club.emblem_img
+    else:
         emblem_contents = await emblem_img.read()
         emblem_url = file_con.upload_club_img(emblem_contents, emblem_img.filename)
-    elif isinstance(emblem_img, str):
-        emblem_url = None
-    else:
-        emblem_url = club.emblem_img
 
-    if isinstance(img, UploadFile):
+    if img is None:
+        img_url = club.img
+    else:
         img_contents = await img.read()
         img_url = file_con.upload_club_img(img_contents, img.filename)
-    elif isinstance(img, str):
-        img_url = None
-    else:
-        img_url = club.img
 
     club.emblem_img = emblem_url
     club.img = img_url
@@ -198,9 +194,7 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post(
-    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
-)
+@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -271,9 +265,7 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete(
-    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
-)
+@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
