@@ -2,6 +2,7 @@ from typing import List, Optional, Literal
 
 from pydantic import BaseModel, Field
 from enum import Enum, StrEnum
+from datetime import datetime
 
 
 class NotificationType(StrEnum):
@@ -26,3 +27,19 @@ class CreateNotificationSchema(BaseModel):
     to_user_seq: int = Field(title="받는 사용자 seq")
     title: str = Field(title="제목")
     message: str = Field(title="내용")
+
+
+class GetNotificationSchema(BaseModel):
+    seq: int = Field(title="시퀀스")
+    type: NotificationType = Field(title="알림 타입")
+    data: dict = Field(default_factory=dict, title="데이터")
+    from_user_seq: int = Field(title="보내는 사용자 seq")
+    to_user_seq: int = Field(title="받는 사용자 seq")
+    title: str = Field(title="제목")
+    message: str = Field(title="내용")
+    is_read: bool = Field(title="읽음 여부")
+    created_at: datetime = Field(title="생성일자")
+
+
+class UpdateIsReadNotificationSchema(BaseModel):
+    seq: int = Field(title="시퀀스")

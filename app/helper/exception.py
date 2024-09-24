@@ -183,3 +183,9 @@ class JoinMatchAcceptException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     error_code = 100026
     error_detail = "매치 신청이 이미 수락되었습니다."
+
+
+class NotificationNotFoundException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    error_code = 100027
+    error_detail = "푸쉬 알림을 찾을 수 없습니다"
