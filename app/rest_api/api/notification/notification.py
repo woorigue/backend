@@ -100,8 +100,8 @@ def update_app_push_notification_is_read(
     return {"success": True}
 
 
-@notification_router.patch(
-    "/app/push/read",
+@notification_router.post(
+    "/app/push",
     summary="앱 푸쉬",
 )
 def app_push_notification(
