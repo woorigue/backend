@@ -43,3 +43,10 @@ class GetNotificationSchema(BaseModel):
 
 class UpdateIsReadNotificationSchema(BaseModel):
     seq: int = Field(title="시퀀스")
+
+
+class NotificationAppPushSchema(BaseModel):
+    type: NotificationType = Field(title="알림 타입")
+    title: str = Field(title="제목")
+    message: str = Field(title="내용")
+    to_user_seq: int = Field(title="받는 사용자 seq")

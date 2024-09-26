@@ -11,6 +11,8 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 from starlette.config import Config
 from app.helper.exception import NotificationNotFoundException
+from app.model.device import Device
+from firebase_admin import messaging
 
 from app.core.config import settings
 from app.core.deps import get_db
@@ -37,6 +39,7 @@ from app.rest_api.schema.email import (
 from app.rest_api.schema.notification.notification import (
     GetNotificationSchema,
     UpdateIsReadNotificationSchema,
+    NotificationAppPushSchema,
 )
 from app.rest_api.schema.profile import UpdateProfileSchema
 from app.rest_api.schema.token import RefreshTokenSchema
@@ -75,7 +78,7 @@ def get_app_push_notification(
 
 @notification_router.patch(
     "/app/push/read",
-    summary="앱 푸쉬 조회",
+    summary="앱 푸쉬 읽음 처리",
 )
 def update_app_push_notification_is_read(
     data: UpdateIsReadNotificationSchema,
@@ -94,4 +97,28 @@ def update_app_push_notification_is_read(
     notification.is_read = True
     db.add(notification)
     db.commit()
+    return {"success": True}
+
+
+@notification_router.patch(
+    "/app/push/read",
+    summary="앱 푸쉬",
+)
+def app_push_notification(
+    data: NotificationAppPushSchema,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    device_info = db.query(Device).filter(Device.user_seq == data.to_user_seq).first()
+
+    if device_info:
+        message = messaging.Message(
+            notification=messaging.Notification(title=data.title, body=data.message),
+            token=device_info.token,
+        )
+        messaging.send(message)
+        notification = Notification(**data.model_dump(), from_user_seq=token.seq)
+        db.add(notification)
+        db.commit()
+
     return {"success": True}
