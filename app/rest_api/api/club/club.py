@@ -175,6 +175,41 @@ async def update_club(
 
     return {"success": True}
 
+@club_router.delete(
+    "/{club_seq}/img",
+    summary="클럽 이미지 삭제",
+    response_model=CreateResponse,
+    responses={
+        400: {"description": error_responses([ClubPermissionException])},
+        404: {"description": error_responses([ClubNotFoundException])},
+    },
+)
+async def delete_club_image(
+    token: Annotated[str, Depends(get_current_user)],
+    club_seq: int,
+    emblem_img: bool,
+    img: bool,
+    db: Session = Depends(get_db),
+):
+    club = db.query(Club).filter(Club.seq == club_seq).first()
+    if club is None:
+        raise ClubNotFoundException
+
+    con = ClubController(token)
+    is_owner = con.is_owner(db, club_seq)
+    if not is_owner:
+        raise ClubPermissionException
+
+    if emblem_img:
+        club.emblem_img = None
+    
+    if img:
+        club.img = None
+
+    db.commit()
+
+    return {"success": True}
+
 
 @club_router.get("", response_model=list[ClubListSchema], summary="클럽 조회")
 def filter_clubs(
