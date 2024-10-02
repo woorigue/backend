@@ -27,10 +27,11 @@ class ClubController:
             db.query(JoinClub)
             .join(Club, JoinClub.clubs_seq == Club.seq)
             .where(
-                JoinClub.user_seq == self.user.seq, 
-                JoinClub.accepted == True, 
-                Club.deleted == False
-            ).count()
+                JoinClub.user_seq == self.user.seq,
+                JoinClub.accepted == True,
+                Club.deleted == False,
+            )
+            .count()
         )
 
     def get_joined_member(self, db: Session, club_seq: int) -> int:

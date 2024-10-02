@@ -30,6 +30,7 @@ from app.rest_api.schema.club.club import (
 )
 from app.rest_api.schema.profile import GetProfileSchema
 
+
 club_router = APIRouter(tags=["club"], prefix="/club")
 
 
@@ -175,6 +176,7 @@ async def update_club(
 
     return {"success": True}
 
+
 @club_router.delete(
     "/{club_seq}/img",
     summary="클럽 이미지 삭제",
@@ -202,7 +204,7 @@ async def delete_club_image(
 
     if emblem_img:
         club.emblem_img = None
-    
+
     if img:
         club.img = None
 
