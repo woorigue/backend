@@ -117,7 +117,9 @@ def app_push_notification(
             token=device_info.token,
         )
         messaging.send(message)
-        notification = Notification(**data.model_dump(), from_user_seq=token.seq)
+        notification = Notification(
+            **data.model_dump(), from_user_seq=token.seq, data={}
+        )
         db.add(notification)
         db.commit()
 
