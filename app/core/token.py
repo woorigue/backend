@@ -14,7 +14,7 @@ from app.model.user import User
 SECRET_KEY = "JWTSECRETKEY"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 1
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+REFRESH_TOKEN_EXPIRE_DAYS = 90
 
 RLS_SECRET_KEY = "NvbeIjVAT/MW8ihG5pWzb03pzI3PlSCRFJE8B0IzyUAlIzxXiJinD8ywbjQEfOilhkD+fARoW/SlWiU5LrFncw=="
 RLS_ALGORITHM = "HS256"
@@ -30,7 +30,7 @@ def verify_password(plain_password, hashed_password):
 
 
 def create_access_token(data: dict):
-    access_token_expires = timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+    access_token_expires = timedelta(seconds=ACCESS_TOKEN_EXPIRE_DAYS)
 
     to_encode = data.copy()
     expire = datetime.now() + access_token_expires
