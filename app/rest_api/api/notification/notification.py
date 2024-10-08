@@ -118,9 +118,33 @@ def app_push_notification(
         )
         messaging.send(message)
         notification = Notification(
-            **data.model_dump(), from_user_seq=token.seq, data={}
+            **data.model_dump(),
+            from_user_seq=token.seq,
         )
         db.add(notification)
         db.commit()
 
+    return {"success": True}
+
+
+@notification_router.delete(
+    "/app/push/{notification_id}",
+    summary="앱 푸쉬 삭제",
+)
+def app_push_notification(
+    notification_id: int,
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    notification = (
+        db.query(Notification)
+        .filter(
+            Notification.seq == notification_id,
+            Notification.to_user_seq == token.seq,
+        )
+        .first()
+    )
+    if notification is not None:
+        db.delete(notification)
+        db.commit()
     return {"success": True}

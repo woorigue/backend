@@ -10,6 +10,7 @@ from app.core.token import get_current_user
 from app.core.utils import error_responses
 from app.helper.exception import ClubPostingCreatePermissionDenied
 from app.model.clubPosting import ClubPosting, JoinClubPosting
+from app.model.club import Club
 from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.club.clubPosting import (
     ClubPostingSchema,
@@ -184,12 +185,19 @@ def join_clubPosting(
         db.query(Device).filter(Device.user_seq == club_posting.user_seq).first()
     )
     if device_info:
+        club = db.query(Club).filter(Club.seq == club_seq).first()
+        club_data = {
+            "club_seq": club_seq,
+            "club_name": club.name,
+            "publisher_name": token.profile[0].nickname,
+        }
         notification_schema = CreateNotificationSchema(
             type=NotificationType.CLUB_REQUEST,
             title="클럽 입단 신청",
             message="클럽 입단 신청이 들어왔습니다",
             from_user_seq=token.seq,
             to_user_seq=device_info.user_seq,
+            data=club_data,
         )
         message = messaging.Message(
             notification=messaging.Notification(
@@ -201,6 +209,9 @@ def join_clubPosting(
         notification = Notification(**notification_schema.model_dump())
         db.add(notification)
         db.commit()
+
+        test = db.query(Notification).filter(Notification.seq == 46).first()
+        print(test.data)
 
     return {"success": True}
 

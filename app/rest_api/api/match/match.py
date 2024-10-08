@@ -44,6 +44,7 @@ from app.rest_api.schema.notification.notification import (
     NotificationType,
 )
 from app.model.notification import Notification
+from app.model.club import Club
 
 
 match_router = APIRouter(tags=["match"], prefix="/match")
@@ -214,7 +215,6 @@ def join_match(
     db: Session = Depends(get_db),
 ):
     match = db.query(Match).filter(Match.seq == match_seq).first()
-
     if not match:
         raise MatchNotFoundException
 
@@ -233,52 +233,60 @@ def join_match(
     db.add(join_match)
     db.commit()
 
-    # 채팅방 생성 로직
-    chatting_room = ChattingRoom(created_at=datetime.utcnow())
-    db.add(chatting_room)
-    db.commit()
-    db.flush()
+    # # 채팅방 생성 로직
+    # chatting_room = ChattingRoom(created_at=datetime.utcnow())
+    # db.add(chatting_room)
+    # db.commit()
+    # db.flush()
 
-    # 채팅방 참여 로직
-    association_data = {
-        "userId": token.seq,
-        "chat_room_seq": chatting_room.seq,
-        "joinDate": datetime.utcnow(),  # 현재 시간을 joinDate로 설정
-    }
-    chat_association = UserChatRoomAssociation(**association_data)
-    db.add(chat_association)
-    db.commit()
+    # # 채팅방 참여 로직
+    # association_data = {
+    #     "userId": token.seq,
+    #     "chat_room_seq": chatting_room.seq,
+    #     "joinDate": datetime.utcnow(),  # 현재 시간을 joinDate로 설정
+    # }
+    # chat_association = UserChatRoomAssociation(**association_data)
+    # db.add(chat_association)
+    # db.commit()
 
-    association_data = {
-        "userId": match.user_seq,
-        "chat_room_seq": chatting_room.seq,
-        "joinDate": datetime.utcnow(),  # 현재 시간을 joinDate로 설정
-    }
-    chat_association = UserChatRoomAssociation(**association_data)
-    db.add(chat_association)
-    db.commit()
+    # association_data = {
+    #     "userId": match.user_seq,
+    #     "chat_room_seq": chatting_room.seq,
+    #     "joinDate": datetime.utcnow(),  # 현재 시간을 joinDate로 설정
+    # }
+    # chat_association = UserChatRoomAssociation(**association_data)
+    # db.add(chat_association)
+    # db.commit()
+    #
+    # chatting_contents = ChattingContent(
+    #     chatting_room_seq=chatting_room.seq,
+    #     user_seq=token.seq,
+    #     content="매칭 우리 함께해요",
+    # )
+    # db.add(chatting_contents)
+    # db.commit()
+    # db.flush()
 
-    chatting_contents = ChattingContent(
-        chatting_room_seq=chatting_room.seq,
-        user_seq=token.seq,
-        content="매칭 우리 함께해요",
-    )
-    db.add(chatting_contents)
-    db.commit()
-    db.flush()
-
-    user_id = [match.user_seq]
+    # user_id = [match.user_seq]
     # rabbitmq_helper.publish(chatting_room.seq, chatting_contents.content, user_id)
 
     device_info = db.query(Device).filter(Device.user_seq == match.user_seq).first()
 
     if device_info:
+        away_club = db.query(Club).filter(Club.seq == away_club_seq).first()
+        data = {
+            "away_club_seq": away_club.seq,
+            "away_club_name": away_club.name,
+            "match_seq": match.seq,
+            "match_date": match.match_date.strftime("%Y-%m-%d"),
+        }
         notification_schema = CreateNotificationSchema(
             type=NotificationType.MATCH_REQUEST.value,
             title="매치 신청 알림",
             message="매치 신청이 도착했습니다.",
             from_user_seq=token.seq,
             to_user_seq=device_info.user_seq,
+            data=data,
         )
         message = messaging.Message(
             notification=messaging.Notification(
@@ -291,8 +299,7 @@ def join_match(
         notification = Notification(**notification_schema.model_dump())
         db.add(notification)
         db.commit()
-
-    return {"chat_room_seq": chatting_room.seq}
+    return {"success": True}
 
 
 @match_router.patch(

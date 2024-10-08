@@ -408,7 +408,7 @@ def get_match_schedule(
                 or_(
                     Match.home_club_seq.in_(user_club_subquery),
                     Match.away_club_seq.in_(user_club_subquery),
-                )
+                ),
             )
             .order_by(Match.match_date.asc())
             .all()
