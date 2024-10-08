@@ -7,7 +7,7 @@ import httpx
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Depends, Request, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, or_
 from sqlalchemy.orm import Session
 from starlette.config import Config
 
@@ -35,7 +35,7 @@ from app.helper.exception import (
     UserRetrieveFailException,
     DeviceTokenRetrieveFailException,
 )
-from app.model.club import Club
+from app.model.club import Club, JoinClub
 from app.model.clubPosting import ClubPosting
 from app.model.device import Device
 from app.model.guest import Guest
@@ -375,24 +375,41 @@ def get_match_schedule(
     include_match_history: bool,
     db: Session = Depends(get_db),
 ):
-    subquery = (
+    user_poll_subquery = (
         db.query(Poll.match_seq)
         .join(JoinPoll, Poll.seq == JoinPoll.poll_seq)
         .filter(JoinPoll.user_seq == token.seq, JoinPoll.attend == True)
         .subquery()
     )
 
+    user_club_subquery = (
+        db.query(JoinClub.clubs_seq)
+        .filter(JoinClub.user_seq == token.seq, JoinClub.accepted == True)
+        .subquery()
+    )
+
     if include_match_history:
         match_schedule = (
             db.query(Match)
-            .filter(Match.seq.in_(subquery))
+            .filter(
+                Match.seq.in_(user_poll_subquery),
+                Match.away_club != None,
+            )
             .order_by(Match.match_date.desc())
             .all()
         )
     else:
         match_schedule = (
             db.query(Match)
-            .filter(Match.seq.in_(subquery), Match.match_date >= datetime.today())
+            .filter(
+                Match.seq.in_(user_poll_subquery),
+                Match.away_club != None,
+                Match.match_date >= datetime.today(),
+                or_(
+                    Match.home_club_seq.in_(user_club_subquery),
+                    Match.away_club_seq.in_(user_club_subquery),
+                )
+            )
             .order_by(Match.match_date.asc())
             .all()
         )
