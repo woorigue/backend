@@ -417,7 +417,7 @@ def get_match_schedule(
     return match_schedule
 
 
-@user_router.get("/sns/login", response_class=HTMLResponse)
+@user_router.get("/sns/login", response_class=HTMLResponse, deprecated=True)
 def test(request: Request):
     html_content = """
     <html>
@@ -458,7 +458,7 @@ def user_sns_login(data: UserSnsLoginSchema, db: Session = Depends(get_db)):
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-@user_router.get("/google/login")
+@user_router.get("/google/login", deprecated=True)
 async def login(request: Request):
     redirect_uri = request.url_for("auth")
     if settings.SERVER_ENV != "LOCAL":
@@ -470,7 +470,7 @@ async def login(request: Request):
     return res
 
 
-@user_router.get("/auth/google")
+@user_router.get("/auth/google", deprecated=True)
 async def auth(request: Request, db: Session = Depends(get_db)):
     oauth = settings.GOOGLE_OAUTH
     print(request.session)
@@ -529,14 +529,14 @@ oauth_kako.register(
 )
 
 
-@user_router.get("/kakao/login")
+@user_router.get("/kakao/login", deprecated=True)
 async def login(request: Request):
     redirect_uri = request.url_for("kakao_auth")
     print(redirect_uri)
     return await oauth_kako.kakao.authorize_redirect(request, redirect_uri)
 
 
-@user_router.get("/auth/kako")
+@user_router.get("/auth/kako", deprecated=True)
 async def kakao_auth(request: Request, db: Session = Depends(get_db)):
     # token = await oauth_kako.kakao.authorize_access_token(request)
 
@@ -584,7 +584,7 @@ async def kakao_auth(request: Request, db: Session = Depends(get_db)):
             print("Token request failed:", response.status_code, response.text)
 
 
-@user_router.get("/kako/user_info")
+@user_router.get("/kako/user_info", deprecated=True)
 async def get_kako_user_info(access_token):
     user_info_url = "https://kapi.kakao.com/v2/user/me"
     headers = {
@@ -600,7 +600,7 @@ async def get_kako_user_info(access_token):
             print("Token request failed:", response.status_code, response.text)
 
 
-@user_router.get("/kako/token/refresh")
+@user_router.get("/kako/token/refresh", deprecated=True)
 async def get_kako_access_token(refresh_token):
     token_url = "https://kauth.kakao.com/oauth/token"
     headers = {
@@ -651,10 +651,7 @@ def get_user_detail(
     return user
 
 
-@user_router.post(
-    "/google/login",
-    summary="구글 로그인",
-)
+@user_router.post("/google/login", summary="구글 로그인", deprecated=True)
 def get_user_detail(data: GoogleLoginSchema, db: Session = Depends(get_db)):
     access_token = data.access_token
     user_info = requests.get(

@@ -23,7 +23,7 @@ from app.rest_api.schema.notification.faq import (
 faq_router = APIRouter(tags=["faq"], prefix="/faq")
 
 
-@faq_router.get("", summary="faq 조회")
+@faq_router.get("", summary="faq 조회", deprecated=True)
 def list_faqs(db: Session = Depends(get_db)):
     faq = db.query(Faq).order_by(Faq.create_date.desc()).all()
     return faq
@@ -33,6 +33,7 @@ def list_faqs(db: Session = Depends(get_db)):
     "/{faq_id}",
     summary="faq 상세 조회",
     responses={404: {"description": error_responses([FaqNotFoundException])}},
+    deprecated=True,
 )
 def get_faq(faq_id: int, db: Session = Depends(get_db)):
     faq = db.query(Faq).filter(Faq.seq == faq_id).first()
@@ -41,7 +42,7 @@ def get_faq(faq_id: int, db: Session = Depends(get_db)):
     return faq
 
 
-@faq_router.post("", summary="faq 생성")
+@faq_router.post("", summary="faq 생성", deprecated=True)
 def create_faq(
     faq_data: FaqCreateSchema,
     token: Annotated[str, Depends(get_current_user)],
@@ -55,6 +56,7 @@ def create_faq(
     "/{faq_id}",
     summary="faq 수정",
     responses={404: {"description": error_responses([FaqNotFoundException])}},
+    deprecated=True,
 )
 def edit_faq(
     faq_id: int,
@@ -70,6 +72,7 @@ def edit_faq(
     "/{faq_id}",
     summary="faq 삭제",
     responses={404: {"description": error_responses([FaqNotFoundException])}},
+    deprecated=True,
 )
 def delete_faq(
     faq_id: int,

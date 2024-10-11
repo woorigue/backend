@@ -13,10 +13,10 @@ from app.model.profile import Profile
 from app.model.user import User
 from app.rest_api.schema.chat import CreateMatchChatSchema
 
-chat_router = APIRouter(tags=["chat"], prefix="/chat")
+chat_router = APIRouter(tags=["chat"], prefix="/chat", deprecated=True)
 
 
-@chat_router.post("/match/{chat_room_id}")
+@chat_router.post("/match/{chat_room_id}", deprecated=True)
 def create_match_chat(
     chat_room_id: int,
     user_data: CreateMatchChatSchema,  # TODO: serach for user to get club owner's user seq value
@@ -35,7 +35,7 @@ def create_match_chat(
     return {"success": True}
 
 
-@chat_router.get("/match/{chat_room_id}")
+@chat_router.get("/match/{chat_room_id}", deprecated=True)
 def get_match_chats(
     chat_room_id: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -49,7 +49,7 @@ def get_match_chats(
     return contents
 
 
-@chat_router.delete("/match/{chat_room_id}/leave")
+@chat_router.delete("/match/{chat_room_id}/leave", deprecated=True)
 def get_match_chats(
     chat_room_id: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -72,7 +72,7 @@ def get_match_chats(
     return {"success": True}
 
 
-@chat_router.get("")
+@chat_router.get("", deprecated=True)
 def get_joined_chat_list(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
