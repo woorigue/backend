@@ -60,7 +60,7 @@ notification_router = APIRouter(tags=["notification"], prefix="/notification")
 
 @notification_router.get(
     "/app/push",
-    summary="앱 푸쉬 조회",
+    summary="앱 푸시 조회",
     response_model=list[GetNotificationSchema],
 )
 def get_app_push_notification(
@@ -78,7 +78,7 @@ def get_app_push_notification(
 
 @notification_router.patch(
     "/app/push/read",
-    summary="앱 푸쉬 읽음 처리",
+    summary="앱 푸시 읽음 처리",
 )
 def update_app_push_notification_is_read(
     data: UpdateIsReadNotificationSchema,
@@ -102,7 +102,7 @@ def update_app_push_notification_is_read(
 
 @notification_router.post(
     "/app/push",
-    summary="앱 푸쉬",
+    summary="앱 푸시",
 )
 def app_push_notification(
     data: NotificationAppPushSchema,
@@ -129,7 +129,7 @@ def app_push_notification(
 
 @notification_router.delete(
     "/app/push/{notification_id}",
-    summary="앱 푸쉬 삭제",
+    summary="앱 푸시 삭제",
 )
 def app_push_notification(
     notification_id: int,

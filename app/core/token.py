@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
 from app.model.user import User
+from app.model.sns import Sns
 
 SECRET_KEY = "JWTSECRETKEY"
 ALGORITHM = "HS256"
@@ -64,6 +65,7 @@ def get_current_user(
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
+        type = payload.get("type")
         if username is None:
             raise credentials_exception
     except ExpiredSignatureError:
@@ -73,7 +75,11 @@ def get_current_user(
         )
     except JWTError:
         raise credentials_exception
-    user = db.scalar(select(User).where(User.email == username))
+
+    if type is not None:
+        user = db.query(User).join(User.sns).filter(Sns.type == type).first()
+    else:
+        user = db.query(User).filter(User.email == username).first()
     if user is None:
         raise credentials_exception
     return user

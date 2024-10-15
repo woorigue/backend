@@ -12,5 +12,5 @@ class Notification(TimestampedModel):
     to_user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
     title = Column(String(128), comment="제목")
     message = Column(String(128), comment="메시지")
-    data = Column(JSON, nullable=True, comment="데이터")
+    data = Column(JSON, default=dict, comment="데이터")
     is_read = Column(Boolean, default=False, comment="읽음 처리")

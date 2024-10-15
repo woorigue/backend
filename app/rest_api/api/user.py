@@ -137,9 +137,12 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
     if not result:
         raise UserPasswordNotMatchException
 
-    access_token = create_access_token(data={"sub": str(user_data.email)})
-    refresh_token = create_refresh_token(data={"sub": str(user_data.email)})
-
+    access_token = create_access_token(
+        data={"sub": str(user_data.email), "type": "email"}
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": str(user_data.email), "type": "email"}
+    )
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
@@ -452,8 +455,12 @@ def user_sns_login(data: UserSnsLoginSchema, db: Session = Depends(get_db)):
         db.add(sns)
         db.commit()
 
-    access_token = create_access_token(data={"sub": str(sns.join_user.email)})
-    refresh_token = create_refresh_token(data={"sub": str(sns.join_user.email)})
+    access_token = create_access_token(
+        data={"sub": str(sns.join_user.email), "type": data.type}
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": str(sns.join_user.email), "type": data.type}
+    )
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
