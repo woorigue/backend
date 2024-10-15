@@ -112,6 +112,9 @@ def app_push_notification(
     device_info = db.query(Device).filter(Device.user_seq == data.to_user_seq).first()
 
     if device_info:
+        data = {
+            "publisher_name": token.profile[0].nickname,
+        }
         message = messaging.Message(
             notification=messaging.Notification(title=data.title, body=data.message),
             token=device_info.token,
@@ -120,6 +123,7 @@ def app_push_notification(
         notification = Notification(
             **data.model_dump(),
             from_user_seq=token.seq,
+            data=data,
         )
         db.add(notification)
         db.commit()
