@@ -105,23 +105,23 @@ def update_app_push_notification_is_read(
     summary="앱 푸시",
 )
 def app_push_notification(
-    data: NotificationAppPushSchema,
+    notification_data: NotificationAppPushSchema,
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    device_info = db.query(Device).filter(Device.user_seq == data.to_user_seq).first()
+    device_info = db.query(Device).filter(Device.user_seq == notification_data.to_user_seq).first()
 
     if device_info:
         data = {
             "publisher_name": token.profile[0].nickname,
         }
         message = messaging.Message(
-            notification=messaging.Notification(title=data.title, body=data.message),
+            notification=messaging.Notification(title=notification_data.title, body=notification_data.message),
             token=device_info.token,
         )
         messaging.send(message)
         notification = Notification(
-            **data.model_dump(),
+            **notification_data.model_dump(),
             from_user_seq=token.seq,
             data=data,
         )
