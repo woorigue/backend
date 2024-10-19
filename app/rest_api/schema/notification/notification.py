@@ -1,6 +1,7 @@
 from typing import List, Optional, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+from pytz import timezone
 from enum import Enum, StrEnum
 from datetime import datetime
 
@@ -39,6 +40,15 @@ class GetNotificationSchema(BaseModel):
     message: str = Field(title="내용")
     is_read: bool = Field(title="읽음 여부")
     created_at: datetime = Field(title="생성일자")
+
+    @model_validator(mode="before")
+    def convert_created_at_to_kst(cls, values):
+        kst = timezone("Asia/Seoul")
+
+        if values.created_at:
+            values.created_at = values.created_at.astimezone(kst)
+
+        return values
 
 
 class UpdateIsReadNotificationSchema(BaseModel):

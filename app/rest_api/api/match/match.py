@@ -4,7 +4,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session, joinedload
-from app.model.device import Device
 from firebase_admin import messaging
 
 from app.core.deps import get_db
@@ -20,10 +19,16 @@ from app.helper.exception import (
     JoinMatchNotFoundException,
     JoinMatchAcceptException,
 )
+
+from app.model.club import Club
 from app.model.match import JoinMatch, Match
+from app.model.device import Device
+from app.model.notification import Notification
+
 from app.rest_api.controller.club import ClubController
 from app.rest_api.controller.match.match import MatchController
 from app.rest_api.controller.poll import PollController
+
 from app.rest_api.schema.base import CreateResponse
 from app.rest_api.schema.match.match import (
     FilterMatchSchema,
@@ -34,17 +39,14 @@ from app.rest_api.schema.match.match import (
 from app.rest_api.schema.poll import (
     CreatePollSchema,
 )
-
-# from app.core import rabbitmq_helper
-from datetime import datetime
-from app.model.chat import ChattingRoom, UserChatRoomAssociation, ChattingContent
-from app.rest_api.schema.match.match import JoinMatchResponseSchema
 from app.rest_api.schema.notification.notification import (
     CreateNotificationSchema,
     NotificationType,
 )
-from app.model.notification import Notification
-from app.model.club import Club
+
+# from app.core import rabbitmq_helper
+from app.model.chat import ChattingRoom, UserChatRoomAssociation, ChattingContent
+from app.rest_api.schema.match.match import JoinMatchResponseSchema
 
 
 match_router = APIRouter(tags=["match"], prefix="/match")
@@ -299,6 +301,7 @@ def join_match(
         notification = Notification(**notification_schema.model_dump())
         db.add(notification)
         db.commit()
+
     return {"success": True}
 
 

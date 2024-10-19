@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi_filter import FilterDepends
 from sqlalchemy import and_, delete, exists, or_
 from sqlalchemy.orm import Session, joinedload
+from firebase_admin import messaging
 
 from app.core.deps import get_db
 from app.core.token import get_current_user
@@ -14,11 +15,15 @@ from app.helper.exception import (
     ClubPermissionException,
     JoinClubLimitError,
     JoinClubNotFoundException,
+    JoinClubException,
 )
 from app.model.club import Club, JoinClub
 from app.model.match import Match
 from app.model.position import JoinPosition
 from app.model.profile import Profile
+from app.model.notification import Notification
+from app.model.device import Device
+
 from app.rest_api.controller.club import ClubController
 from app.rest_api.controller.file import file_controller as file_con
 from app.rest_api.schema.base import CreateResponse
@@ -29,6 +34,10 @@ from app.rest_api.schema.club.club import (
     GetClubMemberSchema,
 )
 from app.rest_api.schema.profile import GetProfileSchema
+from app.rest_api.schema.notification.notification import (
+    CreateNotificationSchema,
+    NotificationType,
+)
 
 
 club_router = APIRouter(tags=["club"], prefix="/club")
@@ -231,7 +240,9 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -248,11 +259,46 @@ def join_club(
         )
     ).scalar()
 
-    if not join_status:
-        join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="member")
-        db.merge(join_club)
+    if join_status:
+        raise JoinClubException
+
+    join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="member")
+    db.merge(join_club)
+    db.commit()
+    db.flush()
+
+    club_owner = (
+        db.query(JoinClub)
+        .filter(JoinClub.clubs_seq == club_seq, JoinClub.role == "owner")
+        .first()
+    )
+    device_info = (
+        db.query(Device).filter(Device.user_seq == club_owner.user_seq).first()
+    )
+
+    if device_info:
+        data = {
+            "club_seq": club_seq,
+        }
+        notification_schema = CreateNotificationSchema(
+            type=NotificationType.CLUB_REQUEST.value,
+            title="클럽 신청 알림",
+            message="클럽 신청이 도착했습니다.",
+            from_user_seq=token.seq,
+            to_user_seq=device_info.user_seq,
+            data=data,
+        )
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=notification_schema.title, body=notification_schema.message
+            ),
+            token=device_info.token,
+        )
+        messaging.send(message)
+
+        notification = Notification(**notification_schema.model_dump())
+        db.add(notification)
         db.commit()
-        db.flush()
 
     return {"success": True}
 
@@ -302,7 +348,9 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],

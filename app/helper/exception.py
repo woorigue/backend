@@ -189,3 +189,9 @@ class NotificationNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     error_code = 100027
     error_detail = "푸쉬 알림을 찾을 수 없습니다"
+
+
+class JoinClubException(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = 100028
+    error_detail = "클럽 신청이 이미 되었습니다."
