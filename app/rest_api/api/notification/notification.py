@@ -109,14 +109,20 @@ def app_push_notification(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    device_info = db.query(Device).filter(Device.user_seq == notification_data.to_user_seq).first()
+    device_info = (
+        db.query(Device)
+        .filter(Device.user_seq == notification_data.to_user_seq)
+        .first()
+    )
 
     if device_info:
         data = {
             "publisher_name": token.profile[0].nickname,
         }
         message = messaging.Message(
-            notification=messaging.Notification(title=notification_data.title, body=notification_data.message),
+            notification=messaging.Notification(
+                title=notification_data.title, body=notification_data.message
+            ),
             token=device_info.token,
         )
         messaging.send(message)

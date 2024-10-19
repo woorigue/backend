@@ -206,7 +206,7 @@ def filter_match(
     "/{match_seq}/join",
     summary="매치 참여",
     responses={404: {"description": error_responses([MatchNotFoundException])}},
-    response_model=JoinMatchResponseSchema,
+    response_model=CreateResponse,
 )
 def join_match(
     match_seq: int,

@@ -25,7 +25,9 @@ from app.rest_api.schema.notification.notification import (
     NotificationType,
 )
 
-clubPosting_router = APIRouter(tags=["clubPosting"], prefix="/clubPosting")
+clubPosting_router = APIRouter(
+    tags=["clubPosting"], prefix="/clubPosting", deprecated=True
+)
 
 
 @clubPosting_router.post(

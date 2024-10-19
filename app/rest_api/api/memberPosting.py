@@ -15,7 +15,9 @@ from app.rest_api.schema.memberPosting import (
     UpdateMemberPostingSchema,
 )
 
-memberPosting_router = APIRouter(tags=["memberPosting"], prefix="/memberPosting")
+memberPosting_router = APIRouter(
+    tags=["memberPosting"], prefix="/memberPosting", deprecated=True
+)
 
 
 @memberPosting_router.post("", summary="입단신청 공고글 생성", response_model=CreateResponse)

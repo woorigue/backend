@@ -14,7 +14,7 @@ import firebase_admin
 from firebase_admin import credentials, messaging
 from pathlib import Path
 
-firebase_router = APIRouter(tags=["firebase"], prefix="/firebase")
+firebase_router = APIRouter(tags=["firebase"], prefix="/firebase", deprecated=True)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 service_account_path = PROJECT_ROOT / "service_account.json"
