@@ -208,9 +208,7 @@ def join_guest(
     db.add(join_guest)
     db.commit()
 
-    device_info = (
-        db.query(Device).filter(Device.user_seq == join_guest.user_seq).first()
-    )
+    device_info = db.query(Device).filter(Device.user_seq == guest.user_seq).first()
 
     if device_info:
         data = {
