@@ -195,3 +195,9 @@ class JoinClubException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100028
     error_detail = "클럽 신청이 이미 되었습니다."
+
+
+class MatchExpiredException(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = 100029
+    error_detail = "해당 매치는 만료되었습니다."

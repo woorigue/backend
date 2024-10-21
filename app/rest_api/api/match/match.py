@@ -18,6 +18,7 @@ from app.helper.exception import (
     JoinMatchException,
     JoinMatchNotFoundException,
     JoinMatchAcceptException,
+    MatchExpiredException,
 )
 
 from app.model.club import Club
@@ -47,6 +48,7 @@ from app.rest_api.schema.notification.notification import (
 # from app.core import rabbitmq_helper
 from app.model.chat import ChattingRoom, UserChatRoomAssociation, ChattingContent
 from app.rest_api.schema.match.match import JoinMatchResponseSchema
+from datetime import datetime
 
 
 match_router = APIRouter(tags=["match"], prefix="/match")
@@ -219,6 +221,10 @@ def join_match(
     match = db.query(Match).filter(Match.seq == match_seq).first()
     if not match:
         raise MatchNotFoundException
+
+    now = datetime.now()
+    if match.match_date > now:
+        raise MatchExpiredException
 
     if match.away_club_seq is not None:
         raise MatchNotFoundException

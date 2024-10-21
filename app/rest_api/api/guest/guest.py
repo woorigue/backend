@@ -17,6 +17,7 @@ from app.helper.exception import (
     JoinGuestNotFoundException,
     JoinGuestAcceptException,
     MatchNotFoundException,
+    MatchExpiredException,
 )
 from app.model.guest import Guest, JoinGuest
 from app.model.match import Match
@@ -36,6 +37,7 @@ from app.rest_api.schema.notification.notification import (
 from app.model.notification import Notification
 from app.model.device import Device
 from firebase_admin import messaging
+from datetime import datetime
 
 guest_router = APIRouter(tags=["guest"], prefix="/guest")
 
@@ -199,6 +201,10 @@ def join_guest(
 
     if not guest:
         raise GuestNotFoundException
+
+    now = datetime.now()
+    if guest.match.match_date > now:
+        raise MatchExpiredException
 
     join_guest = JoinGuest(
         guest_seq=guest.seq,
