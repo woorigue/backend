@@ -223,7 +223,7 @@ def join_match(
         raise MatchNotFoundException
 
     now = datetime.now()
-    if match.match_date > now:
+    if match.match_date < now:
         raise MatchExpiredException
 
     if match.away_club_seq is not None:

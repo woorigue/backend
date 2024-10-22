@@ -203,7 +203,7 @@ def join_guest(
         raise GuestNotFoundException
 
     now = datetime.now()
-    if guest.match.match_date > now:
+    if guest.match.match_date < now:
         raise MatchExpiredException
 
     join_guest = JoinGuest(
