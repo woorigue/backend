@@ -191,10 +191,10 @@ class NotificationNotFoundException(RestException):
     error_detail = "푸쉬 알림을 찾을 수 없습니다"
 
 
-class JoinClubException(RestException):
+class JoinClubAcceptException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100028
-    error_detail = "클럽 신청이 이미 되었습니다."
+    error_detail = "해당 사용자는 이미 클럽에 등록되었습니다."
 
 
 class MatchExpiredException(RestException):

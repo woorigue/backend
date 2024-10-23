@@ -15,7 +15,7 @@ from app.helper.exception import (
     ClubPermissionException,
     JoinClubLimitError,
     JoinClubNotFoundException,
-    JoinClubException,
+    JoinClubAcceptException,
 )
 from app.model.club import Club, JoinClub
 from app.model.match import Match
@@ -240,7 +240,9 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -257,13 +259,12 @@ def join_club(
         )
     ).scalar()
 
-    if join_status:
-        raise JoinClubException
+    if not join_status:
 
-    join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="member")
-    db.merge(join_club)
-    db.commit()
-    db.flush()
+        join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="member")
+        db.merge(join_club)
+        db.commit()
+        db.flush()
 
     club_owner = (
         db.query(JoinClub)
@@ -340,13 +341,18 @@ def accept_club(
     if not join_club:
         raise JoinClubNotFoundException
 
+    if join_club.accepted:
+        raise JoinClubAcceptException
+
     join_club.accepted = True
     db.commit()
 
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
