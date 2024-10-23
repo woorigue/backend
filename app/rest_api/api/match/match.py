@@ -278,24 +278,28 @@ def join_match(
     # user_id = [match.user_seq]
     # rabbitmq_helper.publish(chatting_room.seq, chatting_contents.content, user_id)
 
-    device_info = db.query(Device).filter(Device.user_seq == match.user_seq).first()
+    away_club = db.query(Club).filter(Club.seq == away_club_seq).first()
+    data = {
+        "away_club_seq": away_club.seq,
+        "away_club_name": away_club.name,
+        "match_seq": match.seq,
+        "match_date": match.match_date.strftime("%Y-%m-%d"),
+    }
+    notification_schema = CreateNotificationSchema(
+        type=NotificationType.MATCH_REQUEST.value,
+        title="매치 신청 알림",
+        message="매치 신청이 도착했습니다.",
+        from_user_seq=token.seq,
+        to_user_seq=match.user_seq,
+        data=data,
+    )
 
+    notification = Notification(**notification_schema.model_dump())
+    db.add(notification)
+    db.commit()
+
+    device_info = db.query(Device).filter(Device.user_seq == match.user_seq).first()
     if device_info:
-        away_club = db.query(Club).filter(Club.seq == away_club_seq).first()
-        data = {
-            "away_club_seq": away_club.seq,
-            "away_club_name": away_club.name,
-            "match_seq": match.seq,
-            "match_date": match.match_date.strftime("%Y-%m-%d"),
-        }
-        notification_schema = CreateNotificationSchema(
-            type=NotificationType.MATCH_REQUEST.value,
-            title="매치 신청 알림",
-            message="매치 신청이 도착했습니다.",
-            from_user_seq=token.seq,
-            to_user_seq=device_info.user_seq,
-            data=data,
-        )
         message = messaging.Message(
             notification=messaging.Notification(
                 title=notification_schema.title, body=notification_schema.message
@@ -303,10 +307,6 @@ def join_match(
             token=device_info.token,
         )
         messaging.send(message)
-
-        notification = Notification(**notification_schema.model_dump())
-        db.add(notification)
-        db.commit()
 
     return {"success": True}
 

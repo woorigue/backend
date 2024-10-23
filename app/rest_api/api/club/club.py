@@ -271,22 +271,26 @@ def join_club(
         .filter(JoinClub.clubs_seq == club_seq, JoinClub.role == "owner")
         .first()
     )
+    data = {
+        "club_seq": club_seq,
+    }
+    notification_schema = CreateNotificationSchema(
+        type=NotificationType.CLUB_REQUEST.value,
+        title="클럽 신청 알림",
+        message="클럽 신청이 도착했습니다.",
+        from_user_seq=token.seq,
+        to_user_seq=club_owner.user_seq,
+        data=data,
+    )
+    notification = Notification(**notification_schema.model_dump())
+    db.add(notification)
+    db.commit()
+
     device_info = (
         db.query(Device).filter(Device.user_seq == club_owner.user_seq).first()
     )
 
     if device_info:
-        data = {
-            "club_seq": club_seq,
-        }
-        notification_schema = CreateNotificationSchema(
-            type=NotificationType.CLUB_REQUEST.value,
-            title="클럽 신청 알림",
-            message="클럽 신청이 도착했습니다.",
-            from_user_seq=token.seq,
-            to_user_seq=device_info.user_seq,
-            data=data,
-        )
         message = messaging.Message(
             notification=messaging.Notification(
                 title=notification_schema.title, body=notification_schema.message
@@ -294,10 +298,6 @@ def join_club(
             token=device_info.token,
         )
         messaging.send(message)
-
-        notification = Notification(**notification_schema.model_dump())
-        db.add(notification)
-        db.commit()
 
     return {"success": True}
 

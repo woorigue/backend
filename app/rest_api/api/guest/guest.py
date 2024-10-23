@@ -214,22 +214,25 @@ def join_guest(
     db.add(join_guest)
     db.commit()
 
-    device_info = db.query(Device).filter(Device.user_seq == guest.user_seq).first()
+    data = {
+        "guest_seq": guest_seq,
+        "publisher_name": token.profile[0].nickname,
+        "match_date": guest.match.match_date.strftime("%Y-%m-%d"),
+    }
+    notification_schema = CreateNotificationSchema(
+        type=NotificationType.GUEST_REQUEST,
+        title="용병 신청 알림",
+        message="새로운 용병 신청이 들어왔습니다.",
+        from_user_seq=token.seq,
+        to_user_seq=guest.user_seq,
+        data=data,
+    )
+    notification = Notification(**notification_schema.model_dump())
+    db.add(notification)
+    db.commit()
 
+    device_info = db.query(Device).filter(Device.user_seq == guest.user_seq).first()
     if device_info:
-        data = {
-            "guest_seq": guest_seq,
-            "publisher_name": token.profile[0].nickname,
-            "match_date": guest.match.match_date.strftime("%Y-%m-%d"),
-        }
-        notification_schema = CreateNotificationSchema(
-            type=NotificationType.GUEST_REQUEST,
-            title="용병 신청 알림",
-            message="새로운 용병 신청이 들어왔습니다.",
-            from_user_seq=token.seq,
-            to_user_seq=device_info.user_seq,
-            data=data,
-        )
         message = messaging.Message(
             notification=messaging.Notification(
                 title=notification_schema.title, body=notification_schema.message
@@ -237,9 +240,6 @@ def join_guest(
             token=device_info.token,
         )
         messaging.send(message)
-        notification = Notification(**notification_schema.model_dump())
-        db.add(notification)
-        db.commit()
 
     return {"success": True}
 

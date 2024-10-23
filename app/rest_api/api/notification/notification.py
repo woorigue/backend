@@ -114,11 +114,18 @@ def app_push_notification(
         .filter(Device.user_seq == notification_data.to_user_seq)
         .first()
     )
+    data = {
+        "publisher_name": token.profile[0].nickname,
+    }
+    notification = Notification(
+        **notification_data.model_dump(),
+        from_user_seq=token.seq,
+        data=data,
+    )
+    db.add(notification)
+    db.commit()
 
     if device_info:
-        data = {
-            "publisher_name": token.profile[0].nickname,
-        }
         message = messaging.Message(
             notification=messaging.Notification(
                 title=notification_data.title, body=notification_data.message
@@ -126,13 +133,6 @@ def app_push_notification(
             token=device_info.token,
         )
         messaging.send(message)
-        notification = Notification(
-            **notification_data.model_dump(),
-            from_user_seq=token.seq,
-            data=data,
-        )
-        db.add(notification)
-        db.commit()
 
     return {"success": True}
 
