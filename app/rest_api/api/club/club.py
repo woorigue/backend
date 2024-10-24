@@ -266,6 +266,7 @@ def join_club(
         db.commit()
         db.flush()
 
+    club = db.query(Club).filter(Club.seq == club_seq).first()
     club_owner = (
         db.query(JoinClub)
         .filter(JoinClub.clubs_seq == club_seq, JoinClub.role == "owner")
@@ -273,6 +274,8 @@ def join_club(
     )
     data = {
         "club_seq": club_seq,
+        "club_name": club.name,
+        "publisher_name": token.profile[0].nickname,
     }
     notification_schema = CreateNotificationSchema(
         type=NotificationType.CLUB_REQUEST.value,
