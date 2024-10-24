@@ -77,7 +77,12 @@ def get_current_user(
         raise credentials_exception
 
     if type is not None and type != "email":
-        user = db.query(User).join(User.sns).filter(Sns.type == type).first()
+        user = (
+            db.query(User)
+            .join(User.sns)
+            .filter(Sns.type == type, User.email == username)
+            .first()
+        )
     else:
         user = db.query(User).filter(User.email == username).first()
     if user is None:
