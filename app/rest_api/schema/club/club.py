@@ -113,3 +113,7 @@ class GetClubMemberSchema(BaseModel):
     class Config:
         orm_mode = True
         from_attributes = True
+
+
+class CreateClubResponse(BaseModel):
+    club_seq: int

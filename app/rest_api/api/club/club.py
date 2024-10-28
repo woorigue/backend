@@ -32,6 +32,7 @@ from app.rest_api.schema.club.club import (
     ClubResponseSchema,
     FilterClubSchema,
     GetClubMemberSchema,
+    CreateClubResponse,
 )
 from app.rest_api.schema.profile import GetProfileSchema
 from app.rest_api.schema.notification.notification import (
@@ -47,7 +48,7 @@ club_router = APIRouter(tags=["club"], prefix="/club")
     "",
     summary="클럽 생성",
     responses={400: {"description": error_responses([JoinClubLimitError])}},
-    response_model=CreateResponse,
+    response_model=CreateClubResponse,
 )
 async def create_club(
     token: Annotated[str, Depends(get_current_user)],
@@ -101,7 +102,7 @@ async def create_club(
     db.add(join_club)
     db.commit()
 
-    return {"success": True}
+    return {"club_seq": club.seq}
 
 
 @club_router.get(
@@ -240,9 +241,7 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post(
-    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
-)
+@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -260,7 +259,6 @@ def join_club(
     ).scalar()
 
     if not join_status:
-
         join_club = JoinClub(user_seq=token.seq, clubs_seq=club_seq, role="member")
         db.merge(join_club)
         db.commit()
@@ -353,9 +351,7 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete(
-    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
-)
+@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
