@@ -35,7 +35,7 @@ class EmailController:
 
         to_email = user_data.email
         auth_number = email.auth_number
-        sender = "tpdnrqkqh@gmail.com"
+        sender = "woorigue@gmail.com"
         try:
             response = client.send_email(
                 Destination={
@@ -76,7 +76,7 @@ class EmailController:
 
         to_email = user_data.email
         auth_number = email.auth_number
-        sender = "tpdnrqkqh@gmail.com"
+        sender = "woorigue@gmail.com"
         try:
             response = client.send_email(
                 Destination={
