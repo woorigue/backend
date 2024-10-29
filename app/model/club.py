@@ -50,14 +50,18 @@ class Club(Base):
     def roles(self):
         roles = (
             db.query(JoinClub.user_seq, JoinClub.role)
-            .filter(JoinClub.clubs_seq == self.seq)
+            .filter(JoinClub.clubs_seq == self.seq, JoinClub.accepted == True)
             .all()
         )
         return {role: user_seq for user_seq, role in roles}
 
     @property
     def team_size(self):
-        return db.query(JoinClub).filter(JoinClub.clubs_seq == self.seq).count()
+        return (
+            db.query(JoinClub)
+            .filter(JoinClub.clubs_seq == self.seq, JoinClub.accepted == True)
+            .count()
+        )
 
 
 class JoinClub(Base):
