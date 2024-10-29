@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .club.club import ClubResponseSchema
 from .profile import GetProfileSchema
+from app.model.device import DeviceTypeEnum
 
 
 class EmailLoginSchema(BaseModel):
@@ -49,4 +50,5 @@ class UserSnsLoginSchema(BaseModel):
 
 
 class UserDeviceTokenSchema(BaseModel):
+    type: DeviceTypeEnum = Field(title="type")
     token: str = Field(title="token")

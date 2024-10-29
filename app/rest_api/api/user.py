@@ -707,11 +707,14 @@ def add_device(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    device = db.scalar(select(Device).where(Device.user_seq == token.seq))
+    device = db.scalar(
+        select(Device).where(Device.user_seq == token.seq, Device.type == data.type)
+    )
     if not device:
         device = Device(
             user_seq=token.seq,
             token=data.token,
+            type=data.type,
         )
         db.add(device)
 
