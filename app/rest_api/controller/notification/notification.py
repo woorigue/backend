@@ -62,7 +62,7 @@ class AbstractNotification(ABC, metaclass=NotificationMeta):
         messaging.send(message)
 
 
-class MatchNotification(AbstractNotification):
+class MatchNotificationService(AbstractNotification):
     TITLE = "매치 신청 알림"
     MESSAGE = "매치 신청이 도착했습니다."
 

@@ -49,6 +49,7 @@ from app.rest_api.schema.notification.notification import (
 from app.model.chat import ChattingRoom, UserChatRoomAssociation, ChattingContent
 from app.rest_api.schema.match.match import JoinMatchResponseSchema
 from datetime import datetime
+from app.rest_api.controller.notification.notification import MatchNotificationService
 
 
 match_router = APIRouter(tags=["match"], prefix="/match")
@@ -278,35 +279,38 @@ def join_match(
     # user_id = [match.user_seq]
     # rabbitmq_helper.publish(chatting_room.seq, chatting_contents.content, user_id)
 
-    away_club = db.query(Club).filter(Club.seq == away_club_seq).first()
-    data = {
-        "away_club_seq": away_club.seq,
-        "away_club_name": away_club.name,
-        "match_seq": match.seq,
-        "match_date": match.match_date.strftime("%Y-%m-%d"),
-    }
-    notification_schema = CreateNotificationSchema(
-        type=NotificationType.MATCH_REQUEST.value,
-        title="매치 신청 알림",
-        message="매치 신청이 도착했습니다.",
-        from_user_seq=token.seq,
-        to_user_seq=match.user_seq,
-        data=data,
-    )
+    # away_club = db.query(Club).filter(Club.seq == away_club_seq).first()
+    # data = {
+    #     "away_club_seq": away_club.seq,
+    #     "away_club_name": away_club.name,
+    #     "match_seq": match.seq,
+    #     "match_date": match.match_date.strftime("%Y-%m-%d"),
+    # }
+    # notification_schema = CreateNotificationSchema(
+    #     type=NotificationType.MATCH_REQUEST.value,
+    #     title="매치 신청 알림",
+    #     message="매치 신청이 도착했습니다.",
+    #     from_user_seq=token.seq,
+    #     to_user_seq=match.user_seq,
+    #     data=data,
+    # )
+    #
+    # notification = Notification(**notification_schema.model_dump())
+    # db.add(notification)
+    # db.commit()
+    #
+    # device_info = db.query(Device).filter(Device.user_seq == match.user_seq).first()
+    # if device_info:
+    #     message = messaging.Message(
+    #         notification=messaging.Notification(
+    #             title=notification_schema.title, body=notification_schema.message
+    #         ),
+    #         token=device_info.token,
+    #     )
+    #     messaging.send(message)
 
-    notification = Notification(**notification_schema.model_dump())
-    db.add(notification)
-    db.commit()
-
-    device_info = db.query(Device).filter(Device.user_seq == match.user_seq).first()
-    if device_info:
-        message = messaging.Message(
-            notification=messaging.Notification(
-                title=notification_schema.title, body=notification_schema.message
-            ),
-            token=device_info.token,
-        )
-        messaging.send(message)
+    service = MatchNotificationService(match)
+    service.send(token, db)
 
     return {"success": True}
 
