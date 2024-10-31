@@ -242,6 +242,9 @@ def join_match(
     db.add(join_match)
     db.commit()
 
+    service = MatchNotificationService(db, match, away_club_seq)
+    service.send(db, token)
+
     # # 채팅방 생성 로직
     # chatting_room = ChattingRoom(created_at=datetime.utcnow())
     # db.add(chatting_room)
@@ -308,9 +311,6 @@ def join_match(
     #         token=device_info.token,
     #     )
     #     messaging.send(message)
-
-    service = MatchNotificationService(match)
-    service.send(token, db)
 
     return {"success": True}
 
