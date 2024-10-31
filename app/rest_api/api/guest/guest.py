@@ -167,13 +167,14 @@ def filter_guests(
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
 ):
+    now = datetime.today()
     query = (
         db.query(Guest)
         .join(Match, Guest.match_seq == Match.seq)
         .filter(
             Guest.closed == False,
             Match.matched == False,
-            Match.match_date + Match.start_time > datetime.now(),
+            Match.match_date + Match.start_time > now,
         )
     )
     guest_con = GuestController()
