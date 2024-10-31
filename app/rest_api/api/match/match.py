@@ -195,10 +195,9 @@ def filter_match(
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    today = datetime.today().strftime("%Y-%m-%d")
     query = db.query(Match).filter(
         Match.matched == False,
-        Match.match_date >= today,
+        Match.match_date + Match.start_time > datetime.now(),
     )
     query = match_filter.filter(query)
     offset = (page - 1) * per_page
