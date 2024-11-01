@@ -39,6 +39,7 @@ from app.rest_api.schema.notification.notification import (
     CreateNotificationSchema,
     NotificationType,
 )
+from app.rest_api.controller.notification.notification import ClubNotificationService
 
 
 club_router = APIRouter(tags=["club"], prefix="/club")
@@ -241,7 +242,9 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -251,6 +254,11 @@ def join_club(
     join_club_count = con.get_joined_club_count(db)
     if join_club_count >= 2:
         raise JoinClubLimitError
+
+    club = db.query(Club).filter(Club.seq == club_seq, Club.deleted == False).first()
+
+    if not club:
+        raise ClubNotFoundException
 
     join_status = db.query(
         exists().where(
@@ -264,41 +272,8 @@ def join_club(
         db.commit()
         db.flush()
 
-    club = db.query(Club).filter(Club.seq == club_seq).first()
-    club_owner = (
-        db.query(JoinClub)
-        .filter(JoinClub.clubs_seq == club_seq, JoinClub.role == "owner")
-        .first()
-    )
-    data = {
-        "club_seq": club_seq,
-        "club_name": club.name,
-        "publisher_name": token.profile[0].nickname,
-    }
-    notification_schema = CreateNotificationSchema(
-        type=NotificationType.CLUB_REQUEST.value,
-        title="클럽 신청 알림",
-        message="클럽 신청이 도착했습니다.",
-        from_user_seq=token.seq,
-        to_user_seq=club_owner.user_seq,
-        data=data,
-    )
-    notification = Notification(**notification_schema.model_dump())
-    db.add(notification)
-    db.commit()
-
-    device_info = (
-        db.query(Device).filter(Device.user_seq == club_owner.user_seq).first()
-    )
-
-    if device_info:
-        message = messaging.Message(
-            notification=messaging.Notification(
-                title=notification_schema.title, body=notification_schema.message
-            ),
-            token=device_info.token,
-        )
-        messaging.send(message)
+    service = ClubNotificationService(db, token.profile[0].nickname, club)
+    service.send(db, token)
 
     return {"success": True}
 
@@ -351,7 +326,9 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],

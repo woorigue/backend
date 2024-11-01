@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
+from sqlalchemy import exists, or_, and_
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
@@ -34,10 +35,12 @@ from app.rest_api.schema.notification.notification import (
     CreateNotificationSchema,
     NotificationType,
 )
+from app.rest_api.controller.notification.notification import (
+    GuestNotificationService,
+)
 from app.model.notification import Notification
 from app.model.device import Device
 from firebase_admin import messaging
-from datetime import datetime
 
 guest_router = APIRouter(tags=["guest"], prefix="/guest")
 
@@ -167,14 +170,18 @@ def filter_guests(
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    now = datetime.today()
+    now = datetime.now()
+    today = now.date()
     query = (
         db.query(Guest)
         .join(Match, Guest.match_seq == Match.seq)
         .filter(
             Guest.closed == False,
             Match.matched == False,
-            Match.match_date + Match.start_time > now,
+            or_(
+                Match.match_date > today,
+                and_(Match.match_date == today, Match.start_time > now.time()),
+            ),
         )
     )
     guest_con = GuestController()
@@ -208,40 +215,23 @@ def join_guest(
     if guest.match.match_date < now:
         raise MatchExpiredException
 
-    join_guest = JoinGuest(
-        guest_seq=guest.seq,
-        user_seq=token.seq,
-        accepted=False,
-    )
-    db.add(join_guest)
-    db.commit()
-
-    data = {
-        "guest_seq": guest_seq,
-        "publisher_name": token.profile[0].nickname,
-        "match_date": guest.match.match_date.strftime("%Y-%m-%d"),
-    }
-    notification_schema = CreateNotificationSchema(
-        type=NotificationType.GUEST_REQUEST,
-        title="용병 신청 알림",
-        message="새로운 용병 신청이 들어왔습니다.",
-        from_user_seq=token.seq,
-        to_user_seq=guest.user_seq,
-        data=data,
-    )
-    notification = Notification(**notification_schema.model_dump())
-    db.add(notification)
-    db.commit()
-
-    device_info = db.query(Device).filter(Device.user_seq == guest.user_seq).first()
-    if device_info:
-        message = messaging.Message(
-            notification=messaging.Notification(
-                title=notification_schema.title, body=notification_schema.message
-            ),
-            token=device_info.token,
+    join_status = db.query(
+        exists().where(
+            (JoinGuest.user_seq == token.seq) & (JoinGuest.guest_seq == guest_seq)
         )
-        messaging.send(message)
+    ).scalar()
+
+    if not join_status:
+        join_guest = JoinGuest(
+            guest_seq=guest.seq,
+            user_seq=token.seq,
+            accepted=False,
+        )
+        db.add(join_guest)
+        db.commit()
+
+    service = GuestNotificationService(db, token.profile[0].nickname, guest)
+    service.send(db, token)
 
     return {"success": True}
 

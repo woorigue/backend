@@ -7,8 +7,9 @@ from firebase_admin import messaging
 from sqlalchemy.orm import Session
 
 from app.model.device import Device, DeviceTypeEnum
+from app.model.club import Club, JoinClub
 from app.model.match import Match
-from app.model.club import Club
+from app.model.guest import Guest
 from app.model.notification import Notification
 from app.model.user import User
 from app.rest_api.schema.notification.notification import (
@@ -116,6 +117,63 @@ class MatchNotificationService(AbstractNotification):
             message=self.MESSAGE,
             from_user_seq=publisher_user_seq,
             to_user_seq=self.match.user_seq,
+            data=data,
+        )
+        return notification_schema
+
+
+class ClubNotificationService(AbstractNotification):
+    TITLE = "클럽 신청 알림"
+    MESSAGE = "클럽 신청이 도착했습니다."
+
+    def __init__(self, db: Session, publisher_name: str, club: Club) -> None:
+        self.db = db
+        self.publisher_name = publisher_name
+        self.club = club
+
+    def create_schema(self, publisher_user_seq: int) -> CreateNotificationSchema:
+        club_owner = (
+            self.db.query(JoinClub)
+            .filter(JoinClub.clubs_seq == self.club.seq, JoinClub.role == "owner")
+            .first()
+        )
+        data = {
+            "club_seq": self.club.seq,
+            "club_name": self.club.name,
+            "publisher_name": self.publisher_name,
+        }
+        notification_schema = CreateNotificationSchema(
+            type=NotificationType.CLUB_REQUEST.value,
+            title=self.TITLE,
+            message=self.MESSAGE,
+            from_user_seq=publisher_user_seq,
+            to_user_seq=club_owner.user_seq,
+            data=data,
+        )
+        return notification_schema
+
+
+class GuestNotificationService(AbstractNotification):
+    TITLE = "용병 신청 알림알림"
+    MESSAGE = "새로운 용병 신청이 들어왔습니다."
+
+    def __init__(self, db: Session, publisher_name: str, guest: Guest) -> None:
+        self.db = db
+        self.publisher_name = publisher_name
+        self.guest = guest
+
+    def create_schema(self, publisher_user_seq: int) -> CreateNotificationSchema:
+        data = {
+            "guest_seq": self.guest.seq,
+            "publisher_name": self.publisher_name,
+            "match_date": self.guest.match.match_date.strftime("%Y-%m-%d"),
+        }
+        notification_schema = CreateNotificationSchema(
+            type=NotificationType.GUEST_REQUEST.value,
+            title=self.TITLE,
+            message=self.MESSAGE,
+            from_user_seq=publisher_user_seq,
+            to_user_seq=self.guest.user_seq,
             data=data,
         )
         return notification_schema

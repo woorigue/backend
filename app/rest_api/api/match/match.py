@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 from fastapi_filter import FilterDepends
+from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session, joinedload
 from firebase_admin import messaging
 
@@ -195,10 +196,14 @@ def filter_match(
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    now = datetime.today()
+    now = datetime.now()
+    today = now.date()
     query = db.query(Match).filter(
         Match.matched == False,
-        Match.match_date + Match.start_time > now,
+        or_(
+            Match.match_date > today,
+            and_(Match.match_date == today, Match.start_time > now.time()),
+        ),
     )
     query = match_filter.filter(query)
     offset = (page - 1) * per_page
