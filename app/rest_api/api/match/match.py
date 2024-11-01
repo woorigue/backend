@@ -191,7 +191,7 @@ def delete_match(
 
 @match_router.get("", response_model=list[MatchResponseSchema], summary="매치 조회")
 def filter_match(
-    # token: Annotated[str, Depends(get_current_user)],
+    token: Annotated[str, Depends(get_current_user)],
     match_filter: FilterMatchSchema = FilterDepends(FilterMatchSchema),
     page: int = Query(1, title="페이지", ge=1),
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
@@ -200,7 +200,6 @@ def filter_match(
     kst = timezone("Asia/Seoul")
     now = datetime.now(kst)
     today = now.date()
-    print(today)
     query = db.query(Match).filter(
         Match.matched == False,
         or_(

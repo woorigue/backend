@@ -5,11 +5,14 @@ from app.helper.exception import (
     JoinClubNotFoundException,
     MatchNotFoundException,
     PollNotFoundException,
+    PollExpiredException,
 )
+from pytz import timezone
 from app.model.club import JoinClub
 from app.model.match import Match
 from app.model.poll import JoinPoll, Poll
 from app.model.user import User
+from datetime import datetime, timedelta
 
 
 class PollValidator:
@@ -108,6 +111,18 @@ class PollController(PollValidator):
                 (JoinPoll.user_seq == self.user.seq) & (JoinPoll.poll_seq == poll.seq)
             )
         ).scalar()
+
+        kst = timezone("Asia/Seoul")
+        match_end_time = (
+            poll.match.match_date
+            + timedelta(
+                hours=poll.match.end_time.hour, minutes=poll.match.end_time.minute
+            )
+        ).astimezone(kst)
+        now = datetime.now(kst)
+
+        if now > match_end_time:
+            raise PollExpiredException
 
         if user_has_voted:
             join_poll = (
