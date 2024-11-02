@@ -207,3 +207,9 @@ class PollExpiredException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100030
     error_detail = "날짜가 지난 매치는 투표할 수 없습니다"
+
+
+class ClubIsDeletedException(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = 100031
+    error_detail = "해당 클럽은 삭제되었습니다"
