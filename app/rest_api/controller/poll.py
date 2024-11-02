@@ -98,7 +98,9 @@ class PollController(PollValidator):
         join_club = (
             self.db.query(JoinClub)
             .filter(
-                JoinClub.clubs_seq == poll.club_seq, JoinClub.user_seq == self.user.seq
+                JoinClub.clubs_seq == poll.club_seq,
+                JoinClub.user_seq == self.user.seq,
+                JoinClub.accepted == True,
             )
             .first()
         )

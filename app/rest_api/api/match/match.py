@@ -20,6 +20,7 @@ from app.helper.exception import (
     JoinMatchNotFoundException,
     JoinMatchAcceptException,
     MatchExpiredException,
+    ClubIsDeletedException,
 )
 
 from app.model.club import Club
@@ -229,6 +230,9 @@ def join_match(
     match = db.query(Match).filter(Match.seq == match_seq).first()
     if not match:
         raise MatchNotFoundException
+
+    if match.home_club.deleted:
+        raise ClubIsDeletedException
 
     now = datetime.now()
     if match.match_date < now:
