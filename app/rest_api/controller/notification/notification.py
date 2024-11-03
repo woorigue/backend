@@ -16,6 +16,9 @@ from app.rest_api.schema.notification.notification import (
     CreateNotificationSchema,
     NotificationType,
 )
+from app.rest_api.schema.notification.notification import (
+    NotificationAppPushSchema,
+)
 
 
 class NotificationMeta(ABCMeta):
@@ -34,8 +37,13 @@ class AbstractNotification(ABC, metaclass=NotificationMeta):
         self.save_to_db(db, notification_schema)
 
         device_info = self.get_device_info(db, notification_schema.to_user_seq)
-        if device_info:
-            self.send_push(db, notification_schema, device_info)
+        for device in device_info:
+            try:
+                if device.token:
+                    self.send_push(db, notification_schema, device)
+            except Exception as e:
+                print(e)
+                continue
 
     @abstractmethod
     def create_schema(self, publisher_user_seq: int) -> CreateNotificationSchema:
@@ -50,8 +58,8 @@ class AbstractNotification(ABC, metaclass=NotificationMeta):
 
     @staticmethod
     @final
-    def get_device_info(db: Session, user_seq: int) -> Optional[Device]:
-        device_info = db.query(Device).filter(Device.user_seq == user_seq).first()
+    def get_device_info(db: Session, user_seq: int) -> list:
+        device_info = db.query(Device).filter(Device.user_seq == user_seq).all()
         return device_info
 
     @staticmethod
@@ -174,6 +182,32 @@ class GuestNotificationService(AbstractNotification):
             message=self.MESSAGE,
             from_user_seq=publisher_user_seq,
             to_user_seq=self.guest.user_seq,
+            data=data,
+        )
+        return notification_schema
+
+
+class CommonNotificationService(AbstractNotification):
+    TITLE = ""
+    MESSAGE = ""
+
+    def __init__(
+        self, db: Session, data: NotificationAppPushSchema, user: User
+    ) -> None:
+        self.db = db
+        self.data = data
+        self.user = user
+
+    def create_schema(self, publisher_user_seq: int) -> CreateNotificationSchema:
+        data = {
+            "publisher_name": self.user.profile[0].nickname,
+        }
+        notification_schema = CreateNotificationSchema(
+            type=self.data.type,
+            title=self.data.title,
+            message=self.data.message,
+            from_user_seq=publisher_user_seq,
+            to_user_seq=self.data.to_user_seq,
             data=data,
         )
         return notification_schema
