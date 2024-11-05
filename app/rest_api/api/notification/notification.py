@@ -77,6 +77,22 @@ def get_app_push_notification(
     return notification_list
 
 
+@notification_router.get(
+    "/app/push/unread_count",
+    summary="앱 푸시 안읽음 수 조회",
+)
+def get_app_unread_push_notification_count(
+    token: Annotated[str, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    notification_count = (
+        db.query(Notification)
+        .filter(Notification.to_user_seq == token.seq, Notification.is_read == False)
+        .count()
+    )
+    return {"count": notification_count}
+
+
 @notification_router.patch(
     "/app/push/read",
     summary="앱 푸시 읽음 처리",
