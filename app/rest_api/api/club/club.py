@@ -40,6 +40,7 @@ from app.rest_api.schema.notification.notification import (
     NotificationType,
 )
 from app.rest_api.controller.notification.notification import ClubNotificationService
+from pytz import timezone
 
 
 club_router = APIRouter(tags=["club"], prefix="/club")
@@ -431,12 +432,13 @@ def get_match_schedule(
     club_seq: int,
     db: Session = Depends(get_db),
 ):
-    today = datetime.today().strftime("%Y-%m-%d")
+    kst = timezone("Asia/Seoul")
+    now = datetime.now(kst)
     match_scehdule = (
         db.query(Match)
         .filter(
             or_(Match.home_club_seq == club_seq, Match.away_club_seq == club_seq),
-            Match.match_date >= today,
+            Match.match_date >= now,
         )
         .order_by(Match.match_date.asc())
         .all()
