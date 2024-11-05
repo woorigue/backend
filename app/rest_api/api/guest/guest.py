@@ -1,4 +1,5 @@
 from datetime import datetime
+from pytz import timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -170,7 +171,8 @@ def filter_guests(
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    now = datetime.now()
+    kst = timezone("Asia/Seoul")
+    now = datetime.now(kst)
     today = now.date()
     query = (
         db.query(Guest)
@@ -211,8 +213,12 @@ def join_guest(
     if not guest:
         raise GuestNotFoundException
 
-    now = datetime.now()
-    if guest.match.match_date < now:
+    kst = timezone("Asia/Seoul")
+    now = datetime.now(kst)
+    today = now.date()
+    if guest.match.match_date < today or (
+        guest.match.match_date == today and guest.match.start_time < now.time()
+    ):
         raise MatchExpiredException
 
     join_status = db.query(
