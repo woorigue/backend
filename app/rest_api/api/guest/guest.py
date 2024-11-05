@@ -185,6 +185,7 @@ def filter_guests(
                 and_(Match.match_date == today, Match.start_time > now.time()),
             ),
         )
+        .order_by(Match.match_date.desc())
     )
     guest_con = GuestController()
     filter_conditions = guest_con.build_filters(guest_filter.dict())
