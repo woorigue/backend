@@ -188,7 +188,7 @@ class JoinMatchAcceptException(RestException):
 class NotificationNotFoundException(RestException):
     status_code = status.HTTP_404_NOT_FOUND
     error_code = 100027
-    error_detail = "푸쉬 알림을 찾을 수 없습니다"
+    error_detail = "푸쉬 알림을 찾을 수 없습니다."
 
 
 class JoinClubAcceptException(RestException):
@@ -206,10 +206,16 @@ class MatchExpiredException(RestException):
 class PollExpiredException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100030
-    error_detail = "날짜가 지난 매치는 투표할 수 없습니다"
+    error_detail = "날짜가 지난 매치는 투표할 수 없습니다."
 
 
 class ClubIsDeletedException(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100031
     error_detail = "해당 클럽은 삭제되었습니다"
+
+
+class MatchDateError(RestException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = 100032
+    error_detail = "지난 날짜에 매치를 생성할 수 없습니다"

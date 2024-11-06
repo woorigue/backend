@@ -17,6 +17,7 @@ from app.helper.exception import (
     ClubPermissionException,
     MatchNotFoundException,
     RegisterMatchError,
+    MatchDateError,
     JoinMatchException,
     JoinMatchNotFoundException,
     JoinMatchAcceptException,
@@ -71,9 +72,13 @@ def create_match(
 ):
     controller = MatchController(db)
     is_validate = controller.validate_match_register(match_data, token.seq)
+    is_valid_match_date = controller.validate_match_date(match_data)
 
     if not is_validate:
         raise RegisterMatchError
+
+    if not is_valid_match_date:
+        raise MatchDateError
 
     if match_data.match_type == "private":
         match_status = "found"
@@ -155,10 +160,16 @@ def update_match(
     match_data: UpdateMatchSchema,
     db: Session = Depends(get_db),
 ):
+    controller = MatchController(db)
     match = db.query(Match).filter(Match.seq == match_seq).first()
 
     if not match:
         raise MatchNotFoundException
+
+    is_valid_match_date = controller.validate_match_date(match_data)
+
+    if not is_valid_match_date:
+        raise MatchDateError
 
     for key, value in match_data.dict(exclude_none=True).items():
         setattr(match, key, value)
@@ -192,7 +203,7 @@ def delete_match(
 
 @match_router.get("", response_model=list[MatchResponseSchema], summary="매치 조회")
 def filter_match(
-    # token: Annotated[str, Depends(get_current_user)],
+    token: Annotated[str, Depends(get_current_user)],
     match_filter: FilterMatchSchema = FilterDepends(FilterMatchSchema),
     page: int = Query(1, title="페이지", ge=1),
     per_page: int = Query(10, title="페이지당 수", ge=1, le=100),
@@ -210,7 +221,7 @@ def filter_match(
                 and_(Match.match_date == today, Match.start_time > now.time()),
             ),
         )
-        .order_by(Match.match_date.desc())
+        .order_by(Match.match_date.asc())
     )
     query = match_filter.filter(query)
     offset = (page - 1) * per_page

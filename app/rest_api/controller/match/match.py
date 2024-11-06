@@ -1,3 +1,6 @@
+from datetime import datetime
+from pytz import timezone
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -27,6 +30,21 @@ class MatchController:
                 Match.end_time <= match_data.end_time,
             )
         )
+
         if join_club is not None and match is None:
             return True
+
+        return False
+
+    def validate_match_date(self, match_data: MatchSchema) -> bool:
+
+        kst = timezone("Asia/Seoul")
+        now = datetime.now(kst)
+        today = now.date()
+
+        if match_data.match_date > today or (
+            match_data.match_date == today and match_data.start_time > now.time()
+        ):
+            return True
+
         return False

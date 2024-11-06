@@ -118,8 +118,10 @@ def update_guest(
     db: Session = Depends(get_db),
 ):
     guest = db.query(Guest).filter(Guest.seq == guest_seq).first()
+
     if not guest:
         raise GuestNotFoundException
+
     if guest.user_seq != token.seq:
         raise GuestPermissionDeniedException
 
@@ -185,7 +187,7 @@ def filter_guests(
                 and_(Match.match_date == today, Match.start_time > now.time()),
             ),
         )
-        .order_by(Match.match_date.desc())
+        .order_by(Match.match_date.asc())
     )
     guest_con = GuestController()
     filter_conditions = guest_con.build_filters(guest_filter.dict())
