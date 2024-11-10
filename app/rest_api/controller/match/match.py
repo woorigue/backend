@@ -37,7 +37,6 @@ class MatchController:
         return False
 
     def validate_match_date(self, match_data: MatchSchema) -> bool:
-
         kst = timezone("Asia/Seoul")
         now = datetime.now(kst)
         today = now.date()
