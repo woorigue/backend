@@ -25,7 +25,7 @@ def health_check():
     return 200
 
 
-@health_check_router.get("/apple-app-site-association")
+@health_check_router.get("/.well-known/apple-app-site-association")
 def apple_app_site_association():
     return FileResponse(".well-known/apple-app-site-association")
 
