@@ -27,7 +27,7 @@ def health_check():
 
 @health_check_router.get("/apple-app-site-association")
 def apple_app_site_association():
-    return FileResponse("apple-app-site-association")
+    return FileResponse(".well-known/apple-app-site-association")
 
 
 rest_router = APIRouter()
