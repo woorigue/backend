@@ -252,8 +252,8 @@ def join_match(
     kst = timezone("Asia/Seoul")
     now = datetime.now(kst)
     today = now.date()
-    if match.match_date < today or (
-        match.match_date == today and match.start_time < now.time()
+    if match.match_date.date() < today or (
+        match.match_date.date() == today and match.start_time < now.time()
     ):
         raise MatchExpiredException
 

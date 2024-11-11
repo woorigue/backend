@@ -183,8 +183,8 @@ def filter_guests(
             Guest.closed == False,
             Match.matched == False,
             or_(
-                Match.match_date > today,
-                and_(Match.match_date == today, Match.start_time > now.time()),
+                Match.match_date.date() > today,
+                and_(Match.match_date.date() == today, Match.start_time > now.time()),
             ),
         )
         .order_by(Match.match_date.asc())
@@ -219,8 +219,8 @@ def join_guest(
     kst = timezone("Asia/Seoul")
     now = datetime.now(kst)
     today = now.date()
-    if guest.match.match_date < today or (
-        guest.match.match_date == today and guest.match.start_time < now.time()
+    if guest.match.match_date.date() < today or (
+        guest.match.match_date.date() == today and guest.match.start_time < now.time()
     ):
         raise MatchExpiredException
 
