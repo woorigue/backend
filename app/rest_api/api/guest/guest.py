@@ -183,8 +183,8 @@ def filter_guests(
             Guest.closed == False,
             Match.matched == False,
             or_(
-                Match.match_date.date() > today,
-                and_(Match.match_date.date() == today, Match.start_time > now.time()),
+                Match.match_date > today,
+                and_(Match.match_date == today, Match.start_time > now.time()),
             ),
         )
         .order_by(Match.match_date.asc())
