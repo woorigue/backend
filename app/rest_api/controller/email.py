@@ -19,6 +19,7 @@ from app.helper.exception import (
 )
 
 from app.helper.exception import UserNotFoundException
+from app.utils.email_form import verify_email_form
 
 
 class EmailController:
@@ -35,6 +36,7 @@ class EmailController:
 
         to_email = user_data.email
         auth_number = email.auth_number
+        data = verify_email_form(auth_number)
         sender = "woorigue@gmail.com"
         try:
             response = client.send_email(
@@ -45,9 +47,9 @@ class EmailController:
                 },
                 Message={
                     "Body": {
-                        "Text": {
+                        "Html": {
                             "Charset": "UTF-8",
-                            "Data": f"안녕하세요. 우리들만의 리그입니다.\n패스워드 초기화를 위한 인증번호\n{auth_number}",
+                            "Data": data,
                         },
                     },
                     "Subject": {
