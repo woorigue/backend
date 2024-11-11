@@ -79,6 +79,8 @@ class Match(Base):
         "Guest",
         primaryjoin="Match.seq == Guest.match_seq",
         back_populates="match",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     poll = relationship("Poll", back_populates="match")
