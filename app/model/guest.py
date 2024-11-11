@@ -46,9 +46,7 @@ class Guest(Base):
         back_populates="away_club_guest",
     )
     match = relationship(
-        "Match",
-        foreign_keys=[match_seq],
-        back_populates="guest",
+        "Match", foreign_keys=[match_seq], back_populates="guest", passive_deletes=True
     )
 
     @property
