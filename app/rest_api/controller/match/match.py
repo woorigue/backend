@@ -41,8 +41,8 @@ class MatchController:
         now = datetime.now(kst)
         today = now.date()
 
-        if match_data.match_date.date() > today or (
-            match_data.match_date.date() == today and match_data.start_time > now.time()
+        if match_data.match_date > today or (
+            match_data.match_date == today and match_data.start_time > now.time()
         ):
             return True
 
