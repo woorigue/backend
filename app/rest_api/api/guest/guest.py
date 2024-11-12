@@ -181,7 +181,6 @@ def filter_guests(
         .join(Match, Guest.match_seq == Match.seq)
         .filter(
             Guest.closed == False,
-            Match.matched == False,
             or_(
                 Match.match_date > today,
                 and_(Match.match_date == today, Match.start_time > now.time()),
