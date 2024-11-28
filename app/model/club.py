@@ -31,6 +31,11 @@ class Club(Base):
         secondaryjoin="and_(User.seq == JoinClub.user_seq, User.is_active == True)",
         back_populates="clubs",
     )
+    join_members = relationship(
+        "JoinClub",
+        primaryjoin="and_(Club.seq == JoinClub.clubs_seq, JoinClub.accepted == True)",
+        back_populates="club",
+    )
 
     poll = relationship("Poll", back_populates="club")
     home_matches = relationship(
@@ -48,20 +53,11 @@ class Club(Base):
 
     @property
     def roles(self):
-        roles = (
-            db.query(JoinClub.user_seq, JoinClub.role)
-            .filter(JoinClub.clubs_seq == self.seq, JoinClub.accepted == True)
-            .all()
-        )
-        return {role: user_seq for user_seq, role in roles}
+        return {item.role: item.user_seq for item in self.join_members}
 
     @property
     def team_size(self):
-        return (
-            db.query(JoinClub)
-            .filter(JoinClub.clubs_seq == self.seq, JoinClub.accepted == True)
-            .count()
-        )
+        return len(self.members)
 
 
 class JoinClub(Base):
@@ -72,3 +68,5 @@ class JoinClub(Base):
     user_seq = Column(Integer, ForeignKey("users.seq", ondelete="CASCADE"))
     role = Column(String(10), comment="역할")
     accepted = Column(Boolean, comment="수락 여부")
+
+    club = relationship("Club", back_populates="join_members")
