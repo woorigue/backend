@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
@@ -57,7 +57,7 @@ async def create_club(
     emblem_img: UploadFile | None = File(None),
     img: UploadFile | None = File(None),
     level: int = Form(...),
-    register_date: str = Form(...),
+    register_date: date = Form(...),
     intro: str = Form(...),
     name: str = Form(...),
     location: str = Form(...),
@@ -141,7 +141,7 @@ async def update_club(
     emblem_img: UploadFile | None = File(None),
     img: UploadFile | None = File(None),
     level: int = Form(...),
-    register_date: str = Form(...),
+    register_date: date = Form(...),
     intro: str = Form(...),
     name: str = Form(...),
     location: str = Form(...),
@@ -243,7 +243,9 @@ def filter_clubs(
     return clubs
 
 
-@club_router.post("/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse)
+@club_router.post(
+    "/{club_seq}/join", summary="클럽 가입 신청", response_model=CreateResponse
+)
 def join_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
@@ -325,7 +327,9 @@ def accept_club(
     return {"success": True}
 
 
-@club_router.delete("/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse)
+@club_router.delete(
+    "/{club_seq}/quit", summary="클럽 탈퇴", response_model=CreateResponse
+)
 def quit_club(
     club_seq: int,
     token: Annotated[str, Depends(get_current_user)],
