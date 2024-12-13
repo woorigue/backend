@@ -4,12 +4,21 @@ from sqlalchemy.orm import Session
 from app.core.mockings import UserMocking
 
 
-def test_user_login(test_db_session: Session, test_app: TestClient):
+def test_user_login(test_db_session: Session, test_app: TestClient) -> None:
     user_mocking = UserMocking()
-    test_db_session.add(user_mocking.user)
-    test_db_session.commit()
+    user_mocking.create_user("test")
+    user = user_mocking.user
 
-    data = {"email": user_mocking.user.email, "password": "test"}
+    data = {"email": user.email, "password": "test"}
     response = test_app.post("/user/email/login", json=data)
 
     assert response.status_code, 200
+    assert "access_token", response.json()
+    assert "refresh_token", response.json()
+
+
+def test_update_user_profile(
+    test_db_session: Session, test_app: TestClient, auth_user_mocking: UserMocking
+) -> None:
+    response = test_app.get("/user/me")
+    # print(response.json())
