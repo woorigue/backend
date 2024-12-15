@@ -7,6 +7,8 @@ from app.app import app as fastapi_app
 from app.core.config import settings
 from app.core.mockings import UserFactory, UserMocking
 from app.db.session import Base
+from app.core.deps import get_db
+
 
 DATABASE_URL = settings.SQLALCHEMY_DATABASE_URL
 engine = create_engine(DATABASE_URL)
@@ -38,6 +40,14 @@ def set_factory_session(test_db_session) -> None:
     factory_list = [UserFactory]
     for item in factory_list:
         item._meta.sqlalchemy_session = test_db_session
+
+
+@pytest.fixture(scope="function", autouse=True)
+def override_db_session(test_db_session):
+    session = test_db_session
+    fastapi_app.dependency_overrides[get_db] = lambda: session
+    yield
+    fastapi_app.dependency_overrides.clear()
 
 
 @pytest.fixture(scope="function")
