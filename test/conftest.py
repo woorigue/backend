@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.app import app as fastapi_app
 from app.core.config import settings
-from app.core.mockings import UserFactory, UserMocking
+from app.core.mockings import UserFactory, UserMocking, ProfileFactory
 from app.db.session import Base
 from app.core.deps import get_db
 
@@ -37,7 +37,7 @@ def test_app() -> TestClient:
 
 @pytest.fixture(scope="function", autouse=True)
 def set_factory_session(test_db_session) -> None:
-    factory_list = [UserFactory]
+    factory_list = [UserFactory, ProfileFactory]
     for item in factory_list:
         item._meta.sqlalchemy_session = test_db_session
 
@@ -53,7 +53,7 @@ def override_db_session(test_db_session):
 @pytest.fixture(scope="function")
 def user_mocking() -> UserMocking:
     user_mocking = UserMocking()
-    user_mocking.create_user("test")
+    user_mocking.create_user()
     return user_mocking
 
 
