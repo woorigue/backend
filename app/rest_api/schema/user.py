@@ -13,6 +13,22 @@ class EmailLoginSchema(BaseModel):
 class EmailRegisterSchema(BaseModel):
     email: str = Field(title="이메일")
     password: str = Field(title="패스워드")
+    nickname: str = Field(title="닉네임")
+
+
+class SnsRegisterSchema(BaseModel):
+    nickname: str = Field(title="닉네임")
+    email: str = Field(title="이메일")
+    type: str = Field(title="SNS 종류")
+    user: str = Field(title="SNS 유저 정보")
+
+
+class SnsSchema(BaseModel):
+    user_seq: int = Field(title="시퀀스")
+    type: str = Field(title="SNS 종류")
+    user: str = Field(title="SNS 유저 정보")
+    sub: str = Field(default="")
+    refresh_token: str = Field(default="")
 
 
 class ResetPasswordSchema(BaseModel):
@@ -26,7 +42,7 @@ class UserSchema(BaseModel):
     seq: int = Field(title="시퀀스")
     email: str = Field(title="이메일")
     is_active: bool = Field(title="계정 활성 여부")
-    profile: list[GetProfileSchema]
+    profile: GetProfileSchema
     clubs: list[ClubResponseSchema]
 
 
@@ -44,9 +60,9 @@ class AppleLoginSchema(BaseModel):
 
 
 class UserSnsLoginSchema(BaseModel):
+    email: str = Field(title="이메일")
     type: str = Field(title="type")
     user: str = Field(title="user")
-    email: str = Field(title="email")
 
 
 class UserDeviceTokenSchema(BaseModel):

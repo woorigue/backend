@@ -219,3 +219,9 @@ class MatchDateError(RestException):
     status_code = status.HTTP_400_BAD_REQUEST
     error_code = 100032
     error_detail = "지난 날짜에 매치를 생성할 수 없습니다"
+
+
+class SnsUserNotFoundException(RestException):
+    status_code = status.HTTP_404_NOT_FOUND
+    error_code = 100033
+    error_detail = "SNS 계정과 연결된 계정이 없습니다. 회원가입을 진행해주세요."

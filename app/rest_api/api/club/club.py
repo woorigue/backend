@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi_filter import FilterDepends
 from sqlalchemy import and_, delete, exists, or_
 from sqlalchemy.orm import Session, joinedload
-from firebase_admin import messaging
 
 from app.core.deps import get_db
 from app.core.token import get_current_user
