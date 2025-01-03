@@ -34,6 +34,7 @@ from app.helper.exception import (
     UserPasswordNotMatchException,
     UserRetrieveFailException,
     DeviceTokenRetrieveFailException,
+    SnsUserNotFoundException,
 )
 from app.model.club import Club, JoinClub
 from app.model.clubPosting import ClubPosting
@@ -60,6 +61,8 @@ from app.rest_api.schema.token import RefreshTokenSchema
 from app.rest_api.schema.user import (
     EmailLoginSchema,
     EmailRegisterSchema,
+    SnsRegisterSchema,
+    SnsSchema,
     ResetPasswordSchema,
     UserLoginResponse,
     UserSchema,
@@ -118,6 +121,28 @@ def email_register_user(user_data: EmailRegisterSchema, db: Session = Depends(ge
 
 
 @user_router.post(
+    "/sns/register",
+    summary="sns 회원가입(등록)",
+    response_model=CreateResponse,
+)
+def sns_register_user(user_data: SnsRegisterSchema, db: Session = Depends(get_db)):
+
+    user_register_data = EmailRegisterSchema(
+        email=user_data.email,
+        password=secrets.token_urlsafe(13),
+        nickname=user_data.nickname,
+    )
+    user = con.email_register_user(db, user_register_data)
+
+    sns_register_data = SnsSchema(
+        user_seq=user.seq, type=user_data.type, user=user_data.user
+    )
+    con.sns_register_user(db, sns_register_data)
+
+    return {"success": True}
+
+
+@user_router.post(
     "/email/login",
     summary="로그인(이메일)",
     responses={
@@ -127,6 +152,7 @@ def email_register_user(user_data: EmailRegisterSchema, db: Session = Depends(ge
     response_model=UserLoginResponse,
 )
 def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
+
     user = db.scalar(select(User).where(User.email == user_data.email))
 
     if not user:
@@ -143,6 +169,24 @@ def email_login(user_data: EmailLoginSchema, db: Session = Depends(get_db)):
     refresh_token = create_refresh_token(
         data={"sub": str(user_data.email), "type": "email"}
     )
+    return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+@user_router.post("/sns/login")
+def user_sns_login(data: UserSnsLoginSchema, db: Session = Depends(get_db)):
+
+    sns = db.query(Sns).filter(Sns.user == data.user, Sns.type == data.type).first()
+
+    if sns is None:
+        raise SnsUserNotFoundException
+
+    access_token = create_access_token(
+        data={"sub": str(sns.join_user.email), "type": data.type}
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": str(sns.join_user.email), "type": data.type}
+    )
+
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
@@ -213,30 +257,28 @@ def update_user_profile(
     db: Session = Depends(get_db),
 ):
     profile = token.profile
-    position = user_data.positions
-
     token.is_active = user_data.is_active
 
-    if not profile:
-        profile = Profile(
-            user_seq=token.seq,
-            nickname=user_data.nickname,
-            gender=user_data.gender,
-            location=user_data.location,
-            age=user_data.age,
-            foot=user_data.foot,
-            level=user_data.level,
-            positions=user_data.positions,
-        )
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
-    else:
-        profile = profile[0]
+    # if not profile:
+    #     profile = Profile(
+    #         user_seq=token.seq,
+    #         nickname=user_data.nickname,
+    #         gender=user_data.gender,
+    #         location=user_data.location,
+    #         age=user_data.age,
+    #         foot=user_data.foot,
+    #         level=user_data.level,
+    #         positions=user_data.positions,
+    #     )
+    #     db.add(profile)
+    #     db.commit()
+    #     db.refresh(profile)
+    # else:
 
-        for key, value in user_data.dict(exclude_none=True).items():
-            setattr(profile, key, value)
+    for key, value in user_data.dict(exclude_none=True).items():
+        setattr(profile, key, value)
 
+    position = user_data.positions
     if position is not None:
         sql = delete(JoinPosition).where(JoinPosition.profile_seq == profile.seq)
         db.execute(sql)
@@ -308,7 +350,7 @@ def delete_user_profile_img(
     token: Annotated[str, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    proflie = token.profile[0]
+    proflie = token.profile
     proflie.img = ""
     db.commit()
     db.flush()
@@ -434,35 +476,6 @@ def test(request: Request):
     </html>
     """
     return HTMLResponse(content=html_content)
-
-
-@user_router.post("/sns/login")
-def user_sns_login(data: UserSnsLoginSchema, db: Session = Depends(get_db)):
-    sns = db.query(Sns).filter(Sns.user == data.user, Sns.type == data.type).first()
-
-    if sns is None:
-        user_login_data = EmailRegisterSchema(
-            email=data.email, password=secrets.token_urlsafe(13)
-        )
-        user = con.email_register_user(db, user_login_data)
-        sns = Sns(
-            sub="",
-            refresh_token="",
-            user_seq=user.seq,
-            type=data.type,
-            user=data.user,
-        )
-        db.add(sns)
-        db.commit()
-
-    access_token = create_access_token(
-        data={"sub": str(sns.join_user.email), "type": data.type}
-    )
-    refresh_token = create_refresh_token(
-        data={"sub": str(sns.join_user.email), "type": data.type}
-    )
-
-    return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 @user_router.get("/google/login", deprecated=True)
